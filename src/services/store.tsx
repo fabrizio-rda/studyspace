@@ -520,7 +520,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubscribe?.();
       try {
         const client = cloudClient();
-        const listener = client.auth.onAuthStateChange?.((event) => {
+        const listener = client.auth.onAuthStateChange?.((event, session) => {
+          if (event === "SIGNED_IN" && session?.user && !cloudRef.current.user) {
+            // Do not await an RPC inside the auth callback: it can deadlock auth initialization.
+            setTimeout(() => {
+              if (!cloudRef.current.user) void attach(session.user).catch((e) => notify((e as Error).message));
+            }, 0);
+          }
           if (event === "SIGNED_OUT" && cloudRef.current.user) {
             restoreLocalSession();
             notify("Sesión cerrada. Los datos de nube quedan ocultos.");
@@ -662,7 +668,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localAccess: canUseLocal(cloud.user?.id ?? null, loadConfig().supabaseUrl),
     workspaceToken: String(epoch.current),
     sendCode: async (email) => {
-      const { error } = await cloudClient().auth.signInWithOtp({ email });
+      const { error } = await cloudClient().auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: "https://fabrizio-rda.github.io/studyspace/" },
+      });
       if (error) throw error;
     },
     verifyCode: async (email, token) => {
