@@ -171,7 +171,6 @@ export function Modal({
     >
       <div className="modal-head">
         <div>
-          <p className="eyebrow">TU ESPACIO, A TU MANERA</p>
           <h2>{title}</h2>
         </div>
         <button

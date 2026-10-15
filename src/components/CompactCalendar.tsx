@@ -81,7 +81,7 @@ export function CompactCalendar() {
             </button>
           ))
         ) : (
-          <p>Un día con espacio para tus planes.</p>
+          <p>Sin actividades para esta fecha.</p>
         )}
         <button
           className="text-btn"

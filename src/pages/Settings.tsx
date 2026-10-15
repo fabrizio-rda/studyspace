@@ -68,7 +68,6 @@ export default function Settings() {
     <div className="page settings-page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">QUE SE SIENTA COMO TUYO</p>
           <h1>Configuración</h1>
           <p>Pequeños ajustes para estudiar a tu manera.</p>
         </div>
@@ -88,7 +87,7 @@ export default function Settings() {
         </div>
       </div>
       <div className="settings-grid">
-        <Card title="Tu espacio personal">
+        <Card title="Perfil y zona horaria">
           <form onSubmit={save} className="editor-form">
             <label>
               Nombre mostrado
@@ -172,8 +171,8 @@ export default function Settings() {
             <span />
             <span />
             <div>
-              <strong>Beige, con un toque de calma</strong>
-              <p>El tema de tu espacio en esta primera fase.</p>
+              <strong>Azul y celeste sobre beige</strong>
+              <p>Morado y naranja como acento secundario.</p>
             </div>
           </div>
         </Card>
@@ -300,9 +299,7 @@ export default function Settings() {
           Restablecer datos
         </button>
       </section>
-      <p className="version-note">
-        StudySpace 1.0 · Hecho para tus próximos pasos.
-      </p>
+      <p className="version-note">StudySpace 1.0</p>
     </div>
   );
 }

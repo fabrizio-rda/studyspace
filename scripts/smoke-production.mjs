@@ -49,14 +49,14 @@ try {
   assert(
     w.document
       .querySelector("main")
-      .textContent.includes("Este es tu espacio para organizar tus estudios."),
+      .textContent.includes("Cursos, tareas y evaluaciones."),
   );
   for (const [route, heading] of [
-    ["/tareas", "Todo en su lugar."],
+    ["/tareas", "Mis tareas"],
     ["/cursos", "Mis cursos"],
     ["/calendario", "Mi calendario"],
     ["/configuracion", "Configuración"],
-    ["/", "Este es tu espacio"],
+    ["/", "Cursos, tareas y evaluaciones."],
   ]) {
     w.location.hash = route;
     await delay(400);

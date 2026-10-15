@@ -20,7 +20,6 @@ import {
   Plus,
   Search,
   Settings2,
-  Sparkles,
   X,
 } from "lucide-react";
 import { StoreProvider, useStore } from "./services/store";
@@ -139,7 +138,6 @@ function Shell() {
             </span>
             <span>
               Study<span className="brand-light">Space</span>
-              <small>UN ESPACIO PARA CRECER</small>
             </span>
           </NavLink>
           <button
@@ -168,9 +166,7 @@ function Shell() {
           </nav>
           <div className="sidebar-bottom">
             <div className="sidebar-note">
-              <span>✧</span>
-              <strong>A tu propio ritmo.</strong>
-              <p>Lo que haces hoy también cuenta.</p>
+              <p>Los pendientes sí se acuerdan de ti.</p>
             </div>
             <button
               className="collapse-btn"
@@ -196,7 +192,6 @@ function Shell() {
                 <strong>{data.settings.name}</strong>
                 <small>Mi espacio personal</small>
               </div>
-              <Sparkles size={17} />
             </div>
           </div>
         </aside>
@@ -213,8 +208,6 @@ function Shell() {
                 <Menu size={22} />
               </button>
               <span>{section}</span>
-              <span className="section-dot" />
-              <small>Tu día, un poco más claro</small>
             </div>
             <div className="topbar-actions">
               <div className="global-search">
@@ -222,7 +215,7 @@ function Shell() {
                   <Search size={17} />
                   <input
                     aria-label="Buscar en StudySpace"
-                    placeholder="Busca algo en tu espacio…"
+                    placeholder="Buscar cursos y actividades…"
                     value={query}
                     onFocus={() => setSearching(true)}
                     onChange={(e) => {
@@ -253,7 +246,7 @@ function Shell() {
                     aria-label="Resultados de búsqueda"
                   >
                     <div className="search-results-heading">
-                      En tu espacio
+                      Resultados
                       <button
                         className="icon-btn"
                         aria-label="Cerrar resultados"
@@ -331,7 +324,7 @@ function Shell() {
                     path="*"
                     element={
                       <div className="page">
-                        <h1>Este rincón aún no existe.</h1>
+                        <h1>Página no encontrada</h1>
                         <NavLink className="btn primary" to="/">
                           Volver al inicio
                         </NavLink>
@@ -344,8 +337,8 @@ function Shell() {
           </main>
           <footer className="app-footer">
             <span>StudySpace</span>
-            <p>Un lugar para ordenar tus ideas y hacerlas crecer.</p>
-            <small>FASE 01 · TU PUNTO DE PARTIDA</small>
+            <p>Cursos, tareas y calendario.</p>
+            <small>FASE 01</small>
           </footer>
         </div>
         {adding && (
@@ -360,19 +353,19 @@ function Shell() {
                 },
                 {
                   label: "Un examen",
-                  detail: "Tu próxima evaluación, bajo control",
+                  detail: "Examen con fecha y curso",
                   icon: GraduationCap,
                   editor: { kind: "task", type: "examen" } as EditorState,
                 },
                 {
                   label: "Una actividad",
-                  detail: "Un espacio reservado en tu calendario",
+                  detail: "Evento independiente en el calendario",
                   icon: CalendarDays,
                   editor: { kind: "event" } as EditorState,
                 },
                 {
                   label: "Un curso",
-                  detail: "Un nuevo espacio para aprender",
+                  detail: "Nombre, icono y color del curso",
                   icon: BookOpen,
                   editor: { kind: "course" } as EditorState,
                 },

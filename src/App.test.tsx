@@ -48,9 +48,7 @@ describe("StudySpace: recorridos de usuario", () => {
     const u = userEvent.setup();
     const app = render(<App />);
     expect(
-      await screen.findByText(
-        "Este es tu espacio para organizar tus estudios.",
-      ),
+      await screen.findByText("Cursos, tareas y evaluaciones."),
     ).toBeInTheDocument();
     await route("/tareas");
     await createTask("Resolver dinámica");

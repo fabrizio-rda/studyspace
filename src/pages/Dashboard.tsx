@@ -8,9 +8,7 @@ import {
   Coffee,
   Hourglass,
   ListChecks,
-  Sparkles,
   TrendingUp,
-  WandSparkles,
 } from "lucide-react";
 import { useStore } from "../services/store";
 import {
@@ -74,9 +72,6 @@ export default function Dashboard() {
     <div className="dashboard">
       <section className="welcome">
         <div className="welcome-copy">
-          <span className="welcome-tag">
-            <Sparkles size={13} /> UN POCO DE ORDEN, MÁS ESPACIO PARA TI
-          </span>
           <h1>
             {hour < 12
               ? "Buenos días"
@@ -85,9 +80,8 @@ export default function Dashboard() {
                 : "Buenas noches"}
             ,<br />
             {data.settings.name}
-            <span className="hello-star">✦</span>
           </h1>
-          <p>Este es tu espacio para organizar tus estudios.</p>
+          <p>Cursos, tareas y evaluaciones.</p>
           <div className="welcome-bottom">
             <span className="date-pill">
               <CalendarDays size={14} />
@@ -96,15 +90,13 @@ export default function Dashboard() {
             <span>
               {pending.length
                 ? `${pending.length} ${pending.length === 1 ? "tarea pendiente" : "tareas pendientes"}`
-                : "Todo comienza con un pequeño paso"}
+                : "Sin tareas pendientes"}
             </span>
           </div>
         </div>
         <div className="study-art" aria-hidden="true">
           <div className="orbit orbit-one" />
           <div className="orbit orbit-two" />
-          <div className="art-star star-one">✦</div>
-          <div className="art-star star-two">✧</div>
           <div className="book-stack">
             <div className="book-book blue-book" />
             <div className="book-book pink-book" />
@@ -133,8 +125,8 @@ export default function Dashboard() {
           />
         ) : (
           <Empty
-            title="Hoy, una página en blanco"
-            description="Añade tu primera tarea y dale un lugar en tu día."
+            title="Sin tareas para hoy"
+            description="Puedes añadir una tarea para esta fecha."
           />
         )}
         <button
@@ -151,9 +143,6 @@ export default function Dashboard() {
             Ver las {todays.length} tareas
           </button>
         )}
-        <div className="tiny-note">
-          <span>✧</span> Un paso a la vez también es avanzar.
-        </div>
       </Card>
       <Card
         title="Esta semana"
@@ -204,7 +193,6 @@ export default function Dashboard() {
             );
           })}
         </div>
-        <p className="card-footnote">Pequeñas victorias que sí cuentan.</p>
       </Card>
       <Card title="Tu progreso" className="progress-card">
         <div
@@ -212,7 +200,7 @@ export default function Dashboard() {
           role="img"
           aria-label={`${percent}% de tareas completadas`}
           style={{
-            background: `conic-gradient(#A18BE0 ${percent}%, #EEE5F2 0)`,
+            background: `conic-gradient(#83A8EB ${percent}%, #DFEAF6 0)`,
           }}
         >
           <div>
@@ -230,15 +218,7 @@ export default function Dashboard() {
           <span>{pending.length} pendientes</span>
         </div>
       </Card>
-      <Card
-        title="Un atajo para cada idea"
-        className="quick-card"
-        action={
-          <span className="muted">
-            <Sparkles size={17} />
-          </span>
-        }
-      >
+      <Card title="Accesos rápidos" className="quick-card">
         <div className="quick-grid">
           {[
             {
@@ -312,14 +292,14 @@ export default function Dashboard() {
           </div>
         ) : (
           <Empty
-            title="Todo despejado por aquí"
-            description="Cuando añadas un examen, lo encontrarás aquí."
+            title="Sin evaluaciones próximas"
+            description="Los exámenes con fecha aparecerán aquí."
             action={
               <button
                 className="text-btn"
                 onClick={() => open({ kind: "task", type: "examen" })}
               >
-                Añadir mi primera evaluación <ArrowUpRight size={14} />
+                Añadir evaluación <ArrowUpRight size={14} />
               </button>
             }
           />
@@ -330,23 +310,19 @@ export default function Dashboard() {
       </Card>
       <section className="plan-card">
         <span className="plan-symbol">
-          <WandSparkles size={24} />
+          <CalendarDays size={24} />
         </span>
         <div>
           <div className="plan-heading">
             <h2>Tu plan de estudio</h2>
             <span className="badge">FASE 2</span>
           </div>
-          <p>
-            Un plan que se adapte a ti. La planificación inteligente llegará en
-            la siguiente fase.
-          </p>
+          <p>Planificación de estudio disponible en la fase 2.</p>
         </div>
       </section>
       <section className="timer-card">
         <div>
-          <span className="eyebrow">ESPACIO PARA CONCENTRARTE</span>
-          <h2>Una cosa a la vez</h2>
+          <h2>Temporizador</h2>
           <p>Sesiones Pomodoro · Fase 2</p>
         </div>
         <div className="timer-preview">

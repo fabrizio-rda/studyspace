@@ -97,7 +97,6 @@ export default function Calendar() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">HAZ ESPACIO PARA LO QUE IMPORTA</p>
           <h1>Mi calendario</h1>
           <p>
             Entregas, evaluaciones y planes. Una visión más clara de tus días.
@@ -324,7 +323,7 @@ export default function Calendar() {
             </div>
           ) : (
             <Empty
-              title="Un día con espacio libre"
+              title="Sin actividades"
               description="Haz clic en una fecha para añadir una actividad o crea una tarea con fecha límite."
             />
           )}

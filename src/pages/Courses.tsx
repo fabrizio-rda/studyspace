@@ -39,7 +39,6 @@ export default function Courses() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">CADA MATERIA, SU PROPIO ESPACIO</p>
           <h1>Mis cursos</h1>
           <p>
             {data.courses.filter((c) => !c.archived).length} cursos activos.
@@ -120,7 +119,7 @@ export default function Courses() {
               >
                 <h2>{c.name}</h2>
                 {c.archived && <span className="badge">Archivado</span>}
-                <p>{c.description || "Un espacio para seguir aprendiendo."}</p>
+                <p>{c.description || "Sin descripción."}</p>
                 <div className="course-card-bottom">
                   <span>
                     {
@@ -145,7 +144,7 @@ export default function Courses() {
       </div>
       {!courses.length && (
         <Empty
-          title="Un espacio para un nuevo comienzo"
+          title="No hay cursos"
           action={
             <button
               className="btn soft"
@@ -222,8 +221,7 @@ export function CourseDetail() {
           </p>
           <h1>{course.name}</h1>
           <p className="course-description">
-            {course.description ||
-              "Añade una descripción para hacer este espacio tuyo."}
+            {course.description || "Sin descripción. Puedes editarla."}
           </p>
         </div>
         <button
@@ -283,8 +281,8 @@ export function CourseDetail() {
           />
         ) : (
           <Empty
-            title="Tu siguiente paso empieza aquí"
-            description="Añade las tareas de este curso para seguirles el ritmo."
+            title="Sin tareas en este curso"
+            description="Las tareas que crees para este curso aparecerán aquí."
           />
         )}
       </Card>
@@ -326,7 +324,7 @@ export function CourseDetail() {
           action={<span className="badge">PRÓXIMAMENTE</span>}
         >
           <Empty
-            title="Más espacio para aprender"
+            title="Temas y materiales pendientes"
             description="Los temarios llegarán en la fase 2 y la biblioteca de materiales, en la fase 3."
             action={<BookOpen size={22} />}
           />

@@ -1,10 +1,10 @@
 # StudySpace · Fase 1
 
-Una aplicación académica personal, estática y en español. Paleta beige con morado, rosado, melocotón y azul pastel; diseño inspirado en la composición de FocusMate, con identidad y gráficos propios.
+Una aplicación académica personal, estática y en español. Fondo beige con azul y celeste como colores principales, degradados fríos en navegación y controles y un acento de morado a naranja en la bienvenida. Diseño inspirado en la composición de FocusMate, con identidad y gráficos propios. Los textos de interfaz son neutros y se han eliminado los destellos decorativos.
 
 ## Estado de la entrega
 
-La implementación de la fase 1 y el flujo de despliegue están preparados en [fabrizio-rda/studyspace](https://github.com/fabrizio-rda/studyspace). La publicación se verifica en GitHub Actions: los trabajos `build` y `deploy` deben finalizar correctamente y el segundo debe devolver la URL del sitio. La revisión visual con navegador y las capturas de escritorio/móvil siguen pendientes porque el entorno de construcción no ofrece la herramienta de navegador requerida.
+La implementación de la fase 1 y el flujo de despliegue están preparados en [fabrizio-rda/studyspace](https://github.com/fabrizio-rda/studyspace). La publicación inicial se verificó correctamente en GitHub Actions y responde en https://fabrizio-rda.github.io/studyspace/. Los cambios posteriores se publican tras aprobar los trabajos `build` y `deploy`. La revisión visual con navegador y las capturas de escritorio/móvil siguen pendientes porque el entorno de construcción no ofrece la herramienta de navegador requerida.
 
 ## Usar sin instalar programas
 

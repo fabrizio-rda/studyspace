@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @theme {
   --font-sans: "Plus Jakarta Sans", sans-serif;
-  --color-lilac: #a18be0;
+  --color-lilac: #83a8eb;
   --color-cream: #f6f0e7;
 }
 :root {
@@ -12,7 +12,7 @@
   line-height: 1.5;
   font-weight: 500;
   font-size: 14px;
-  --purple: #a18be0;
+  --purple: #83a8eb;
   --muted: #746d78;
   --card: #fff9f1;
   --line: #eae2d8;
@@ -85,7 +85,7 @@ button:active:not(:disabled) {
   transform: translateY(1px);
 }
 :focus-visible {
-  outline: 3px solid #8372bf;
+  outline: 3px solid #5b85b6;
   outline-offset: 3px;
 }
 input,
@@ -104,8 +104,8 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: #9d87d6;
-  box-shadow: 0 0 0 3px #a18be019;
+  border-color: #83a8eb;
+  box-shadow: 0 0 0 3px #83a8eb19;
 }
 input::placeholder,
 textarea::placeholder {
@@ -157,16 +157,16 @@ strong {
   min-height: 40px;
 }
 .btn.primary {
-  background: #a18be0;
+  background: linear-gradient(115deg, #83a8eb, #b3dff5);
   color: #fff;
-  box-shadow: 0 3px 9px #a18be024;
+  box-shadow: 0 3px 9px #83a8eb24;
 }
 .btn.primary:hover {
-  background: #9079ce;
+  background: linear-gradient(115deg, #759bdc, #a4d3ef);
 }
 .btn.soft {
-  background: #ede4f5;
-  color: #635181;
+  background: #e0edf8;
+  color: #385c82;
 }
 .btn.ghost {
   background: #f6f0e7;
@@ -210,7 +210,7 @@ strong {
 }
 .count-pill {
   font-size: 11px;
-  background: #ede4f5;
+  background: #e0edf8;
   color: #75628f;
   min-width: 24px;
   min-height: 24px;
@@ -243,7 +243,7 @@ strong {
   gap: 1px;
 }
 .avatar {
-  background: linear-gradient(135deg, #b49ee7, #eab2cc);
+  background: linear-gradient(135deg, #83a8eb, #b3dff5);
   color: #fff9f1;
   display: inline-flex;
   align-items: center;
@@ -277,13 +277,7 @@ strong {
   inset: 20px auto 20px 20px;
   width: var(--sidebar);
   border-radius: 25px;
-  background: linear-gradient(
-    165deg,
-    #c2b1ec 0%,
-    #d9b8e3 48%,
-    #edbcbe 77%,
-    #f2c4a7 100%
-  );
+  background: linear-gradient(165deg, #83a8eb 0%, #9dc5ef 50%, #b3dff5 100%);
   padding: 29px 18px 17px;
   display: flex;
   flex-direction: column;
@@ -358,7 +352,7 @@ strong {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #a18be0;
+  background: #83a8eb;
   display: none;
 }
 .active .nav-active-dot {
@@ -660,28 +654,13 @@ main:focus {
   z-index: 2;
   max-width: 79%;
 }
-.welcome-tag {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  color: #776380;
-  font-size: 7px;
-  letter-spacing: 1.2px;
-  font-weight: 750;
-  margin-bottom: 13px;
-}
+
 .welcome h1 {
   font-size: 30px;
   line-height: 1.25;
   letter-spacing: -1.15px;
 }
-.hello-star {
-  color: #746a7b;
-  display: inline-block;
-  font-size: 23px;
-  margin-left: 9px;
-  vertical-align: middle;
-}
+
 .welcome p {
   font-size: 11px;
   color: #7c6a7e;
@@ -814,21 +793,7 @@ main:focus {
   top: 22px;
   border-style: dashed;
 }
-.art-star {
-  position: absolute;
-  color: #746a7b;
-  font-size: 27px;
-}
-.star-one {
-  top: 3px;
-  right: 15px;
-}
-.star-two {
-  top: 65px;
-  left: -12px;
-  color: #746a7b;
-  font-size: 32px;
-}
+
 .today-card {
   grid-column: 3;
   grid-row: 1 / span 2;
@@ -879,7 +844,7 @@ main:focus {
   font-size: 10px;
 }
 .dashed-add {
-  border: 1px dashed #cebedb;
+  border: 1px dashed #adc9e2;
   color: #746a7b;
   border-radius: 10px;
   display: flex;
@@ -892,22 +857,9 @@ main:focus {
   margin-top: 13px;
 }
 .dashed-add:hover {
-  background: #f3ebf6;
+  background: #e7f2fa;
 }
-.tiny-note {
-  margin-top: 17px;
-  padding: 13px 4px 0;
-  border-top: 1px solid var(--line);
-  font-size: 9px;
-  line-height: 1.6;
-  color: #746a7b;
-  text-align: center;
-}
-.tiny-note span {
-  font-size: 17px;
-  color: #746a7b;
-  margin-right: 4px;
-}
+
 .week-card,
 .progress-card {
   min-height: 225px;
@@ -943,7 +895,7 @@ main:focus {
 .bar-track {
   width: 11px;
   height: 65px;
-  background: #f0e8f4;
+  background: #e4edf5;
   border-radius: 8px;
   position: relative;
   display: block;
@@ -955,18 +907,14 @@ main:focus {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(#b29de5, #d3c0ef);
+  background: linear-gradient(#83a8eb, #b3dff5);
   border-radius: 8px;
 }
 .bar-column small {
   font-size: 8px;
   color: #746a7b;
 }
-.card-footnote {
-  font-size: 8px;
-  color: #746a7b;
-  margin-top: 13px;
-}
+
 .progress-ring {
   width: 130px;
   height: 130px;
@@ -1011,7 +959,7 @@ main:focus {
   display: inline-block;
   width: 5px;
   height: 5px;
-  background: #a18be0;
+  background: #83a8eb;
   border-radius: 50%;
   margin-right: 3px;
 }
@@ -1049,11 +997,11 @@ main:focus {
   justify-content: center;
 }
 .purple {
-  background: #e5dcf6;
+  background: #dceaf8;
   color: #746a7b;
 }
 .pink {
-  background: #f5dce8;
+  background: #deedf7;
   color: #746a7b;
 }
 .blue {
@@ -1073,8 +1021,8 @@ main:focus {
   margin-bottom: 7px;
 }
 .rdp-root {
-  --rdp-accent-color: #9076c6;
-  --rdp-accent-background-color: #e6d9f6;
+  --rdp-accent-color: #638bb9;
+  --rdp-accent-background-color: #dcecf8;
   --rdp-day-height: 31px;
   --rdp-day-width: 34px;
   --rdp-day_button-height: 30px;
@@ -1104,7 +1052,7 @@ main:focus {
 .rdp-chevron {
   width: 14px;
   height: 14px;
-  fill: #a38caf;
+  fill: #6289b2;
 }
 .rdp-weekday {
   font-size: 8px;
@@ -1118,13 +1066,13 @@ main:focus {
   position: relative;
 }
 .rdp-selected .rdp-day_button {
-  background: #a18be0;
+  background: #83a8eb;
   color: white;
   font-weight: 700;
-  box-shadow: 0 4px 8px #a18be02b;
+  box-shadow: 0 4px 8px #83a8eb2b;
 }
 .rdp-today:not(.rdp-selected) .rdp-day_button {
-  background: #f1e8f7;
+  background: #e5f1fa;
 }
 .rdp-outside {
   opacity: 0.3;
@@ -1200,7 +1148,7 @@ main:focus {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  background: #eee4f5;
+  background: #e0edf8;
   border-radius: 10px;
   color: #746a7b;
   flex-shrink: 0;
@@ -1251,7 +1199,7 @@ main:focus {
   align-items: center;
   gap: 16px;
   padding: 19px 22px;
-  background: #eee7f2;
+  background: #e4eef7;
   border-radius: 18px;
   border: 1px solid #fff9f1;
 }
@@ -1259,7 +1207,7 @@ main:focus {
   width: 42px;
   height: 42px;
   border-radius: 13px;
-  background: #e4d8ee;
+  background: #d7e8f5;
   color: #746a7b;
   display: flex;
   align-items: center;
@@ -1277,7 +1225,7 @@ main:focus {
 }
 .plan-heading .badge {
   font-size: 7px;
-  background: #e2d5ec;
+  background: #d0e3f3;
 }
 .plan-card p {
   font-size: 9px;
@@ -1461,8 +1409,8 @@ main:focus {
   flex-shrink: 0;
 }
 .done .check-btn {
-  background: #b8a3dd;
-  border-color: #b8a3dd;
+  background: #8eb5de;
+  border-color: #8eb5de;
   color: white;
 }
 .task-info {
@@ -1645,7 +1593,7 @@ main:focus {
   color: #746a7b;
 }
 .checkbox-label input {
-  accent-color: #a18be0;
+  accent-color: #83a8eb;
   width: 14px;
   height: 14px;
 }
@@ -1880,7 +1828,7 @@ main:focus {
   color: #746a7b;
 }
 .calendar-cell.is-selected {
-  background: #f2eaf6;
+  background: #e5f0f8;
 }
 .calendar-day-number {
   display: flex;
@@ -1909,11 +1857,11 @@ main:focus {
   opacity: 1;
 }
 .calendar-cell.is-today .calendar-day-number > span {
-  background: #a18be0;
+  background: #83a8eb;
   color: white;
 }
 .calendar-event {
-  border-left: 3px solid #a18be0;
+  border-left: 3px solid #83a8eb;
   display: block;
   padding: 4px;
   border-radius: 4px;
@@ -2038,8 +1986,8 @@ main:focus {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  background: #ebe6f1;
-  border: 1px solid #ded3eb;
+  background: #e4eef7;
+  border: 1px solid #c7dceb;
   color: #746a7b;
   padding: 20px;
   border-radius: 16px;
@@ -2095,7 +2043,7 @@ main:focus {
   transition: transform 0.2s;
 }
 .switch:checked {
-  background: #a18be0;
+  background: #83a8eb;
 }
 .switch:checked:before {
   transform: translateX(15px);
@@ -2112,10 +2060,10 @@ main:focus {
   height: 28px;
   border-radius: 50%;
   border: 2px solid #fff9f1;
-  background: #d5c2eb;
+  background: #83a8eb;
 }
 .theme-preview > span:nth-child(2) {
-  background: #eca6c8;
+  background: #b3dff5;
   margin-left: -9px;
 }
 .theme-preview > span:nth-child(3) {
@@ -2333,7 +2281,7 @@ main:focus {
   border: 2px solid transparent;
 }
 .icon-options .chosen {
-  border-color: #a18be0;
+  border-color: #83a8eb;
 }
 .icon-options .course-icon {
   width: 34px;
@@ -2464,9 +2412,7 @@ main:focus {
   .welcome p {
     font-size: 13px;
   }
-  .welcome-tag {
-    font-size: 9px;
-  }
+
   .study-art {
     transform: scale(1.15);
     right: 9%;
@@ -2558,9 +2504,7 @@ main:focus {
   .welcome h1 {
     font-size: 27px;
   }
-  .welcome-tag {
-    font-size: 6px;
-  }
+
   .welcome-copy {
     max-width: 85%;
   }
@@ -2705,9 +2649,7 @@ main:focus {
   .welcome p {
     font-size: 12px;
   }
-  .welcome-tag {
-    font-size: 7px;
-  }
+
   .study-art {
     right: 7%;
     opacity: 0.9;
@@ -3051,10 +2993,7 @@ main:focus {
   .welcome h1 {
     font-size: 29px;
   }
-  .welcome-tag {
-    font-size: 6px;
-    letter-spacing: 0.8px;
-  }
+
   .welcome p {
     font-size: 10px;
     max-width: 235px;
@@ -3480,17 +3419,17 @@ main:focus {
 
 /* Maintain readable text on the pastel primary surface. */
 .btn.primary {
-  color: #352944;
+  color: #213c59;
 }
 .avatar,
 .sidebar-profile .avatar {
-  color: #51405e;
+  color: #294e71;
 }
 .rdp-selected .rdp-day_button {
-  color: #352944;
+  color: #213c59;
 }
 .calendar-cell.is-today .calendar-day-number > span {
-  color: #352944;
+  color: #213c59;
 }
 .course-open p,
 .page-heading p:not(.eyebrow),
@@ -3500,4 +3439,44 @@ main:focus {
 .calendar-note,
 .form-help {
   color: #746a7b;
+}
+
+.plan-card {
+  background: linear-gradient(115deg, #e1ecf9, #e4f3fa);
+}
+.plan-symbol {
+  background: #d2e5f5;
+  color: #426f98;
+}
+.sidebar-note {
+  background: #fff9f126;
+  border-color: #fff9f142;
+  padding: 13px 10px;
+}
+.sidebar-note p {
+  margin: 0;
+  color: #294e71;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.progress-ring strong {
+  color: #4674a5;
+}
+.book-cover {
+  background: linear-gradient(135deg, #9fc3eb, #789fd3);
+}
+.blue-book {
+  background: #83a8eb;
+}
+.purple-book {
+  background: #8eb5de;
+}
+.pink-book {
+  background: #b3dff5;
+}
+.theme-preview > span:nth-child(2) {
+  background: #b3dff5;
+}
+.theme-preview > span:nth-child(3) {
+  background: linear-gradient(120deg, #a18be0, #f4b58a);
 }

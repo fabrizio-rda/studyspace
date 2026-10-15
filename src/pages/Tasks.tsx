@@ -46,11 +46,10 @@ export default function Tasks() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">PASO A PASO</p>
-          <h1>Todo en su lugar.</h1>
+          <h1>Mis tareas</h1>
           <p>
             {data.tasks.filter((t) => t.status !== "completada").length}{" "}
-            pendientes. Una tarea menos, un poco más de calma.
+            pendientes.
           </p>
         </div>
         <AddButton label="Nueva tarea" onClick={() => open({ kind: "task" })} />
@@ -172,14 +171,12 @@ export default function Tasks() {
           ) : (
             <Empty
               title={
-                data.tasks.length
-                  ? "No hay coincidencias"
-                  : "Tus ideas tienen un lugar aquí"
+                data.tasks.length ? "No hay coincidencias" : "No hay tareas"
               }
               description={
                 data.tasks.length
                   ? "Prueba con otros filtros."
-                  : "Añade tu primera tarea. Puedes empezar con algo pequeño."
+                  : "Crea una tarea para verla en esta lista."
               }
               action={
                 <button
@@ -207,7 +204,7 @@ export default function Tasks() {
                   onEdit={(item) => open({ kind: "task", item })}
                 />
                 {!filtered.some((t) => t.status === k) && (
-                  <p className="kanban-empty">Nada por aquí… todavía.</p>
+                  <p className="kanban-empty">Sin tareas</p>
                 )}
               </section>
             ))}

@@ -112,7 +112,7 @@ function ActivityEditor({
             autoFocus
             required
             maxLength={200}
-            placeholder="¿Qué tienes en mente?"
+            placeholder="Título de la actividad"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -286,7 +286,7 @@ function CourseEditor({
           <textarea
             rows={3}
             maxLength={5000}
-            placeholder="Tu espacio para este curso…"
+            placeholder="Descripción del curso (opcional)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
