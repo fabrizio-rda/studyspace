@@ -56,7 +56,7 @@ export function cloudClient() {
     cached?.auth.stopAutoRefresh();
     cached = createClient<Database>(c.supabaseUrl, c.supabaseKey, {
       auth: {
-        persistSession: false,
+        persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
       },
