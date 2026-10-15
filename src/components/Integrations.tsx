@@ -197,7 +197,7 @@ export default function Integrations() {
                 </button>
               </div>
               <p className="form-help">
-                Sesión en memoria. Al cerrar o recargar la página tendrás que
+                Sesión en memoria. Puedes entrar desde el enlace del correo o con un código. Al cerrar o recargar la página tendrás que
                 iniciar sesión otra vez; no se guardan tokens en el navegador.
               </p>
             </>
