@@ -197,8 +197,7 @@ export default function Integrations() {
                 </button>
               </div>
               <p className="form-help">
-                Sesión en memoria. Puedes entrar desde el enlace del correo o con un código. Al cerrar o recargar la página tendrás que
-                iniciar sesión otra vez; no se guardan tokens en el navegador.
+                La sesión se conserva en este navegador para que puedas volver a entrar sin solicitar otro correo. Cierra sesión en dispositivos compartidos.
               </p>
             </>
           ) : (
@@ -259,6 +258,11 @@ export default function Integrations() {
                 >
                   Cambiar email / solicitar otro código
                 </button>
+              )}
+              {error && (
+                <p className="integration-error" role="alert" aria-live="assertive" style={{ marginTop: 12, overflowWrap: "anywhere" }}>
+                  No se pudo completar el acceso: {error}
+                </p>
               )}
               {!config.supabaseUrl && (
                 <p className="form-help">
@@ -452,10 +456,11 @@ export default function Integrations() {
           )}
         </Card>
       </div>
-      {(error || google.error) && (
-        <p className="integration-error" role="alert">
-          {error || google.error}
-        </p>
+      {google.error && (
+        <p className="integration-error" role="alert">{google.error}</p>
+      )}
+      {error && cloud.user && (
+        <p className="integration-error" role="alert">{error}</p>
       )}
       <details className="integration-setup">
         <summary>Configurar servicios externos</summary>
