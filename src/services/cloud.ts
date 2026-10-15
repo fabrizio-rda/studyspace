@@ -58,7 +58,7 @@ export function cloudClient() {
       auth: {
         persistSession: false,
         autoRefreshToken: true,
-        detectSessionInUrl: false,
+        detectSessionInUrl: true,
       },
       global: {
         fetch: (input, init) =>
