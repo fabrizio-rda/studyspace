@@ -1,3 +1,6 @@
+import { useState } from "react";
+import Syllabus from "../components/Syllabus";
+import { topicProgress } from "../services/planner";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowDown,
@@ -63,6 +66,7 @@ export default function Courses() {
       </div>
       <div className="course-grid">
         {courses.map((c) => {
+          const learning = topicProgress(data, c.id);
           const upcoming = [
             ...data.tasks
               .filter(
@@ -132,6 +136,15 @@ export default function Courses() {
                   <ArrowUpRight size={20} />
                 </div>
               </button>
+              {learning.total > 0 && (
+                <p className="course-topic-progress">
+                  Temario:{" "}
+                  {Math.round((learning.completed / learning.total) * 100)}%
+                  completado ·{" "}
+                  {Math.round((learning.mastered / learning.total) * 100)}%
+                  dominado
+                </p>
+              )}
               <div className="course-next">
                 <CalendarDays size={13} />
                 {upcoming
@@ -142,6 +155,14 @@ export default function Courses() {
           );
         })}
       </div>
+      {data.units.some((u) => u.courseId === null) && (
+        <button
+          className="btn soft"
+          onClick={() => navigate("/cursos/sin-curso")}
+        >
+          Ver temarios conservados sin curso
+        </button>
+      )}
       {!courses.length && (
         <Empty
           title="No hay cursos"
@@ -160,11 +181,25 @@ export default function Courses() {
 }
 export function CourseDetail() {
   const { id } = useParams();
+  const [tab, setTab] = useState("overview");
   const { data, commit, deleteCourse } = useStore();
   const open = useEditor();
   const navigate = useNavigate();
   const course = data.courses.find((c) => c.id === id);
   const today = todayIn(data.settings.timezone);
+  if (id === "sin-curso")
+    return (
+      <div className="page">
+        <button className="text-btn" onClick={() => navigate("/cursos")}>
+          Volver a cursos
+        </button>
+        <h1>Temarios sin curso</h1>
+        <p className="form-help">
+          Contenido conservado después de eliminar un curso.
+        </p>
+        <Syllabus courseId={null} />
+      </div>
+    );
   if (!course)
     return (
       <Empty
@@ -193,7 +228,7 @@ export function CourseDetail() {
       data.events.filter((e) => e.courseId === c.id).length;
     if (
       window.confirm(
-        `¿Eliminar el curso «${c.name}»? Se conservarán sus ${count} tareas y actividades como «Sin curso». Solo se eliminarán el curso y su descripción. Esta acción no se puede deshacer.`,
+        `¿Eliminar el curso «${c.name}»? Se conservarán sus ${count} tareas y actividades, temario, planes y sesiones como «Sin curso». Solo se eliminarán el curso y su descripción. Esta acción no se puede deshacer.`,
       )
     ) {
       if (deleteCourse(c.id)) navigate("/cursos");
@@ -270,66 +305,94 @@ export function CourseDetail() {
           Eliminar curso
         </button>
       </div>
-      <Card
-        title="Tareas del curso"
-        action={<span className="count-pill">{tasks.length}</span>}
+      <div
+        className="tabs study-tabs"
+        role="tablist"
+        aria-label="Secciones del curso"
       >
-        {tasks.length ? (
-          <TaskList
-            tasks={tasks}
-            onEdit={(item) => open({ kind: "task", item })}
-          />
-        ) : (
-          <Empty
-            title="Sin tareas en este curso"
-            description="Las tareas que crees para este curso aparecerán aquí."
-          />
-        )}
-      </Card>
-      <div className="detail-grid">
-        <Card title="Evaluaciones próximas">
-          {upcoming.length || events.some((e) => e.type === "examen") ? (
-            <div className="simple-list">
-              {[
-                ...upcoming.map((t) => ({
-                  id: t.id,
-                  title: t.title,
-                  date: t.dueDate,
-                  edit: () => open({ kind: "task", item: t }),
-                })),
-                ...events
-                  .filter((e) => e.type === "examen")
-                  .map((e) => ({
-                    id: e.id,
-                    title: e.title,
-                    date: e.date,
-                    edit: () => open({ kind: "event", item: e }),
-                  })),
-              ]
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .map((e) => (
-                  <button key={e.id} onClick={e.edit}>
-                    <CalendarDays size={17} />
-                    <span>{e.title}</span>
-                    <small>{displayDate(e.date)}</small>
-                  </button>
-                ))}
-            </div>
-          ) : (
-            <Empty title="Sin evaluaciones por ahora" />
-          )}
-        </Card>
-        <Card
-          title="Temas y materiales"
-          action={<span className="badge">PRÓXIMAMENTE</span>}
+        <button
+          role="tab"
+          aria-selected={tab === "overview"}
+          className={tab === "overview" ? "active" : ""}
+          onClick={() => setTab("overview")}
         >
-          <Empty
-            title="Temas y materiales pendientes"
-            description="Los temarios llegarán en la fase 2 y la biblioteca de materiales, en la fase 3."
-            action={<BookOpen size={22} />}
-          />
-        </Card>
+          Resumen
+        </button>
+        <button
+          role="tab"
+          aria-selected={tab === "syllabus"}
+          className={tab === "syllabus" ? "active" : ""}
+          onClick={() => setTab("syllabus")}
+        >
+          Temario
+        </button>
       </div>
+      {tab === "syllabus" ? (
+        <Syllabus courseId={course.id} />
+      ) : (
+        <>
+          <Card
+            title="Tareas del curso"
+            action={<span className="count-pill">{tasks.length}</span>}
+          >
+            {tasks.length ? (
+              <TaskList
+                tasks={tasks}
+                onEdit={(item) => open({ kind: "task", item })}
+              />
+            ) : (
+              <Empty
+                title="Sin tareas en este curso"
+                description="Las tareas que crees para este curso aparecerán aquí."
+              />
+            )}
+          </Card>
+          <div className="detail-grid">
+            <Card title="Evaluaciones próximas">
+              {upcoming.length || events.some((e) => e.type === "examen") ? (
+                <div className="simple-list">
+                  {[
+                    ...upcoming.map((t) => ({
+                      id: t.id,
+                      title: t.title,
+                      date: t.dueDate,
+                      edit: () => open({ kind: "task", item: t }),
+                    })),
+                    ...events
+                      .filter((e) => e.type === "examen")
+                      .map((e) => ({
+                        id: e.id,
+                        title: e.title,
+                        date: e.date,
+                        edit: () => open({ kind: "event", item: e }),
+                      })),
+                  ]
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .map((e) => (
+                      <button key={e.id} onClick={e.edit}>
+                        <CalendarDays size={17} />
+                        <span>{e.title}</span>
+                        <small>{displayDate(e.date)}</small>
+                      </button>
+                    ))}
+                </div>
+              ) : (
+                <Empty title="Sin evaluaciones por ahora" />
+              )}
+            </Card>
+            <Card
+              title="Materiales"
+              action={<span className="badge">PRÓXIMAMENTE</span>}
+            >
+              <Empty
+                title="Biblioteca pendiente"
+                description="La biblioteca de materiales llegará en la fase 3."
+                action={<BookOpen size={22} />}
+              />
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import StudyPreferences from "../components/StudyPreferences";
+import { LEGACY_BACKUP_KEY } from "../services/storage";
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
@@ -49,7 +51,7 @@ export default function Settings() {
       const parsed = parseBackup(await f.text());
       if (
         window.confirm(
-          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades. Esto reemplazará TODOS los datos y preferencias de este navegador. Exporta una copia antes. ¿Continuar?`,
+          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos y preferencias de este navegador. Exporta una copia antes. ¿Continuar?`,
         )
       ) {
         if (replace(parsed)) {
@@ -86,6 +88,7 @@ export default function Settings() {
           </p>
         </div>
       </div>
+      <StudyPreferences key={JSON.stringify(data.studyPreferences)} />
       <div className="settings-grid">
         <Card title="Perfil y zona horaria">
           <form onSubmit={save} className="editor-form">
@@ -178,8 +181,9 @@ export default function Settings() {
         </Card>
         <Card title="Copias de seguridad" className="backup-card">
           <p className="muted">
-            Incluyen cursos, tareas, actividades y preferencias. Formato JSON ·
-            Esquema 1.
+            Incluyen cursos, tareas, actividades, temarios, planes, sesiones,
+            repasos, temporizador y preferencias. Formato JSON · Esquema 2.
+            Compatible con copias de fase 1.
           </p>
           <div className="backup-stats">
             <span>
@@ -225,6 +229,23 @@ export default function Settings() {
               }}
             />
           </div>
+          <button
+            className="text-btn"
+            onClick={() => {
+              try {
+                const raw = localStorage.getItem(LEGACY_BACKUP_KEY);
+                if (raw) downloadText(raw, "studyspace-antes-de-fase2.json");
+                else
+                  notify(
+                    "No hay una copia anterior a la fase 2 en este navegador.",
+                  );
+              } catch {
+                notify("No se pudo leer la copia anterior.");
+              }
+            }}
+          >
+            Descargar copia anterior a fase 2 (si existe)
+          </button>
           {storageError && (
             <button
               className="btn danger"
@@ -276,8 +297,9 @@ export default function Settings() {
         <div>
           <h2>Volver a empezar</h2>
           <p>
-            Elimina tus tareas, actividades y cursos personalizados. Restaura
-            los once cursos iniciales y las preferencias predeterminadas.
+            Elimina tus tareas, actividades, temarios, planes, sesiones, repasos
+            y cursos personalizados. Restaura los once cursos iniciales y las
+            preferencias predeterminadas.
           </p>
         </div>
         <button
@@ -285,7 +307,7 @@ export default function Settings() {
           onClick={() => {
             if (
               window.confirm(
-                "¿Restablecer TODOS los datos de StudySpace en este navegador? Se eliminarán todas las tareas, actividades y personalizaciones. Exporta una copia antes. Esta acción no se puede deshacer.",
+                "¿Restablecer TODOS los datos de StudySpace en este navegador? Se eliminarán todas las tareas, actividades, temarios, planes, sesiones, repasos y personalizaciones. Exporta una copia antes. Esta acción no se puede deshacer.",
               )
             ) {
               if (reset()) {
@@ -299,7 +321,7 @@ export default function Settings() {
           Restablecer datos
         </button>
       </section>
-      <p className="version-note">StudySpace 1.0</p>
+      <p className="version-note">StudySpace 2.0</p>
     </div>
   );
 }

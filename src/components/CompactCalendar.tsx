@@ -24,6 +24,15 @@ export function CompactCalendar() {
         courseId: t.courseId,
         edit: () => open({ kind: "task", item: t }),
       })),
+    ...data.scheduledSessions
+      .filter((s) => s.status !== "cancelled" && s.date === key)
+      .map((s) => ({
+        id: s.id,
+        title: `${s.kind === "review" ? "Repaso" : "Estudio"}: ${s.title}`,
+        time: s.time,
+        courseId: s.courseId,
+        edit: () => navigate(`/calendario?date=${key}`),
+      })),
     ...data.events
       .filter((e) => e.date === key)
       .map((e) => ({
@@ -58,6 +67,9 @@ export function CompactCalendar() {
         modifiers={{
           activity: [
             ...data.tasks.map((t) => parseDay(t.dueDate)),
+            ...data.scheduledSessions
+              .filter((s) => s.status !== "cancelled")
+              .map((s) => parseDay(s.date)),
             ...data.events.map((e) => parseDay(e.date)),
           ],
         }}

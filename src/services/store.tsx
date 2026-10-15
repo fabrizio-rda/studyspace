@@ -7,6 +7,7 @@ import type {
   AcademicEvent,
   Settings,
 } from "../models/schema";
+import { recoverTimer } from "./study";
 import { initialState } from "../models/schema";
 import { loadState, saveState, STORAGE_KEY } from "./storage";
 type ContextValue = {
@@ -14,7 +15,10 @@ type ContextValue = {
   storageError: string | null;
   notice: string;
   notify: (text: string) => void;
-  commit: (mutate: (draft: AppState) => void, message?: string) => boolean;
+  commit: (
+    mutate: (draft: AppState) => void,
+    message?: string | null,
+  ) => boolean;
   replace: (data: AppState) => boolean;
   reset: () => boolean;
   saveTask: (task: Task) => boolean;
@@ -35,6 +39,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     timer.current = setTimeout(() => setNotice(""), 5000);
   }
   useEffect(() => {
+    const current = loadState();
+    if (
+      !current.error &&
+      current.data.activeTimer?.runningSince !== null &&
+      current.data.activeTimer
+    ) {
+      current.data.activeTimer = recoverTimer(current.data.activeTimer);
+      try {
+        saveState(current.data);
+        setLoaded(current);
+        notify(
+          "Hay una sesión interrumpida. Puedes recuperarla o descartarla en Sesiones.",
+        );
+      } catch (e) {
+        notify((e as Error).message);
+      }
+    }
     const listener = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY || e.key === null) {
         setLoaded(loadState());
@@ -49,6 +70,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
   function replace(data: AppState) {
     try {
+      if (data.activeTimer)
+        data = { ...data, activeTimer: recoverTimer(data.activeTimer) };
       saveState(data);
       setLoaded({ data, error: null });
       notify("Datos guardados en este navegador.");
@@ -60,7 +83,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
   function commit(
     mutate: (draft: AppState) => void,
-    message = "Cambios guardados",
+    message: string | null = "Cambios guardados",
   ) {
     const current = loadState();
     if (current.error) {
@@ -73,7 +96,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       mutate(draft);
       saveState(draft);
       setLoaded({ data: draft, error: null });
-      notify(message);
+      if (message !== null) notify(message);
       return true;
     } catch (e) {
       notify((e as Error).message);
@@ -129,6 +152,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         d.events.forEach((e) => {
           if (e.courseId === id) e.courseId = null;
         });
+        for (const collection of [
+          d.units,
+          d.plans,
+          d.scheduledSessions,
+          d.studyLogs,
+        ])
+          for (const item of collection)
+            if (item.courseId === id) item.courseId = null;
+        if (d.activeTimer?.courseId === id) d.activeTimer.courseId = null;
       }, "Curso eliminado. Las actividades se conservaron sin curso.");
     },
   };

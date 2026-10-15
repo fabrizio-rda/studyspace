@@ -1,3 +1,5 @@
+import TodayPlan from "../components/TodayPlan";
+import { weekStart as studyWeekStart } from "../services/dates";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -308,27 +310,34 @@ export default function Dashboard() {
           <CalendarDays size={14} /> {exams.length} próximas evaluaciones
         </div>
       </Card>
-      <section className="plan-card">
-        <span className="plan-symbol">
-          <CalendarDays size={24} />
-        </span>
+      <TodayPlan />
+      <section className="timer-card dashboard-timer-link">
         <div>
-          <div className="plan-heading">
-            <h2>Tu plan de estudio</h2>
-            <span className="badge">FASE 2</span>
-          </div>
-          <p>Planificación de estudio disponible en la fase 2.</p>
+          <h2>Sesiones de estudio</h2>
+          <p>
+            {Math.round(
+              data.studyLogs
+                .filter((l) => l.date === today)
+                .reduce((n, l) => n + l.seconds / 60, 0),
+            )}{" "}
+            min hoy ·{" "}
+            {Math.round(
+              data.studyLogs
+                .filter(
+                  (l) => l.date >= studyWeekStart(today) && l.date <= today,
+                )
+                .reduce((n, l) => n + l.seconds / 3600, 0) * 10,
+            ) / 10}{" "}
+            h esta semana
+          </p>
         </div>
-      </section>
-      <section className="timer-card">
-        <div>
-          <h2>Temporizador</h2>
-          <p>Sesiones Pomodoro · Fase 2</p>
-        </div>
-        <div className="timer-preview">
-          <Hourglass size={23} strokeWidth={1.4} />
-          <span>25:00</span>
-        </div>
+        <button
+          className="btn soft small-btn"
+          onClick={() => navigate("/sesiones")}
+        >
+          <Hourglass size={17} />
+          Abrir temporizador
+        </button>
       </section>
       <div className="dashboard-footer">
         <Check size={13} /> Tus cambios se guardan en este navegador.

@@ -1,6 +1,12 @@
-import { initialState, stateSchema } from "../models/schema";
+import {
+  initialState,
+  stateSchema,
+  legacyStateSchema,
+  defaultStudyPreferences,
+} from "../models/schema";
 import type { AppState } from "../models/schema";
 export const STORAGE_KEY = "studyspace:data:v1";
+export const LEGACY_BACKUP_KEY = "studyspace:backup:before-phase2";
 export function parseBackup(raw: string): AppState {
   if (raw.length > 20_000_000)
     throw new Error("El archivo supera el límite de 20 MB.");
@@ -10,10 +16,34 @@ export function parseBackup(raw: string): AppState {
   } catch {
     throw new Error("El archivo no contiene JSON válido.");
   }
+  if (
+    data &&
+    typeof data === "object" &&
+    "schemaVersion" in data &&
+    data.schemaVersion === 1
+  ) {
+    const legacy = legacyStateSchema.safeParse(data);
+    if (!legacy.success)
+      throw new Error(
+        "La copia de fase 1 no es válida. No se reemplazó tu información.",
+      );
+    data = {
+      ...legacy.data,
+      schemaVersion: 2,
+      units: [],
+      topics: [],
+      plans: [],
+      scheduledSessions: [],
+      studyLogs: [],
+      reviewHistory: [],
+      activeTimer: null,
+      studyPreferences: defaultStudyPreferences(),
+    };
+  }
   const result = stateSchema.safeParse(data);
   if (!result.success)
     throw new Error(
-      "Los datos no tienen un formato StudySpace válido (esquema 1). No se reemplazó tu información.",
+      "Los datos no tienen un formato StudySpace válido (esquema 1 o 2). No se reemplazó tu información.",
     );
   return result.data;
 }
@@ -35,6 +65,15 @@ export function loadState(): { data: AppState; error: string | null } {
 export function saveState(data: AppState) {
   const validated = stateSchema.parse(data);
   try {
+    const previous = localStorage.getItem(STORAGE_KEY);
+    let legacy = false;
+    try {
+      legacy = !!previous && JSON.parse(previous).schemaVersion === 1;
+    } catch {
+      /* A confirmed import/reset may replace corrupt data. */
+    }
+    if (previous && legacy && localStorage.getItem(LEGACY_BACKUP_KEY) === null)
+      localStorage.setItem(LEGACY_BACKUP_KEY, previous);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
   } catch {
     throw new Error(

@@ -1,61 +1,51 @@
-# StudySpace — verificación de la fase 1
+# Verificación — StudySpace, fase 2
 
-Fecha: 15 de octubre de 2026.
+15 de octubre de 2026. Mismo repositorio y URL de fase 1.
 
-## Resultados observados
+## Resultados locales
 
-| Comprobación                              | Resultado y alcance                                                                                                                                                               |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TypeScript + compilación Vite             | Correcto. `npm run build` genera `dist/` sin errores.                                                                                                                             |
-| Pruebas automatizadas                     | 14 pruebas aprobadas en dos archivos con Vitest.                                                                                                                                  |
-| Abrir y navegar por la app                | Las cinco rutas se renderizan y responden en JSDOM. También se ejecutó el bundle real de producción.                                                                              |
-| Crear, editar, completar una tarea        | Aprobado mediante interacción con formularios y botones. Se comprueban estado y fecha de finalización.                                                                            |
-| Persistencia                              | Aprobada al desmontar y volver a montar la app leyendo `localStorage`. No se ha cerrado y reabierto Chrome real.                                                                  |
-| Crear un examen y verlo en calendario     | Aprobado. Una entrada mensual y su detalle diario; no se crea un evento duplicado. Vistas Semana y Día verificadas en DOM.                                                        |
-| Abrir, crear y editar un curso            | Aprobado. Descripción editable y datos conservados.                                                                                                                               |
-| Archivar y eliminar un curso              | Aprobado. Se conserva la tarea asociada y queda sin curso después de confirmar la eliminación.                                                                                    |
-| Filtros y Kanban                          | Aprobados: curso, prioridad, estado y texto; cambio de vista.                                                                                                                     |
-| Exportar JSON                             | Aprobado: se genera el Blob y se inicia la descarga. El diálogo de descarga real de Chrome no se ha probado.                                                                      |
-| Importar JSON                             | Aprobado: esquema válido reemplaza datos tras confirmar; JSON inválido se rechaza; cancelar conserva los datos previos.                                                           |
-| Actividades independientes                | Crear, editar y eliminar desde calendario; no se convierten en tareas.                                                                                                            |
-| Búsqueda global                           | Encuentra una actividad y abre su editor.                                                                                                                                         |
-| Datos corruptos y cuota de almacenamiento | Los datos corruptos no se sobrescriben; la escritura rechazada genera error sin comunicar éxito.                                                                                  |
-| Esquema y referencias                     | Se rechazan versiones incompatibles, fechas inválidas, IDs duplicados y referencias a cursos inexistentes.                                                                        |
-| Zona horaria y fechas civiles             | Aprobados los límites de medianoche entre Lima y Madrid y los cálculos entre meses. Las fechas no se convierten a UTC.                                                            |
-| Bundle de producción y HTML autónomo      | Ejecutados con JSDOM, sin errores de ejecución, recorriendo las cinco rutas. El HTML integra CSS y JavaScript.                                                                    |
-| Revisión visual en escritorio y móvil     | **Pendiente.** Se implementaron los breakpoints y el menú móvil, pero no se midió el layout en un navegador real.                                                                 |
-| Capturas reales                           | **No disponibles.** No se generaron imágenes que simulen capturas de la aplicación.                                                                                               |
-| GitHub remoto                             | **Creado por el titular y acceso comprobado.** Repositorio público `fabrizio-rda/studyspace`, rama `main`; fuentes incorporadas con esta entrega.                                 |
-| GitHub Pages                              | **Publicación inicial verificada.** `build` y `deploy` finalizaron correctamente; https://fabrizio-rda.github.io/studyspace/ y sus recursos CSS/JavaScript respondieron HTTP 200. |
+**41 pruebas automatizadas** en cinco archivos: 14 del planificador/tiempo/repasos, 6 de migración, 7 de almacenamiento/fechas, 7 recorridos de fase 1 y 7 recorridos de estudio de fase 2. Se ejecutaron con Vitest, Testing Library y JSDOM. Compilación TypeScript/Vite correcta.
 
-Los diálogos nativos, el desplazamiento y las descargas se simulan en JSDOM. Las pruebas no certifican el contraste visual final, el ajuste de elementos ni la consola de Chrome. No se inició un servidor ni se instaló un navegador como sustituto de la herramienta de revisión requerida por el entorno.
+| Escenario solicitado           | Evidencia                                                                                                                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Crear unidad, tema y subtema   | Recorrido UI: creación, dominio, tema completado y recarga.                                                                                                       |
+| Editar dominio                 | La prueba cambia «Lo domino» explícitamente y comprueba que otro tema completado sigue sin dominarse.                                                             |
+| Crear plan y generar sesiones  | Asistente completo; se comprueba que no existe nada guardado antes de confirmar la vista previa.                                                                  |
+| Disponibilidad diaria          | Algoritmo: nunca supera el límite configurado; respeta días de descanso y máximos del plan.                                                                       |
+| Tiempo compartido entre planes | Algoritmo con dos planes: no multiplica el presupuesto y avisa de los minutos que no caben.                                                                       |
+| Calendario                     | Recorrido UI: sesiones visibles y apertura de su información; las pruebas de fase 1 siguen comprobando exámenes sin duplicación.                                  |
+| Reprogramación                 | Recorrido UI: cambia fecha y duración de una sesión, conserva su ID y la marca manual.                                                                            |
+| Iniciar, pausar y reanudar     | UI con marcas temporales: se comprueban segundos reales tras una pausa y reanudación.                                                                             |
+| Completar sesión y tiempo real | UI: guarda 150 segundos y notas; no utiliza la duración prevista como tiempo real.                                                                                |
+| Progreso de plan               | Se comprueba el avance por tiempo completado, conservando trabajo pendiente.                                                                                      |
+| Próxima fecha de repaso        | Intervalos comprobados para autoevaluaciones distintas; historial y contador de repasos reales.                                                                   |
+| Tu plan de hoy                 | UI: sesión, motivo y acciones visibles; al posponer, desaparece de hoy y sigue en la fecha nueva.                                                                 |
+| Persistencia                   | Temario conservado al desmontar/montar; temporizador recuperado pausado sin inventar una sesión completa.                                                         |
+| Exportación/importación        | Copias válidas, inválidas y canceladas; roundtrip con unidades, temas, planes, sesiones, logs, historial y temporizador.                                          |
+| Datos de fase 1                | Igualdad exacta de cursos, tareas, eventos y preferencias al migrar. Primera copia de recuperación byte por byte. Fallo de cuota impide sobrescribir el original. |
+| Fechas límite y pasado         | Algoritmo: sin nuevas sesiones en horas pasadas ni después del objetivo; aviso para planes vencidos.                                                              |
+| Regeneración                   | Determinismo, ausencia de duplicados y conservación de completadas, manuales y sesión del temporizador activo.                                                    |
+| Actividades previas            | Reserva diaria y bloqueo horario por actividad; no cambia las tareas existentes.                                                                                  |
+| Repasos recurrentes            | Se genera el siguiente repaso espaciado aun después de completar la cuota inicial del plan; sin duplicados tema/fecha.                                            |
+| Pomodoro                       | Descanso largo cada cuatro bloques y exclusión de descansos del tiempo de estudio.                                                                                |
+| Esquema                        | Rechazo de referencias rotas, jerarquías cíclicas, versiones incompatibles e IDs duplicados.                                                                      |
 
-## Comandos utilizados
+El bundle real compilado se ejecuta además mediante `npm run test:production` y recorre siete rutas sin errores de ejecución. Esto no equivale a una inspección visual de Chrome.
 
-```sh
-npm test
-npm run build
-npm run preview:html
-npm run test:production
-```
+## Alcance y publicación
 
-`npm ci` es el paso de instalación reproducible del workflow; las dependencias están bloqueadas en `package-lock.json`.
+El workflow de GitHub Actions ejecuta las mismas pruebas y compilación antes de publicar. La entrega se confirma comprobando que `build` y `deploy` terminan correctamente y que la página y sus recursos coinciden con la compilación. El resultado remoto y el enlace de la versión se comunican al finalizar la publicación.
 
-## Comprobación pendiente después del despliegue
+- Aplicación: https://fabrizio-rda.github.io/studyspace/
+- Código: https://github.com/fabrizio-rda/studyspace
+- Historial de despliegues: https://github.com/fabrizio-rda/studyspace/actions
 
-1. Repositorio `studyspace` creado por el titular y acceso comprobado.
-2. Incorporar las fuentes y seleccionar **Settings → Pages → Source → GitHub Actions**.
-3. Verificar `build` y `deploy` en verde y abrir la URL devuelta por el trabajo de despliegue.
-4. En Chrome, comprobar que CSS y JavaScript cargan sin errores de consola, navegar y recargar una ruta como `#/tareas`.
-5. Crear datos, recargar y cerrar/abrir Chrome. Confirmar persistencia; exportar e importar una copia real.
-6. Inspeccionar 1440×900 y 390×844: cuadrícula, legibilidad, formularios, calendario desplazable y menú móvil; capturar esas pantallas.
+**Pendiente de revisión visual real:** capturas, medidas de layout, contraste final y experiencia en escritorio/móvil. Se implementaron estilos responsive y navegación móvil; el entorno no ofrece la herramienta de navegador requerida para esa inspección. No se generaron imágenes que simulen capturas ni se presenta JSDOM como navegador real.
 
-## Límites funcionales de esta entrega
+La migración se verificó con datos representativos de fase 1. No hay acceso a los datos locales del navegador personal del usuario; por tanto, no se afirma haber leído o inspeccionado esos registros.
 
-- Almacenamiento por origen, navegador y dispositivo. No hay sincronización ni autenticación.
-- La copia HTML autónoma usa el almacenamiento que Chrome permita para archivos locales. Sus datos son independientes de los de la futura URL pública. Usa Exportar/Importar para trasladarlos. Si el navegador impide `localStorage`, se muestra un aviso y no se afirma que los cambios se hayan guardado.
-- Las horas son horas civiles del calendario. Cambiar la zona horaria no convierte horas existentes; sí actualiza la fecha de hoy, el saludo y las métricas de finalización.
-- Kanban cambia estados con un selector o el formulario; no ofrece arrastrar tarjetas.
-- No hay algoritmo de estudio, Pomodoro activo, archivos, Drive, Supabase, estadísticas de sesiones ni PWA en esta fase.
-- La última escritura desde varias pestañas puede prevalecer; no existe resolución de conflictos simultáneos.
-- Google Fonts requiere conexión; se dispone de fuente sans-serif alternativa.
+## Limitaciones prácticas
+
+La disponibilidad depende de lo que se configure. Las duraciones de preparación son estimaciones; la reserva por tarea/actividad es configurable porque el modelo antiguo no tiene duración. El planificador utiliza bloques de cinco minutos y un horizonte máximo de 730 días; avisa del trabajo que no cabe. No convierte una sesión en dominio automáticamente. Un cierre abrupto puede perder los últimos segundos desde la marca de recuperación de 15 segundos, pero no añade tiempo ausente ni completa sesiones por su cuenta. Los descansos no se programan como eventos.
+
+No hay sincronización externa, Google Drive, Supabase, autenticación, Classroom ni funciones de las fases 3–5.

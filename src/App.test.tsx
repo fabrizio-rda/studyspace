@@ -84,7 +84,7 @@ describe("StudySpace: recorridos de usuario", () => {
       ).toBeInTheDocument(),
     );
     expect(document.querySelectorAll(".calendar-event")).toHaveLength(1);
-    expect(screen.getAllByText("Prueba de Física").length).toBe(2);
+    expect(screen.getAllByText(/Prueba de Física/).length).toBe(2);
     expect(loadState().data.events).toHaveLength(0);
     await userEvent.click(screen.getByRole("button", { name: "Semana" }));
     expect(document.querySelector(".view-week")).toBeInTheDocument();

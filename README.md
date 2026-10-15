@@ -1,81 +1,102 @@
-# StudySpace · Fase 1
+# StudySpace · Fase 2
 
-Una aplicación académica personal, estática y en español. Fondo beige con azul y celeste como colores principales, degradados fríos en navegación y controles y un acento de morado a naranja en la bienvenida. Diseño inspirado en la composición de FocusMate, con identidad y gráficos propios. Los textos de interfaz son neutros y se han eliminado los destellos decorativos.
+Organizador académico con temarios, planes de preparación, sesiones de estudio y repetición espaciada. React, TypeScript y Vite; aplicación estática sin servicios de pago ni IA externa.
 
-## Estado de la entrega
+- Aplicación: https://fabrizio-rda.github.io/studyspace/
+- Código: https://github.com/fabrizio-rda/studyspace
+- Despliegues y pruebas: https://github.com/fabrizio-rda/studyspace/actions
 
-La implementación de la fase 1 y el flujo de despliegue están preparados en [fabrizio-rda/studyspace](https://github.com/fabrizio-rda/studyspace). La publicación inicial se verificó correctamente en GitHub Actions y responde en https://fabrizio-rda.github.io/studyspace/. Los cambios posteriores se publican tras aprobar los trabajos `build` y `deploy`. La revisión visual con navegador y las capturas de escritorio/móvil siguen pendientes porque el entorno de construcción no ofrece la herramienta de navegador requerida.
+Se mantiene el diseño aprobado: fondo beige, azul/celeste como acento principal, degradado de morado a naranja en la bienvenida, tipografía Plus Jakarta Sans, tarjetas y navegación redondeadas. Sin estrellas ni mensajes motivacionales genéricos.
 
-## Usar sin instalar programas
+## Uso en Chrome, sin instalar programas
 
-Una vez desplegado, abre la URL que entregue el trabajo `deploy` de GitHub Actions en Chrome. No necesitas instalar Node, Git, VS Code ni una aplicación. Puedes guardar la dirección como marcador. La app no incluye todavía instalación PWA ni funcionamiento offline garantizado.
+1. Abre la aplicación. Los cursos, tareas y eventos existentes siguen en el mismo navegador y la misma URL.
+2. En **Mis cursos → un curso → Temario**, crea unidades, temas y subtemas. Edita dificultad y dominio; marcar «completado» es independiente de «Lo domino». Las flechas cambian el orden y las unidades y temas con hijos se pueden desplegar. El botón de historial muestra el tiempo real y los repasos.
+3. En **Configuración → Configuración de estudio**, ajusta tu disponibilidad global, días de descanso, horario, intervalos y temporizador. Cero minutos indica descanso. Los valores iniciales son preferencias editables, no una detección automática de tu disponibilidad.
+4. En **Planes de estudio → Crear plan**, indica objetivo, fechas, temas, dificultad, máximos diarios, duración, prioridad y porcentaje para repasar. El asistente muestra una vista previa: el plan y su programación solo se guardan al pulsar **Confirmar calendario**.
+5. Revisa **Tu plan de hoy** en Inicio. Puedes iniciar, completar, posponer o editar cada sesión y abrir el plan relacionado. Los repasos pendientes aparecen también aquí.
+6. En **Sesiones de estudio**, inicia un temporizador libre o una sesión programada. Usa estudio continuo o Pomodoro, pausa, reanuda y guarda el tiempo real junto a notas y comprensión. Al llegar a cero no se inventa un registro: debes guardarlo. En Pomodoro decides cuándo iniciar el descanso o el siguiente bloque.
+7. En **Calendario** aparecen tareas, exámenes, sesiones y repasos con etiquetas distintas y colores de curso. Puedes editar fecha/hora/duración de sesiones pendientes. Los cambios manuales se conservan al regenerar.
+8. Exporta copias JSON desde Configuración. Incluyen todos los datos y se pueden importar con confirmación. Se aceptan las copias de fase 1.
 
-1. En **Mis tareas**, crea una tarea y elige curso, tipo, fecha, hora opcional, prioridad y estado.
-2. Haz clic en su título o en el lápiz para editarla; usa la casilla para completarla.
-3. En **Calendario**, cambia entre Mes, Semana y Día. Pulsa una fecha para crear una actividad independiente; las tareas con fecha aparecen automáticamente.
-4. Abre **Mis cursos** para ver y personalizar los once cursos iniciales. Las flechas cambian su orden. Archivar conserva todo. Eliminar un curso conserva sus tareas y actividades como «Sin curso» y requiere confirmación.
-5. En **Configuración**, cambia tu nombre y zona horaria, activa la vista compacta y exporta una copia JSON con frecuencia. Importar y restablecer requieren confirmación.
+**Los datos permanecen en este navegador y dispositivo.** No hay sincronización entre dispositivos. Borrar los datos del sitio o usar navegación privada puede eliminarlos. Todavía no se implementan Drive, Supabase, autenticación, Google Classroom ni PWA.
 
-**Los datos viven en este navegador y dispositivo.** No se sincronizan con otros. Borrar los datos del sitio, usar navegación privada o cambiar de origen puede hacer que no estén disponibles. La exportación incluye cursos, tareas, eventos, preferencias y versión de esquema. Los datos personales no se suben al repositorio al utilizar la aplicación. Google Fonts sirve únicamente la fuente; si no carga, se usa sans-serif.
+## Cómo planifica
 
-## Publicación en GitHub Pages
+El algoritmo de `src/services/planner.ts` es determinista y no usa una API de IA.
 
-### Paso que necesita el titular de la cuenta
+- Ordena planes por fecha objetivo; para una misma fecha, por prioridad. Dentro de cada plan da preferencia a temas difíciles y con dominio bajo.
+- Estima la preparación de cada tema a partir de su dificultad y dominio. Esa carga es orientativa, no una medición científica del tiempo que necesitará cada persona.
+- Descuenta los minutos reales ya completados y los bloques manuales futuros que se conservarán.
+- Comparte una sola disponibilidad global entre todos los planes. El límite de un plan puede reducirla, nunca sumarla. Los días con cero minutos se omiten.
+- Reserva el porcentaje de repaso configurado y coloca los repasos después del estudio. También programa los repasos espaciados vencidos o próximos, incluso si ya se cumplió la cuota inicial del plan.
+- Cada tarea o actividad reserva por defecto 30 minutos del presupuesto de su fecha, porque el modelo de fase 1 no registra su duración. Si tiene hora, bloquea además ese intervalo. Esta reserva se modifica en Configuración y se explica en la vista previa.
+- Considera sesiones existentes, minutos reales registrados, límites diarios y horario de estudio. Genera bloques de al menos cinco minutos sin asignarlos a horas pasadas ni después de la fecha objetivo del plan.
+- Si algo no cabe, informa los minutos pendientes por tema y tipo. No amplía la disponibilidad ni elimina tareas para hacerlos caber.
+- Regenerar conserva sesiones completadas, canceladas, manuales y la vinculada al temporizador activo. Reemplaza solo las pendientes automáticas después de mostrar la propuesta y obtener confirmación. Si los datos cambian mientras se revisa, exige actualizar la vista previa.
 
-1. El repositorio público `fabrizio-rda/studyspace` ya está creado y la conexión tiene acceso.
-2. En el repositorio, selecciona **Settings → Pages → Build and deployment → Source → GitHub Actions** si todavía no está habilitado.
-3. Abre **Actions → Validate and deploy StudySpace → Run workflow → main → Run workflow** si no se ejecuta automáticamente.
-4. Espera a que `build` y `deploy` finalicen en verde. Usa la URL que devuelve `deploy`; no se considera verificada antes de ese resultado.
+El avance de un plan compara los minutos completados con la carga estimada de sus temas y repasos. Los minutos que no cupieron siguen formando parte del trabajo pendiente. Actualizar dificultad o dominio puede cambiar la estimación y, por tanto, el porcentaje.
 
-El flujo ya realiza `npm ci`, pruebas, compilación y despliegue. No necesita secretos personales. `pages: write` y `id-token: write` se conceden al token temporal del flujo. Si GitHub bloquea los workflows, revisa **Settings → Actions → General → Actions permissions** y permite las acciones oficiales usadas por este proyecto. Si la conexión no tiene permiso para escribir archivos en `.github/workflows`, el titular deberá crear ese archivo desde la interfaz web o conceder ese permiso a la aplicación conectada.
+## Repetición espaciada y dominio
 
-`base: './'` hace que Vite genere rutas de recursos relativas válidas bajo el subdirectorio del repositorio. `HashRouter` mantiene la navegación y la recarga sin reglas de redirección. El artefacto desplegado es `dist/`.
+Al guardar una sesión completada con un tema se solicita una autoevaluación:
 
-### Revisar el HTML autónomo
+| Comprensión        | Intervalo inicial |
+| ------------------ | ----------------- |
+| No lo entiendo     | 1 día             |
+| Necesito practicar | 2 días            |
+| Lo entiendo        | 5 días            |
+| Lo domino          | 14 días           |
 
-`StudySpace.html` contiene la misma aplicación compilada, con CSS y JavaScript integrados. Descárgalo y ábrelo en Chrome para revisar el diseño y las funciones sin instalar programas. El almacenamiento de un archivo local depende de Chrome y es independiente de la futura URL pública: exporta/importa JSON si quieres trasladar datos. Esta copia no sustituye el despliegue de GitHub Pages ni constituye una captura de pantalla. Se reproduce con `npm run build` y `npm run preview:html`.
+Los intervalos son editables. El próximo repaso se calcula desde la fecha real del estudio. Se conservan última fecha de estudio, última fecha de repaso, contador e historial. Completar una sesión no marca un tema como completado ni dominado por el mero tiempo dedicado.
 
-### Alternativa con archivos
+## Temporizador y recuperación
 
-El ZIP de entrega incluye `studyspace/` con fuentes, dependencias bloqueadas y workflow, y `sitio-compilado/` con el resultado de producción. No incluye `node_modules`, datos personales, credenciales ni la imagen de referencia. No subas el ZIP como único archivo del repositorio: GitHub no descomprime proyectos automáticamente. La vía más simple con el complemento es crear el repositorio inicializado y dejar que el asistente incorpore las fuentes.
+El tiempo transcurrido se calcula con `Date.now()` y marcas de inicio/pausa, no restando un segundo por intervalo. El refresco visual no determina la duración. Los descansos Pomodoro no suman minutos de estudio.
 
-## Funciones de esta fase
+Se guarda una marca de recuperación cada 15 segundos y al abandonar la página. Al volver, el temporizador se recupera **pausado**, hasta la última marca persistida. Una caída abrupta puede perder los últimos segundos desde esa marca; el tiempo ausente no se cuenta como estudio ni se registra una sesión completa. Puedes corregir la duración real al guardar, recuperar la sesión o descartarla. El estado vive en la misma capa de datos y se incluye en las copias.
 
-- Dashboard con saludo y fecha locales, tareas de hoy, calendario compacto interactivo, evaluaciones y métricas calculadas con tareas reales.
-- Navegación con cinco secciones, búsqueda global, menú contraíble, menú móvil y formularios en diálogos nativos con foco y Escape.
-- Once cursos sin tareas ni calificaciones de demostración; creación, edición, descripción, colores, iconos, orden, archivo y eliminación sin perder actividades.
-- Tareas con CRUD, descripción, curso, cinco tipos, prioridad, estados, creación y finalización; lista, Kanban por estados, filtros, texto, orden por fecha, hoy, próximos siete días y vencidas.
-- Calendario mensual, semanal y diario, navegación, filtro por curso, creación/edición/eliminación de actividades independientes y visualización de tareas sin duplicación.
-- Persistencia `localStorage`, validación de esquema y referencias con Zod, identificadores estables, errores de escritura, bloqueo de sobrescritura de datos corruptos y actualización entre pestañas.
-- Copias JSON validadas, confirmación de reemplazo, exportación de recuperación y restablecimiento confirmado.
-- Preferencias de nombre, zona horaria, vista compacta, vista de tareas y cursos archivados.
+## Migración y seguridad de los datos
 
-El temporizador y el plan de estudio son estados futuros claramente identificados, sin botones que simulen funciones. Las fases 2–5 no están implementadas.
+Se conserva la clave `studyspace:data:v1`; el contenido nuevo utiliza `schemaVersion: 2`.
 
-## Fechas y zona horaria
+1. Una lectura de fase 1 valida el formato y lo migra **en memoria**, sin escribir durante cada renderizado.
+2. Se conservan exactamente cursos, tareas, eventos y preferencias de la fase 1. Se añaden colecciones de estudio vacías y preferencias iniciales.
+3. Antes de la primera escritura sobre datos de fase 1, se guarda su JSON original, byte por byte, en `studyspace:backup:before-phase2`.
+4. Si no hay espacio para esa copia, se cancela la escritura y se conserva el original.
+5. Las siguientes escrituras validan el estado completo. No se reinician las entidades al cargar la aplicación.
+6. Las copias antiguas se aceptan y migran; versiones desconocidas, relaciones rotas y datos inválidos se rechazan.
 
-La preferencia inicial es `America/Lima`. Las fechas de día completo se guardan como `YYYY-MM-DD` y las horas opcionales como `HH:mm`, separadas de los instantes UTC de creación/finalización. Nunca se usa `toISOString()` para convertir la fecha de vencimiento. Cambiar la zona horaria afecta «hoy», el saludo y las métricas de finalización; no convierte las horas civiles ya ingresadas de tareas y eventos. Esa limitación se explica también en la interfaz.
+Configuración incluye una descarga de la copia anterior a fase 2, cuando existe. El reset sigue requiriendo confirmación y elimina también los datos de estudio actuales; la copia de recuperación anterior se conserva.
+
+Eliminar un curso conserva sus actividades y datos de estudio sin curso. Los temarios conservados se pueden consultar desde Mis cursos. Eliminar un tema cancela su programación pendiente, lo retira de planes y mantiene los registros históricos con su nombre. Eliminar un plan conserva registros y cancela sus pendientes, sin inventar sesiones completadas.
+
+Se escucha `storage` para actualizar otras pestañas y se relee el estado antes de modificar. No existe resolución de conflictos simultáneos: la última escritura puede prevalecer.
 
 ## Arquitectura
 
 ```text
-src/
-  models/schema.ts          Tipos, validación, versión y cursos iniciales
-  services/storage.ts       Lectura/escritura y copias JSON
-  services/store.tsx        Estado compartido y operaciones de dominio
-  services/dates.ts         Fechas civiles y zona horaria
-  components/               Formularios, calendario compacto y elementos comunes
-  pages/                    Inicio, tareas, cursos, calendario y configuración
-  App.tsx                   Navegación, búsqueda global y composición
-  styles.css                Sistema visual y adaptación responsive
-.github/workflows/deploy.yml  Validación y publicación en Pages
+src/models/schema.ts          Esquemas 1/2, modelos y preferencias
+src/services/storage.ts       Migración, validación, copias y persistencia
+src/services/store.tsx        Operaciones compartidas y recuperación
+src/services/planner.ts       Planificador, conflictos, progreso y recomendaciones
+src/services/study.ts         Temporizador, registros, repasos y relaciones
+src/components/Syllabus.tsx   Jerarquía de unidades/temas e historial
+src/components/SchedulePreview.tsx  Confirmación de programación
+src/components/SessionCards.tsx     Acciones de sesiones
+src/components/StudyDialogs.tsx     Edición y registro real
+src/components/TodayPlan.tsx        Recomendaciones del dashboard
+src/components/Reviews.tsx          Repasos pendientes y próximos
+src/components/StudyPreferences.tsx Preferencias de estudio
+src/components/TimerRuntime.tsx     Persistencia del temporizador entre rutas
+src/pages/Plans.tsx            Planes y asistente
+src/pages/StudySessions.tsx    Temporizador, estadísticas e historial
+src/study.css                 Estilos de fase 2, adaptados a móvil
 ```
 
-La capa de almacenamiento se puede sustituir en la fase 3 manteniendo las entidades. El esquema 1 se valida al leer/importar; una versión desconocida se rechaza y conserva el original hasta implementar su migración. Cada modificación guarda una instantánea completa validada. Entre pestañas se recarga el estado más reciente antes de escribir y se escucha `storage`; no existe resolución de edición simultánea y la última escritura puede prevalecer.
+Los modelos separan tareas/eventos, programación, registros reales y repasos. No se duplica una tarea como evento. Las fechas civiles siguen en `YYYY-MM-DD` y las horas en `HH:mm`; creación y finalización utilizan instantes ISO. `America/Lima` sigue siendo la preferencia inicial. Cambiar de zona no convierte las horas civiles ya ingresadas.
 
-## Desarrollo en un entorno en la nube
-
-React · TypeScript · Vite · Tailwind CSS · Lucide React · Framer Motion · React Day Picker · date-fns · Zod · React Router.
+## Verificación y desarrollo en la nube
 
 ```sh
 npm ci
@@ -85,8 +106,20 @@ npm run preview:html
 npm run test:production
 ```
 
-`npm run dev` sirve el entorno de desarrollo cuando el entorno dispone de vista previa. Esos comandos son para el desarrollador o GitHub Actions; el usuario final solo necesita Chrome.
+La suite cubre recorridos de ambas fases, migración y cuotas de almacenamiento, límites compartidos, prioridades, conflictos, fechas, regeneración, temporizador y repasos. El bundle compilado se ejecuta en JSDOM recorriendo las siete rutas. Consulta `VERIFICACION.md` para el alcance real.
 
-## Verificación
+La inspección visual y capturas en un navegador real siguen pendientes: el entorno de construcción no ofrece la herramienta requerida. La implementación incluye breakpoints de escritorio/móvil, pero una prueba DOM no certifica su aspecto en pantalla.
 
-Consulta `VERIFICACION.md` para el alcance y los resultados reales de las pruebas. Las pruebas de interfaz usan JSDOM; no sustituyen una inspección visual en navegador. Antes de considerar la fase completamente cerrada, se debe comprobar el despliegue público, los recursos, la recarga y el diseño real en escritorio y móvil.
+## Publicación
+
+Se utiliza el mismo repositorio y la misma URL de GitHub Pages. `.github/workflows/deploy.yml` instala el lockfile, ejecuta pruebas, compila, verifica el bundle y despliega `dist/`. Pages debe permanecer configurado con **Source → GitHub Actions**. Los usuarios finales solo necesitan Chrome; no deben instalar las herramientas de desarrollo.
+
+## Límites explícitos
+
+- El planificador es una heurística determinista, no un optimizador exacto. Puede requerir aumentar disponibilidad, reducir contenido o ajustar manualmente una sesión. Informa el trabajo que no pudo ubicar.
+- Horizonte máximo de generación: 730 días; se avisa si el objetivo queda más lejos. Resolución de cinco minutos.
+- Las tareas y eventos de fase 1 no tienen duración; por eso consumen la reserva configurable mencionada arriba. Los descansos del temporizador no se añaden como eventos del calendario.
+- Las sesiones manuales se conservan incluso si después cambian las preferencias; se informa de los conflictos y solo se reprograma con confirmación.
+- El dominio es una autoevaluación del usuario. No se infiere de minutos ni se presenta como una calificación oficial.
+- Los registros locales reales del usuario no son accesibles desde este entorno. La conservación se comprueba con datos de fase 1 en pruebas de migración, sin afirmar una inspección de su navegador personal.
+- No se han iniciado las fases 3, 4 o 5.

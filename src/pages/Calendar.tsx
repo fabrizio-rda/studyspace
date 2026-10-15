@@ -20,10 +20,12 @@ import { useStore } from "../services/store";
 import { dateSchema, TYPES } from "../models/schema";
 import { todayIn, parseDay, dateKey, displayDate } from "../services/dates";
 import { useEditor } from "../components/AppContext";
-import { AddButton, Empty } from "../components/ui";
+import SessionCards from "../components/SessionCards";
+import { AddButton, Empty, Modal } from "../components/ui";
 export default function Calendar() {
   const { data, commit } = useStore();
   const open = useEditor();
+  const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const today = todayIn(data.settings.timezone);
   const [params] = useSearchParams();
   const [anchor, setAnchor] = useState(() =>
@@ -63,6 +65,22 @@ export default function Calendar() {
       kind: "task" as const,
       edit: () => open({ kind: "task", item: t }),
     })),
+    ...data.scheduledSessions
+      .filter((s) => s.status !== "cancelled")
+      .map((s) => ({
+        key: `session-${s.id}`,
+        id: s.id,
+        title: s.title,
+        date: s.date,
+        time: s.time,
+        description: `${s.minutes} min · ${s.reason}`,
+        courseId: s.courseId,
+        type: "practica" as const,
+        completed: s.status === "completed",
+        kind: "session" as const,
+        studyKind: s.kind,
+        edit: () => setSelectedSession(s.id),
+      })),
     ...data.events.map((e) => ({
       key: `event-${e.id}`,
       id: e.id,
@@ -77,6 +95,15 @@ export default function Calendar() {
       edit: () => open({ kind: "event", item: e }),
     })),
   ]
+    .map((a) => ({
+      ...a,
+      label:
+        a.kind === "session"
+          ? a.studyKind === "review"
+            ? "Repaso"
+            : "Sesión de estudio"
+          : TYPES[a.type],
+    }))
     .filter((a) => !course || a.courseId === course)
     .sort(
       (a, b) => a.time.localeCompare(b.time) || a.title.localeCompare(b.title),
@@ -172,6 +199,12 @@ export default function Calendar() {
             </div>
           </div>
         </div>
+        <div className="calendar-legend">
+          <span>▰ Tarea</span>
+          <span>▣ Examen</span>
+          <span>▱ E · Estudio</span>
+          <span>◌ R · Repaso</span>
+        </div>
         {view !== "day" ? (
           <div className="calendar-scroll">
             <div className={`calendar-grid view-${view}`}>
@@ -206,17 +239,24 @@ export default function Calendar() {
                         <button
                           key={a.key}
                           onClick={a.edit}
-                          className={`calendar-event ${a.completed ? "event-done" : ""}`}
+                          className={`calendar-event ${a.completed ? "event-done" : ""} ${a.kind === "session" ? (a.studyKind === "review" ? "calendar-review" : "calendar-study") : a.type === "examen" ? "calendar-exam" : "calendar-task"}`}
                           style={{
                             borderLeftColor:
                               data.courses.find((c) => c.id === a.courseId)
                                 ?.color ?? "#A18BE0",
                             background: `${data.courses.find((c) => c.id === a.courseId)?.color ?? "#A18BE0"}20`,
                           }}
-                          title={`${a.title} · ${TYPES[a.type]} · ${a.time || "Todo el día"}`}
+                          title={`${a.title} · ${a.label} · ${a.time || "Todo el día"}`}
                         >
                           <span>
                             {a.time && <small>{a.time} </small>}
+                            {a.kind === "session"
+                              ? a.studyKind === "review"
+                                ? "R · "
+                                : "E · "
+                              : a.type === "examen"
+                                ? "Ex · "
+                                : ""}
                             {a.title}
                           </span>
                         </button>
@@ -288,8 +328,12 @@ export default function Calendar() {
                     <small>
                       {data.courses.find((c) => c.id === a.courseId)?.name ??
                         "Sin curso"}{" "}
-                      · {TYPES[a.type]} ·{" "}
-                      {a.kind === "task" ? "Tarea" : "Actividad independiente"}
+                      · {a.label} ·{" "}
+                      {a.kind === "task"
+                        ? "Tarea"
+                        : a.kind === "session"
+                          ? "Sesión programada"
+                          : "Actividad independiente"}
                     </small>
                     {a.description && <p>{a.description}</p>}
                   </button>
@@ -302,7 +346,8 @@ export default function Calendar() {
                   </button>
                   <button
                     className="icon-btn danger-icon"
-                    aria-label={`Eliminar ${a.title}`}
+                    aria-label={`${a.kind === "session" ? "Cancelar sesión" : "Eliminar"} ${a.title}`}
+                    disabled={a.kind === "session" && a.completed}
                     onClick={() => {
                       if (
                         window.confirm(
@@ -312,7 +357,16 @@ export default function Calendar() {
                         commit((d) => {
                           if (a.kind === "task")
                             d.tasks = d.tasks.filter((t) => t.id !== a.id);
-                          else d.events = d.events.filter((e) => e.id !== a.id);
+                          else if (a.kind === "session") {
+                            if (d.activeTimer?.sessionId === a.id)
+                              throw new Error(
+                                "Finaliza o descarta el temporizador primero.",
+                              );
+                            d.scheduledSessions.find(
+                              (s) => s.id === a.id,
+                            )!.status = "cancelled";
+                          } else
+                            d.events = d.events.filter((e) => e.id !== a.id);
                         }, "Actividad eliminada");
                     }}
                   >
@@ -333,6 +387,19 @@ export default function Calendar() {
           vez; las actividades independientes no aparecen en Mis tareas.
         </p>
       </div>
+      {selectedSession && (
+        <Modal
+          title="Sesión programada"
+          onClose={() => setSelectedSession(null)}
+          wide
+        >
+          <SessionCards
+            sessions={data.scheduledSessions.filter(
+              (s) => s.id === selectedSession,
+            )}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

@@ -10,6 +10,8 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
+  ListTodo,
+  Timer,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -33,11 +35,16 @@ import Tasks from "./pages/Tasks";
 import Courses, { CourseDetail } from "./pages/Courses";
 import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
+import Plans from "./pages/Plans";
+import StudySessions from "./pages/StudySessions";
+import TimerRuntime from "./components/TimerRuntime";
 const links = [
   { to: "/", label: "Inicio", icon: House },
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/tareas", label: "Mis tareas", icon: ListChecks },
   { to: "/cursos", label: "Mis cursos", icon: BookOpen },
+  { to: "/planes", label: "Planes de estudio", icon: ListTodo },
+  { to: "/sesiones", label: "Sesiones de estudio", icon: Timer },
   { to: "/configuracion", label: "Configuración", icon: Settings2 },
 ];
 function Shell() {
@@ -110,6 +117,7 @@ function Shell() {
         className={`app-shell ${collapsed ? "collapsed" : ""} ${data.settings.compact ? "is-compact" : ""}`}
         data-clock={clock}
       >
+        <TimerRuntime />
         <a
           className="skip-link"
           href="#main-content"
@@ -294,6 +302,19 @@ function Shell() {
             </div>
           </header>
           <main id="main-content" tabIndex={-1} ref={content}>
+            {data.activeTimer && location.pathname !== "/sesiones" && (
+              <button
+                className="active-timer-banner"
+                onClick={() => navigate("/sesiones")}
+              >
+                <Timer size={16} />
+                Sesión{" "}
+                {data.activeTimer.runningSince === null
+                  ? "pausada"
+                  : "en curso"}
+                : {data.activeTimer.topicName} · Abrir temporizador
+              </button>
+            )}
             {storageError && (
               <div className="storage-error" role="alert">
                 {storageError}
@@ -319,6 +340,8 @@ function Shell() {
                   <Route path="/calendario" element={<Calendar />} />
                   <Route path="/cursos" element={<Courses />} />
                   <Route path="/cursos/:id" element={<CourseDetail />} />
+                  <Route path="/planes" element={<Plans />} />
+                  <Route path="/sesiones" element={<StudySessions />} />
                   <Route path="/configuracion" element={<Settings />} />
                   <Route
                     path="*"
@@ -338,7 +361,7 @@ function Shell() {
           <footer className="app-footer">
             <span>StudySpace</span>
             <p>Cursos, tareas y calendario.</p>
-            <small>FASE 01</small>
+            <small>FASE 02</small>
           </footer>
         </div>
         {adding && (
