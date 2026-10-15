@@ -114,6 +114,26 @@ export default function Plans() {
                 className="plan-tile"
                 action={<CourseIcon course={course} size={20} />}
               >
+                {p.deadlineWarning && (
+                  <p className="deadline-warning" role="status">
+                    {p.deadlineWarning}
+                    <button
+                      className="text-btn"
+                      onClick={() => {
+                        const due = data.tasks.find(
+                          (t) => t.id === p.targetTaskId,
+                        )?.dueDate;
+                        setWizard({
+                          ...p,
+                          targetDate:
+                            due && due >= p.startDate ? due : p.targetDate,
+                        });
+                      }}
+                    >
+                      Revisar fecha y recalcular
+                    </button>
+                  </p>
+                )}
                 <p className="muted">
                   {course?.name ?? "Sin curso"} ·{" "}
                   {p.status === "completed"
@@ -135,7 +155,9 @@ export default function Plans() {
                   </span>
                 </div>
                 <div className="linear-progress">
-                  <span style={{ width: `${progress}%` }} />
+                  <span
+                    style={{ width: `${progress}%`, background: course?.color }}
+                  />
                 </div>
                 <p className="muted">
                   {progress}% de la preparación estimada completada ·{" "}
@@ -332,6 +354,7 @@ function PlanWizard({
   const [start, setStart] = useState(
     item?.startDate ?? todayIn(data.settings.timezone),
   );
+  const [targetTaskId, setTargetTaskId] = useState(item?.targetTaskId ?? "");
   const [target, setTarget] = useState(item?.targetDate ?? "");
   const [topicIds, setTopicIds] = useState<string[]>(item?.topicIds ?? []);
   const [difficulties, setDifficulties] = useState<
@@ -385,6 +408,8 @@ function PlanWizard({
         courseId: courseId || null,
         startDate: start,
         targetDate: target,
+        targetTaskId: targetTaskId || null,
+        deadlineWarning: "",
         topicIds,
         availability,
         sessionMinutes: duration,
@@ -431,6 +456,7 @@ function PlanWizard({
                 onChange={(e) => {
                   setCourseId(e.target.value);
                   setTopicIds([]);
+                  setTargetTaskId("");
                 }}
               >
                 <option value="">
@@ -441,6 +467,32 @@ function PlanWizard({
                   .map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label>
+              Actividad como objetivo (opcional)
+              <select
+                value={targetTaskId}
+                onChange={(e) => {
+                  setTargetTaskId(e.target.value);
+                  const task = data.tasks.find((t) => t.id === e.target.value);
+                  if (task) {
+                    setTarget(task.dueDate);
+                    if (!name) setName(task.title);
+                  }
+                }}
+              >
+                <option value="">Objetivo independiente</option>
+                {data.tasks
+                  .filter((t) => t.courseId === (courseId || null) && t.dueDate)
+                  .map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.title} · {t.dueDate}
+                      {data.classroomItems.some((i) => i.taskId === t.id)
+                        ? " · Classroom"
+                        : ""}
                     </option>
                   ))}
               </select>

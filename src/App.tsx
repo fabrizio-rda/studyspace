@@ -10,6 +10,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
+  FolderOpen,
   ListTodo,
   Timer,
   CalendarDays,
@@ -37,18 +38,27 @@ import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
 import Plans from "./pages/Plans";
 import StudySessions from "./pages/StudySessions";
+import Library from "./pages/Library";
+import { SyncIndicator } from "./components/Integrations";
+import { GoogleProvider } from "./services/google-context";
 import TimerRuntime from "./components/TimerRuntime";
 const links = [
   { to: "/", label: "Inicio", icon: House },
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/tareas", label: "Mis tareas", icon: ListChecks },
   { to: "/cursos", label: "Mis cursos", icon: BookOpen },
+  { to: "/biblioteca", label: "Biblioteca", icon: FolderOpen },
   { to: "/planes", label: "Planes de estudio", icon: ListTodo },
   { to: "/sesiones", label: "Sesiones de estudio", icon: Timer },
   { to: "/configuracion", label: "Configuración", icon: Settings2 },
 ];
+function WorkspaceShell() {
+  const { workspaceId } = useStore();
+  return <Shell key={workspaceId} />;
+}
 function Shell() {
-  const { data, storageError, notice, updateSettings } = useStore();
+  const { data, cloud, workspaceId, storageError, notice, updateSettings } =
+    useStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [editor, setEditor] = useState<EditorState | null>(null);
@@ -71,7 +81,7 @@ function Shell() {
     setSearching(false);
     content.current?.focus();
     window.scrollTo(0, 0);
-  }, [location.pathname]);
+  }, [location.pathname, workspaceId]);
   useEffect(() => {
     const id = setInterval(() => setClock((x) => x + 1), 60_000);
     return () => clearInterval(id);
@@ -96,7 +106,9 @@ function Shell() {
           .map((t) => ({
             id: `t-${t.id}`,
             label: t.title,
-            category: "Tarea",
+            category: data.classroomItems.some((i) => i.taskId === t.id)
+              ? "Classroom"
+              : "Tarea",
             run: () => setEditor({ kind: "task", item: t }),
           })),
         ...data.events
@@ -109,7 +121,51 @@ function Shell() {
             category: "Actividad",
             run: () => setEditor({ kind: "event", item: e }),
           })),
-      ].slice(0, 12)
+        ...data.topics
+          .filter((t) =>
+            `${t.name} ${t.description}`.toLocaleLowerCase("es").includes(q),
+          )
+          .map((t) => ({
+            id: `topic-${t.id}`,
+            label: t.name,
+            category: "Tema",
+            run: () =>
+              navigate(
+                `/cursos/${data.units.find((u) => u.id === t.unitId)?.courseId ?? "sin-curso"}?temario=1&tema=${t.id}`,
+              ),
+          })),
+        ...data.plans
+          .filter((p) =>
+            `${p.name} ${p.goal}`.toLocaleLowerCase("es").includes(q),
+          )
+          .map((p) => ({
+            id: `plan-${p.id}`,
+            label: p.name,
+            category: "Plan",
+            run: () => navigate(`/planes?plan=${p.id}`),
+          })),
+        ...data.folders
+          .filter((f) => f.name.toLocaleLowerCase("es").includes(q))
+          .map((f) => ({
+            id: `folder-${f.id}`,
+            label: f.name,
+            category: "Carpeta",
+            run: () => navigate(`/biblioteca?carpeta=${f.id}`),
+          })),
+        ...data.documents
+          .filter((d) =>
+            `${d.name} ${d.tags.join(" ")}`.toLocaleLowerCase("es").includes(q),
+          )
+          .map((d) => ({
+            id: `doc-${d.id}`,
+            label: d.name,
+            category: "Documento",
+            run: () =>
+              navigate(
+                `/biblioteca?${d.folderId ? "carpeta=" + d.folderId + "&" : ""}documento=${d.id}`,
+              ),
+          })),
+      ]
     : [];
   return (
     <EditorContext.Provider value={setEditor}>
@@ -223,7 +279,7 @@ function Shell() {
                   <Search size={17} />
                   <input
                     aria-label="Buscar en StudySpace"
-                    placeholder="Buscar cursos y actividades…"
+                    placeholder="Buscar en mi espacio…"
                     value={query}
                     onFocus={() => setSearching(true)}
                     onChange={(e) => {
@@ -264,18 +320,28 @@ function Shell() {
                       </button>
                     </div>
                     {results.length ? (
-                      results.map((r) => (
-                        <button
-                          key={r.id}
-                          onClick={() => {
-                            r.run();
-                            setSearching(false);
-                          }}
-                        >
-                          <span>{r.label}</span>
-                          <small>{r.category}</small>
-                        </button>
-                      ))
+                      [...new Set(results.map((r) => r.category))].map(
+                        (category) => (
+                          <div className="search-group" key={category}>
+                            <strong>{category}</strong>
+                            {results
+                              .filter((r) => r.category === category)
+                              .slice(0, 8)
+                              .map((r) => (
+                                <button
+                                  key={r.id}
+                                  onClick={() => {
+                                    r.run();
+                                    setSearching(false);
+                                  }}
+                                >
+                                  <span>{r.label}</span>
+                                  <small>{r.category}</small>
+                                </button>
+                              ))}
+                          </div>
+                        ),
+                      )
                     ) : (
                       <p>No encontramos coincidencias.</p>
                     )}
@@ -301,7 +367,14 @@ function Shell() {
               </button>
             </div>
           </header>
-          <main id="main-content" tabIndex={-1} ref={content}>
+          <main key={workspaceId} id="main-content" tabIndex={-1} ref={content}>
+            <SyncIndicator />
+            {cloud.mode === "cloud" && cloud.status === "conflict" && (
+              <div className="storage-error">
+                Hay cambios en otro dispositivo. Revisa Configuración para
+                resolverlos.
+              </div>
+            )}
             {data.activeTimer && location.pathname !== "/sesiones" && (
               <button
                 className="active-timer-banner"
@@ -340,6 +413,7 @@ function Shell() {
                   <Route path="/calendario" element={<Calendar />} />
                   <Route path="/cursos" element={<Courses />} />
                   <Route path="/cursos/:id" element={<CourseDetail />} />
+                  <Route path="/biblioteca" element={<Library />} />
                   <Route path="/planes" element={<Plans />} />
                   <Route path="/sesiones" element={<StudySessions />} />
                   <Route path="/configuracion" element={<Settings />} />
@@ -360,8 +434,8 @@ function Shell() {
           </main>
           <footer className="app-footer">
             <span>StudySpace</span>
-            <p>Cursos, tareas y calendario.</p>
-            <small>FASE 02</small>
+            <p>Cursos, documentos y estudio.</p>
+            <small>FASE 03</small>
           </footer>
         </div>
         {adding && (
@@ -432,9 +506,11 @@ function Shell() {
 export default function App() {
   return (
     <StoreProvider>
-      <HashRouter>
-        <Shell />
-      </HashRouter>
+      <GoogleProvider>
+        <HashRouter>
+          <WorkspaceShell />
+        </HashRouter>
+      </GoogleProvider>
     </StoreProvider>
   );
 }

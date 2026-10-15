@@ -1,51 +1,60 @@
-# Verificación — StudySpace, fase 2
+# Verificación — StudySpace, fase 3
 
-15 de octubre de 2026. Mismo repositorio y URL de fase 1.
+15 de octubre de 2026. Mismo repositorio y URL de GitHub Pages.
 
-## Resultados locales
+## Automatizadas
 
-**41 pruebas automatizadas** en cinco archivos: 14 del planificador/tiempo/repasos, 6 de migración, 7 de almacenamiento/fechas, 7 recorridos de fase 1 y 7 recorridos de estudio de fase 2. Se ejecutaron con Vitest, Testing Library y JSDOM. Compilación TypeScript/Vite correcta.
+**65 pruebas Vitest / Testing Library / JSDOM** en nueve archivos. Incluyen las 41 pruebas de fases 1/2, ocho de esquema/Biblioteca/Classroom, cinco recorridos de Biblioteca/colores/calendario, seis de estado de nube con API sustituida y cinco de adaptadores Google con SDK/red sustituidos.
 
-| Escenario solicitado           | Evidencia                                                                                                                                                         |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Crear unidad, tema y subtema   | Recorrido UI: creación, dominio, tema completado y recarga.                                                                                                       |
-| Editar dominio                 | La prueba cambia «Lo domino» explícitamente y comprueba que otro tema completado sigue sin dominarse.                                                             |
-| Crear plan y generar sesiones  | Asistente completo; se comprueba que no existe nada guardado antes de confirmar la vista previa.                                                                  |
-| Disponibilidad diaria          | Algoritmo: nunca supera el límite configurado; respeta días de descanso y máximos del plan.                                                                       |
-| Tiempo compartido entre planes | Algoritmo con dos planes: no multiplica el presupuesto y avisa de los minutos que no caben.                                                                       |
-| Calendario                     | Recorrido UI: sesiones visibles y apertura de su información; las pruebas de fase 1 siguen comprobando exámenes sin duplicación.                                  |
-| Reprogramación                 | Recorrido UI: cambia fecha y duración de una sesión, conserva su ID y la marca manual.                                                                            |
-| Iniciar, pausar y reanudar     | UI con marcas temporales: se comprueban segundos reales tras una pausa y reanudación.                                                                             |
-| Completar sesión y tiempo real | UI: guarda 150 segundos y notas; no utiliza la duración prevista como tiempo real.                                                                                |
-| Progreso de plan               | Se comprueba el avance por tiempo completado, conservando trabajo pendiente.                                                                                      |
-| Próxima fecha de repaso        | Intervalos comprobados para autoevaluaciones distintas; historial y contador de repasos reales.                                                                   |
-| Tu plan de hoy                 | UI: sesión, motivo y acciones visibles; al posponer, desaparece de hoy y sigue en la fecha nueva.                                                                 |
-| Persistencia                   | Temario conservado al desmontar/montar; temporizador recuperado pausado sin inventar una sesión completa.                                                         |
-| Exportación/importación        | Copias válidas, inválidas y canceladas; roundtrip con unidades, temas, planes, sesiones, logs, historial y temporizador.                                          |
-| Datos de fase 1                | Igualdad exacta de cursos, tareas, eventos y preferencias al migrar. Primera copia de recuperación byte por byte. Fallo de cuota impide sobrescribir el original. |
-| Fechas límite y pasado         | Algoritmo: sin nuevas sesiones en horas pasadas ni después del objetivo; aviso para planes vencidos.                                                              |
-| Regeneración                   | Determinismo, ausencia de duplicados y conservación de completadas, manuales y sesión del temporizador activo.                                                    |
-| Actividades previas            | Reserva diaria y bloqueo horario por actividad; no cambia las tareas existentes.                                                                                  |
-| Repasos recurrentes            | Se genera el siguiente repaso espaciado aun después de completar la cuota inicial del plan; sin duplicados tema/fecha.                                            |
-| Pomodoro                       | Descanso largo cada cuatro bloques y exclusión de descansos del tiempo de estudio.                                                                                |
-| Esquema                        | Rechazo de referencias rotas, jerarquías cíclicas, versiones incompatibles e IDs duplicados.                                                                      |
+| Área                  | Comprobación ejecutada                                                                                                                                                                                                                        | Alcance                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Regresión fases 1/2   | Tareas CRUD/estados/filtros/Kanban, cursos/archivo/eliminación, calendario y actividades, búsqueda, JSON, temarios, dominio, planes, presupuesto compartido, conflictos, reprogramación, sesiones, recuperación de tiempo, Pomodoro y repasos | DOM y funciones reales locales                    |
+| Paleta                | 20 valores únicos; hexadecimal de 3/6 dígitos y rechazo de valores inválidos                                                                                                                                                                  | Unitarias                                         |
+| Colores               | Cambio hexadecimal, preview inmediato, persistencia y recarga; color de curso en tarea de calendario                                                                                                                                          | Recorrido DOM                                     |
+| Migración local       | Lectura de esquemas 1/2, conservación de IDs/entidades, respaldo original byte por byte y protección ante cuota/corrupción                                                                                                                    | localStorage de pruebas; no navegador del usuario |
+| Biblioteca            | Crear carpetas/subcarpetas, renombrar, cambiar icono/color, heredar curso al añadir referencia, etiquetas, búsqueda, lista, mover documento, abrir enlace original, eliminar jerarquía conservando documentos                                 | Recorrido DOM y modelo                            |
+| Integridad            | Jerarquías cíclicas, referencias inexistentes, duplicados, enlaces javascript y secretos administrativos rechazados                                                                                                                           | Validación local                                  |
+| Búsqueda global       | Resultados agrupados y navegación al documento correcto                                                                                                                                                                                       | Recorrido DOM                                     |
+| Classroom             | Conversión UTC/Lima con cambio de día, tarea sin fecha, cinco sincronizaciones sin duplicados, materiales, actualización remota y conservación de notas/prioridad/estimación/estado y descripción personal                                    | Datos de API controlados                          |
+| Classroom/calendario  | Una tarea importada aparece una sola vez, conserva color y abre el origen; entrega escolar separada del estado personal                                                                                                                       | Recorrido DOM con importación local controlada    |
+| Classroom/planes      | Cambio de entrega avisa al plan y no altera sesiones completadas                                                                                                                                                                              | Funciones reales, datos controlados               |
+| Nube                  | Guardado verificado, conservación del espacio local, cierre de sesión, conflicto de revisión, caché autenticada, bloqueo offline, migración, reintento con el mismo ID y recuperación de pendientes tras recarga                              | API Supabase sustituida; no servicio remoto       |
+| Google                | Scope drive.file separado, autorización parcial rechazada, tokens fuera de localStorage, paginación, consultas solo GET, 401/403 y selección Picker con metadatos de Drive                                                                    | GIS/Picker/red sustituidos                        |
+| Configuración inicial | Botones de conexión no autorizada deshabilitados y sin estado conectado inventado                                                                                                                                                             | DOM                                               |
 
-El bundle real compilado se ejecuta además mediante `npm run test:production` y recorre siete rutas sin errores de ejecución. Esto no equivale a una inspección visual de Chrome.
+**SQL/PostgreSQL local:** `npm run test:database` ejecuta la migración completa en PGlite. Comprueba roundtrip relacional/orden, revisión y reintento idempotente, detección de ciclos con rollback, aislamiento de dos usuarios, rechazo de escritura ajena y FK entre propietarios, RLS forzada en las 16 tablas y denegación anónima. No sustituye aplicar y comprobar las políticas en el proyecto Supabase real.
 
-## Alcance y publicación
+**Producción:** TypeScript estricto y Vite compilan. `npm run preview:html && npm run test:production` ejecuta el bundle compilado y recorre ocho rutas en JSDOM sin errores. Vite advierte que el bundle principal supera 650 kB sin comprimir; gzip ronda 280 kB. No impide desplegar; una división del bundle se puede evaluar después de validar las integraciones reales.
 
-El workflow de GitHub Actions ejecuta las mismas pruebas y compilación antes de publicar. La entrega se confirma comprobando que `build` y `deploy` terminan correctamente y que la página y sus recursos coinciden con la compilación. El resultado remoto y el enlace de la versión se comunican al finalizar la publicación.
+GitHub Actions ejecuta la suite, SQL local, compilación y smoke antes de desplegar. La publicación solo se confirma cuando terminan `build` y `deploy` y el HTML/JS/CSS públicos coinciden con la compilación local.
 
-- Aplicación: https://fabrizio-rda.github.io/studyspace/
-- Código: https://github.com/fabrizio-rda/studyspace
-- Historial de despliegues: https://github.com/fabrizio-rda/studyspace/actions
+## Pendientes de autorización externa
 
-**Pendiente de revisión visual real:** capturas, medidas de layout, contraste final y experiencia en escritorio/móvil. Se implementaron estilos responsive y navegación móvil; el entorno no ofrece la herramienta de navegador requerida para esa inspección. No se generaron imágenes que simulen capturas ni se presenta JSDOM como navegador real.
+| Servicio          | Implementación disponible                                                                                     | Comprobación real pendiente                                                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Supabase          | SQL/RLS, OTP, RPC, caché por cuenta, estados, control de revisiones, migración/recibos e integridad           | Crear proyecto, ejecutar SQL, configurar email y clave pública, iniciar/cerrar sesión real, probar persistencia y dos dispositivos, repetir controles RLS en ese proyecto |
+| Drive             | GIS + Picker + Drive API, referencias seleccionadas, curso/tema/carpetas, apertura y desconexión              | Configurar Cloud/OAuth/key/origen, consentimiento real, Picker con archivos propios, acceso permitido y revocación                                                        |
+| Classroom         | Selección/vínculos, consultas readonly, importación y actualización idempotente, materiales, estados y planes | Habilitar API/scopes, autorización escolar o del administrador, consultar cursos reales y comprobar importación/entregas/cambios reales                                   |
+| Datos del usuario | Asistente de preview/exportación/importación, validación y copias locales                                     | No se accedió a localStorage del navegador personal ni se migraron sus registros                                                                                          |
 
-La migración se verificó con datos representativos de fase 1. No hay acceso a los datos locales del navegador personal del usuario; por tanto, no se afirma haber leído o inspeccionado esos registros.
+No se afirma haber creado proyectos externos, recibido permisos escolares, enviado emails de acceso ni completado esas conexiones.
 
-## Limitaciones prácticas
+## Manual y visual
 
-La disponibilidad depende de lo que se configure. Las duraciones de preparación son estimaciones; la reserva por tarea/actividad es configurable porque el modelo antiguo no tiene duración. El planificador utiliza bloques de cinco minutos y un horizonte máximo de 730 días; avisa del trabajo que no cabe. No convierte una sesión en dominio automáticamente. Un cierre abrupto puede perder los últimos segundos desde la marca de recuperación de 15 segundos, pero no añade tiempo ausente ni completa sesiones por su cuenta. Los descansos no se programan como eventos.
+La revisión de código y configuración se realizó en el entorno de desarrollo. **No se realizó una inspección visual con navegador real**: faltó la herramienta de navegador requerida por el entorno. No hay capturas reales de Biblioteca/Integraciones. Los breakpoints responsive están implementados y las rutas se ejecutan en DOM; la apariencia y usabilidad en móvil/escritorio requieren revisión visual del usuario. No se generaron imágenes para simular capturas.
 
-No hay sincronización externa, Google Drive, Supabase, autenticación, Classroom ni funciones de las fases 3–5.
+## Límites prácticos
+
+- Un solo espacio personal por cuenta, sin calendarios compartidos ni perfiles adicionales.
+- Sesiones y tokens en memoria: recargar requiere iniciar sesión/autorizar nuevamente. La caché académica queda separada por cuenta y no se muestra antes de autenticar.
+- Edición offline en nube no implementada: solo consulta de la página ya abierta. Los guardados que pierden conexión se conservan para reintento con revisión original. No hay PWA/service worker ni sincronización cerrando la aplicación.
+- Un conflicto exige exportar/revisar y cargar explícitamente la nube. No hay combinación automática ni sobrescritura silenciosa de la revisión más reciente.
+- El temporizador se debe usar en un dispositivo a la vez; se guarda una recuperación pausada en la nube y puede perder los últimos segundos de un cierre abrupto.
+- Las importaciones JSON y restablecimiento reemplazan el espacio activo, incluida su nube si está activa; requieren confirmación. El espacio local original y las copias descargadas permanecen separados.
+- Los documentos privados se abren en su origen con los permisos de la cuenta. No hay preview privado incrustado garantizado. Eliminar/mover referencias nunca llama a borrar/mover archivos de Drive.
+- Classroom se consulta manualmente, sin entregas ni actualización constante. Una tarea eliminada de StudySpace puede volver a importarse al sincronizar. El estado de entrega no cambia el estado personal.
+- Planificación y repasos conservan los límites documentados de fase 2: heurística determinista, resolución de cinco minutos, horizonte de 730 días y reserva configurable para actividades sin duración. El dominio requiere autoevaluación.
+
+[Configuración paso a paso](docs/CONFIGURACION.md) · [Aplicación](https://fabrizio-rda.github.io/studyspace/) · [Código](https://github.com/fabrizio-rda/studyspace)
+
+No se han iniciado las fases 4 ni 5. Antes de la fase 4 conviene cerrar la configuración externa, comprobar dos dispositivos y revisar el diseño real en móvil.

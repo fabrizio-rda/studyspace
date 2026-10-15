@@ -4,6 +4,8 @@ import { COLORS, ICONS, PRIORITIES, STATUSES, TYPES } from "../models/schema";
 import type { Task, AcademicEvent, TaskType, Course } from "../models/schema";
 import { useStore } from "../services/store";
 import { todayIn } from "../services/dates";
+import { ClassroomSource } from "./ClassroomSource";
+import ColorPicker from "./ColorPicker";
 import { CourseIcon, Modal } from "./ui";
 export type EditorState =
   | {
@@ -58,6 +60,12 @@ function ActivityEditor({
   const [status, setStatus] = useState<Task["status"]>(
     item && "status" in item ? item.status : "pendiente",
   );
+  const [personalNotes, setPersonalNotes] = useState(
+    item && "personalNotes" in item ? (item.personalNotes ?? "") : "",
+  );
+  const [estimate, setEstimate] = useState(
+    item && "estimatedMinutes" in item ? (item.estimatedMinutes ?? 0) : 0,
+  );
   const [error, setError] = useState("");
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -66,6 +74,7 @@ function ActivityEditor({
       return;
     }
     const base = {
+      ...item,
       id: item?.id ?? crypto.randomUUID(),
       title: title.trim(),
       description,
@@ -80,6 +89,8 @@ function ActivityEditor({
           ...base,
           dueDate: date,
           priority,
+          personalNotes,
+          estimatedMinutes: estimate,
           status,
           completedAt:
             status === "completada"
@@ -155,7 +166,7 @@ function ActivityEditor({
               type="date"
               min="1900-01-01"
               max="9999-12-31"
-              required
+              required={event || !item}
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
@@ -211,6 +222,29 @@ function ActivityEditor({
             onChange={(e) => setDescription(e.target.value)}
           />
         </label>
+        {!event && (
+          <div className="form-grid">
+            <label>
+              Notas personales
+              <textarea
+                maxLength={10000}
+                value={personalNotes}
+                onChange={(e) => setPersonalNotes(e.target.value)}
+              />
+            </label>
+            <label>
+              Tiempo estimado (min)
+              <input
+                type="number"
+                min="0"
+                max="10000"
+                value={estimate}
+                onChange={(e) => setEstimate(Number(e.target.value))}
+              />
+            </label>
+          </div>
+        )}
+        {item && !event && <ClassroomSource taskId={item.id} />}
         {event && (
           <p className="form-help">
             Esta actividad aparecerá solo en el calendario. Para darle
@@ -291,28 +325,19 @@ function CourseEditor({
             onChange={(e) => setDescription(e.target.value)}
           />
         </label>
-        <fieldset>
-          <legend>Color</legend>
-          <div className="color-options">
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                aria-label={`Color ${c}`}
-                aria-pressed={color === c}
-                className={color === c ? "chosen" : ""}
-                style={{ background: c }}
-                onClick={() => setColor(c)}
-              />
-            ))}
-            <input
-              type="color"
-              aria-label="Color personalizado"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-            />
-          </div>
-        </fieldset>
+        <ColorPicker value={color} onChange={setColor} />
+        <div
+          className="course-live-preview"
+          style={{
+            background: `linear-gradient(130deg,${color}55,${color}18)`,
+            borderColor: color,
+          }}
+          aria-label="Vista previa del curso"
+        >
+          <CourseIcon course={{ color, icon }} />
+          <strong>{name || "Nombre del curso"}</strong>
+          <span style={{ background: color }} />
+        </div>
         <fieldset>
           <legend>Icono</legend>
           <div className="icon-options">

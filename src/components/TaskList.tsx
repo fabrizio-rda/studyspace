@@ -1,3 +1,4 @@
+import { ClassroomSource } from "./ClassroomSource";
 import { Check, Pencil, Trash2, Clock3 } from "lucide-react";
 import { useStore } from "../services/store";
 import type { Task } from "../models/schema";
@@ -18,7 +19,8 @@ export function TaskList({
     <div className={`task-list ${small ? "small" : ""}`}>
       {tasks.map((t) => {
         const course = data.courses.find((c) => c.id === t.courseId);
-        const overdue = t.status !== "completada" && t.dueDate < today;
+        const overdue =
+          t.status !== "completada" && !!t.dueDate && t.dueDate < today;
         return (
           <article
             key={t.id}
@@ -44,6 +46,7 @@ export function TaskList({
                 {course?.name ?? "Sin curso"}
                 {!small && <span>· {TYPES[t.type]}</span>}
               </div>
+              {!small && <ClassroomSource taskId={t.id} />}
               {!small && t.description && (
                 <p className="task-description">{t.description}</p>
               )}
@@ -104,6 +107,11 @@ export function TaskList({
                       )
                         commit((d) => {
                           d.tasks = d.tasks.filter((x) => x.id !== t.id);
+                          d.classroomItems = d.classroomItems.filter(
+                            (i) => i.taskId !== t.id,
+                          );
+                          for (const p of d.plans)
+                            if (p.targetTaskId === t.id) p.targetTaskId = null;
                         }, "Tarea eliminada");
                     }}
                   >

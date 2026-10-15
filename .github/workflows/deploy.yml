@@ -25,6 +25,8 @@ jobs:
         run: npm ci
       - name: Test data and user journeys
         run: npm test
+      - name: Test SQL policies and atomic sync
+        run: npm run test:database
       - name: Compile production app
         run: npm run build
       - name: Verify production bundle

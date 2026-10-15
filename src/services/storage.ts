@@ -7,6 +7,7 @@ import {
 import type { AppState } from "../models/schema";
 export const STORAGE_KEY = "studyspace:data:v1";
 export const LEGACY_BACKUP_KEY = "studyspace:backup:before-phase2";
+export const PHASE3_BACKUP_KEY = "studyspace:backup:before-phase3";
 export function parseBackup(raw: string): AppState {
   if (raw.length > 20_000_000)
     throw new Error("El archivo supera el límite de 20 MB.");
@@ -40,10 +41,26 @@ export function parseBackup(raw: string): AppState {
       studyPreferences: defaultStudyPreferences(),
     };
   }
+  if (
+    data &&
+    typeof data === "object" &&
+    "schemaVersion" in data &&
+    data.schemaVersion === 2
+  ) {
+    data = {
+      ...data,
+      schemaVersion: 3,
+      folders: [],
+      documents: [],
+      classroomLinks: [],
+      classroomItems: [],
+      integrationPreferences: { lastClassroomSync: null },
+    };
+  }
   const result = stateSchema.safeParse(data);
   if (!result.success)
     throw new Error(
-      "Los datos no tienen un formato StudySpace válido (esquema 1 o 2). No se reemplazó tu información.",
+      "Los datos no tienen un formato StudySpace válido (esquema 1, 2 o 3). No se reemplazó tu información.",
     );
   return result.data;
 }
@@ -74,6 +91,22 @@ export function saveState(data: AppState) {
     }
     if (previous && legacy && localStorage.getItem(LEGACY_BACKUP_KEY) === null)
       localStorage.setItem(LEGACY_BACKUP_KEY, previous);
+    let priorVersion = 0;
+    try {
+      priorVersion = previous ? JSON.parse(previous).schemaVersion : 0;
+    } catch {
+      /* recuperación confirmada */
+    }
+    if (
+      previous &&
+      [1, 2].includes(priorVersion) &&
+      localStorage.getItem(PHASE3_BACKUP_KEY) === null
+    ) {
+      parseBackup(previous);
+      localStorage.setItem(PHASE3_BACKUP_KEY, previous);
+      if (localStorage.getItem(PHASE3_BACKUP_KEY) !== previous)
+        throw new Error("Respaldo no verificable");
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
   } catch {
     throw new Error(

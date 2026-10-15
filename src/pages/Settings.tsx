@@ -1,3 +1,4 @@
+import Integrations from "../components/Integrations";
 import StudyPreferences from "../components/StudyPreferences";
 import { LEGACY_BACKUP_KEY } from "../services/storage";
 import { useRef, useState } from "react";
@@ -22,7 +23,7 @@ import { todayIn } from "../services/dates";
 import { Card, CourseIcon } from "../components/ui";
 import { useEditor } from "../components/AppContext";
 export default function Settings() {
-  const { data, storageError, notify, updateSettings, replace, reset } =
+  const { data, cloud, storageError, notify, updateSettings, replace, reset } =
     useStore();
   const open = useEditor();
   const [name, setName] = useState(data.settings.name);
@@ -51,7 +52,7 @@ export default function Settings() {
       const parsed = parseBackup(await f.text());
       if (
         window.confirm(
-          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos y preferencias de este navegador. Exporta una copia antes. ¿Continuar?`,
+          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos del espacio activo (nube si has iniciado sesión). Exporta una copia antes. ¿Continuar?`,
         )
       ) {
         if (replace(parsed)) {
@@ -80,14 +81,19 @@ export default function Settings() {
       <div className="storage-notice">
         <HardDrive size={24} />
         <div>
-          <strong>Tu información vive en este navegador y dispositivo.</strong>
+          <strong>
+            {cloud.mode === "cloud"
+              ? "Datos de tu cuenta y caché local."
+              : "Tu información está en este navegador."}
+          </strong>
           <p>
-            No se sincroniza automáticamente con otros. Borrar los datos del
-            sitio o usar navegación privada puede eliminarla. Exporta copias de
-            seguridad con frecuencia.
+            {cloud.mode === "cloud"
+              ? "Sin conexión puedes consultar la caché tras autenticarte en esta sesión. La edición requiere conexión. Exporta copias de seguridad."
+              : "Conecta Supabase para utilizar el mismo espacio en otros dispositivos. Exporta copias para conservar tus datos locales."}
           </p>
         </div>
       </div>
+      <Integrations />
       <StudyPreferences key={JSON.stringify(data.studyPreferences)} />
       <div className="settings-grid">
         <Card title="Perfil y zona horaria">
@@ -182,8 +188,8 @@ export default function Settings() {
         <Card title="Copias de seguridad" className="backup-card">
           <p className="muted">
             Incluyen cursos, tareas, actividades, temarios, planes, sesiones,
-            repasos, temporizador y preferencias. Formato JSON · Esquema 2.
-            Compatible con copias de fase 1.
+            repasos, temporizador, Biblioteca y preferencias. Formato JSON ·
+            Esquema 3. Compatible con copias de fases 1 y 2.
           </p>
           <div className="backup-stats">
             <span>
@@ -297,8 +303,9 @@ export default function Settings() {
         <div>
           <h2>Volver a empezar</h2>
           <p>
-            Elimina tus tareas, actividades, temarios, planes, sesiones, repasos
-            y cursos personalizados. Restaura los once cursos iniciales y las
+            Elimina tus tareas, actividades, temarios, planes, sesiones,
+            repasos, carpetas, referencias de documentos y Classroom y cursos
+            personalizados. Restaura los once cursos iniciales y las
             preferencias predeterminadas.
           </p>
         </div>
@@ -307,7 +314,7 @@ export default function Settings() {
           onClick={() => {
             if (
               window.confirm(
-                "¿Restablecer TODOS los datos de StudySpace en este navegador? Se eliminarán todas las tareas, actividades, temarios, planes, sesiones, repasos y personalizaciones. Exporta una copia antes. Esta acción no se puede deshacer.",
+                "¿Restablecer TODOS los datos del espacio activo de StudySpace? Si estás en modo nube, también reemplaza sus datos. Se eliminarán todas las tareas, actividades, temarios, planes, sesiones, repasos, carpetas, referencias de documentos, Classroom y personalizaciones. Exporta una copia antes. Esta acción no se puede deshacer.",
               )
             ) {
               if (reset()) {
@@ -321,7 +328,7 @@ export default function Settings() {
           Restablecer datos
         </button>
       </section>
-      <p className="version-note">StudySpace 2.0</p>
+      <p className="version-note">StudySpace 3.0</p>
     </div>
   );
 }

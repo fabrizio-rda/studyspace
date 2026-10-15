@@ -32,7 +32,7 @@ export function hourIn(timezone: string) {
   );
 }
 export function displayDate(key: string, pattern = "d MMM") {
-  return format(parseDay(key), pattern, { locale: es });
+  return key ? format(parseDay(key), pattern, { locale: es }) : "Sin fecha";
 }
 export function daysUntil(key: string, today: string) {
   return differenceInCalendarDays(parseDay(key), parseDay(today));

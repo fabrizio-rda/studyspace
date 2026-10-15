@@ -34,13 +34,18 @@ export default function Tasks() {
             t.dueDate >= today &&
             t.dueDate <= plusDays(today, 6)) ||
           (range === "overdue" &&
+            !!t.dueDate &&
             t.dueDate < today &&
             t.status !== "completada")),
     )
     .sort((a, b) =>
       sort === "asc"
-        ? a.dueDate.localeCompare(b.dueDate) || a.time.localeCompare(b.time)
-        : b.dueDate.localeCompare(a.dueDate) || b.time.localeCompare(a.time),
+        ? (a.dueDate || "9999-12-31").localeCompare(
+            b.dueDate || "9999-12-31",
+          ) || a.time.localeCompare(b.time)
+        : (b.dueDate || "0000-01-01").localeCompare(
+            a.dueDate || "0000-01-01",
+          ) || b.time.localeCompare(a.time),
     );
   return (
     <div className="page">

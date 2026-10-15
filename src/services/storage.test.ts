@@ -60,7 +60,7 @@ describe("Persistencia y protección de datos", () => {
   it("rechaza versiones futuras, fechas inválidas y referencias huérfanas", () => {
     const data = initialState();
     expect(() =>
-      parseBackup(JSON.stringify({ ...data, schemaVersion: 3 })),
+      parseBackup(JSON.stringify({ ...data, schemaVersion: 99 })),
     ).toThrow();
     expect(() => parseBackup("{no json")).toThrow();
     data.events.push({

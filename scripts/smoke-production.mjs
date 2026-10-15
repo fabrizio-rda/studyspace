@@ -56,6 +56,7 @@ try {
     ["/cursos", "Mis cursos"],
     ["/calendario", "Mi calendario"],
     ["/configuracion", "Configuración"],
+    ["/biblioteca", "Biblioteca"],
     ["/planes", "Planes de estudio"],
     ["/sesiones", "Sesiones de estudio"],
     ["/", "Cursos, tareas y evaluaciones."],
@@ -67,10 +68,10 @@ try {
       `Ruta de producción: ${route}`,
     );
   }
-  assert.equal(w.document.querySelectorAll("nav a").length, 7);
+  assert.equal(w.document.querySelectorAll("nav a").length, 8);
   assert.equal(errors.length, 0, errors.join("\n"));
   console.log(
-    "Producción: HTML autónomo, recursos integrados y siete rutas ejecutados en JSDOM sin errores de ejecución. Esto no es una prueba visual de navegador.",
+    "Producción: HTML autónomo, recursos integrados y ocho rutas ejecutados en JSDOM sin errores de ejecución. Esto no es una prueba visual de navegador.",
   );
 } finally {
   dom.window.close();

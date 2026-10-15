@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { FormEvent } from "react";
 import {
   ArrowDown,
@@ -20,6 +21,15 @@ import { topicProgress } from "../services/planner";
 import { displayDate } from "../services/dates";
 export default function Syllabus({ courseId }: { courseId: string | null }) {
   const { data, commit } = useStore();
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const target = searchParams.get("tema");
+    if (target) {
+      const element = document.getElementById(`topic-${target}`);
+      element?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+      element?.focus();
+    }
+  }, [searchParams]);
   const [editor, setEditor] = useState<
     | { kind: "unit"; item?: Unit }
     | { kind: "topic"; unitId: string; parentId: string | null; item?: Topic }
@@ -86,6 +96,8 @@ export default function Syllabus({ courseId }: { courseId: string | null }) {
     return (
       <div
         key={t.id}
+        id={`topic-${t.id}`}
+        tabIndex={-1}
         className={`syllabus-topic ${t.parentId ? "subtopic" : ""}`}
       >
         <div className="topic-line">

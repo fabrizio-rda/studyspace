@@ -179,6 +179,8 @@ export function completeStudy(
 }
 export function removeContent(data: AppState, topicIds: string[]) {
   const ids = new Set(topicIds);
+  for (const doc of data.documents)
+    if (doc.topicId && ids.has(doc.topicId)) doc.topicId = null;
   data.topics = data.topics.filter((t) => !ids.has(t.id));
   for (const p of data.plans)
     p.topicIds = p.topicIds.filter((id) => !ids.has(id));

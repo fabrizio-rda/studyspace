@@ -355,9 +355,15 @@ export default function Calendar() {
                         )
                       )
                         commit((d) => {
-                          if (a.kind === "task")
+                          if (a.kind === "task") {
                             d.tasks = d.tasks.filter((t) => t.id !== a.id);
-                          else if (a.kind === "session") {
+                            d.classroomItems = d.classroomItems.filter(
+                              (i) => i.taskId !== a.id,
+                            );
+                            for (const p of d.plans)
+                              if (p.targetTaskId === a.id)
+                                p.targetTaskId = null;
+                          } else if (a.kind === "session") {
                             if (d.activeTimer?.sessionId === a.id)
                               throw new Error(
                                 "Finaliza o descarta el temporizador primero.",

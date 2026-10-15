@@ -9,3 +9,5 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 );
 import "./study.css";
+
+import "./library.css";

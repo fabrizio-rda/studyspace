@@ -1,12 +1,35 @@
 import { z } from "zod";
-export const COLORS = [
+export const COURSE_PALETTE = [
+  ["Azul pastel", "#83A8EB"],
+  ["Celeste", "#B3DFF5"],
+  ["Azul profundo", "#597CC8"],
+  ["Azul grisáceo", "#9BAEC0"],
+  ["Lavanda", "#B7A0EA"],
+  ["Morado", "#9575CD"],
+  ["Lila", "#D4B8F0"],
+  ["Violeta", "#A889C8"],
+  ["Rosado pastel", "#ECA6C8"],
+  ["Rosa claro", "#F6C6D9"],
+  ["Fucsia suave", "#D980AE"],
+  ["Melocotón", "#F4B58A"],
+  ["Naranja suave", "#EFA36B"],
+  ["Amarillo pastel", "#F1D58A"],
+  ["Terracota", "#CA917D"],
+  ["Verde menta", "#A8D9C0"],
+  ["Verde salvia", "#A8BEA1"],
+  ["Verde esmeralda", "#74B8A3"],
+  ["Turquesa", "#7CCBC7"],
+  ["Verde oliva suave", "#B6BE85"],
+] as const;
+export const COLORS = COURSE_PALETTE.map(([, color]) => color);
+const ORIGINAL_COLORS = [
   "#A18BE0",
   "#ECA6C8",
   "#F4B58A",
   "#83A8EB",
   "#B3DFF5",
   "#A7C6AE",
-] as const;
+];
 export const ICONS = [
   "atom",
   "flask",
@@ -78,7 +101,9 @@ const taskSchema = z
     description: z.string().max(10000),
     courseId: id.nullable(),
     type: z.enum(["tarea", "examen", "practica", "proyecto", "lectura"]),
-    dueDate: dateSchema,
+    dueDate: dateSchema.or(z.literal("")),
+    personalNotes: z.string().max(10000).optional(),
+    estimatedMinutes: z.number().int().min(0).max(10000).optional(),
     time: timeSchema,
     priority: z.enum(["baja", "media", "alta", "urgente"]),
     status: z.enum(["pendiente", "progreso", "completada"]),
@@ -129,16 +154,21 @@ const initialCourses: [string, Course["icon"]][] = [
 ];
 export function initialState(): AppState {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     courses: initialCourses.map(([name, icon], order) => ({
       id: `course-${order + 1}`,
       name,
       icon,
       order,
-      color: COLORS[order % COLORS.length],
+      color: ORIGINAL_COLORS[order % ORIGINAL_COLORS.length],
       description: "",
       archived: false,
     })),
+    folders: [],
+    documents: [],
+    classroomLinks: [],
+    classroomItems: [],
+    integrationPreferences: { lastClassroomSync: null },
     tasks: [],
     events: [],
     units: [],
@@ -239,6 +269,8 @@ const planSchema = z
     courseId: id.nullable(),
     name: z.string().trim().min(1).max(200),
     goal: z.string().max(5000),
+    targetTaskId: id.nullable().optional(),
+    deadlineWarning: z.string().max(1000).optional(),
     startDate: dateSchema,
     targetDate: dateSchema,
     topicIds: z.array(id).max(10000),
@@ -328,9 +360,73 @@ export const legacyStateSchema = legacyShape.superRefine((data, ctx) => {
     if (a.courseId && !courses.has(a.courseId))
       ctx.addIssue({ code: "custom", message: "Curso inexistente" });
 });
+const safeUrl = z
+  .string()
+  .max(4000)
+  .url()
+  .refine((v) => {
+    try {
+      return ["http:", "https:"].includes(new URL(v).protocol);
+    } catch {
+      return false;
+    }
+  }, "Enlace no permitido");
+export const folderSchema = z.object({
+  id,
+  name: z.string().trim().min(1).max(200),
+  parentId: id.nullable(),
+  courseId: id.nullable(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  icon: z.enum(["folder", "book", "archive", "file"]),
+  createdAt: z.string().datetime(),
+});
+export const documentSchema = z.object({
+  id,
+  name: z.string().trim().min(1).max(300),
+  url: safeUrl,
+  source: z.enum(["manual", "drive", "classroom"]),
+  externalId: z.string().max(300).nullable(),
+  mimeType: z.string().max(200),
+  folderId: id.nullable(),
+  courseId: id.nullable(),
+  topicId: id.nullable(),
+  tags: z.array(z.string().trim().min(1).max(60)).max(30),
+  createdAt: z.string().datetime(),
+});
+export const classroomLinkSchema = z.object({
+  id,
+  externalCourseId: z.string().min(1).max(200),
+  externalName: z.string().max(300),
+  courseId: id.nullable(),
+});
+export const classroomItemSchema = z.object({
+  id,
+  externalCourseId: z.string().min(1).max(200),
+  externalWorkId: z.string().min(1).max(200),
+  taskId: id,
+  remoteTitle: z.string().max(200),
+  remoteDescription: z.string().max(10000),
+  remoteDueDate: dateSchema.or(z.literal("")),
+  remoteTime: timeSchema,
+  url: safeUrl,
+  submissionState: z.string().max(100),
+  updatedAt: z.string().max(100),
+  syncedAt: z.string().datetime(),
+});
+export type LibraryFolder = z.infer<typeof folderSchema>;
+export type DocumentRef = z.infer<typeof documentSchema>;
+export type ClassroomLink = z.infer<typeof classroomLinkSchema>;
+export type ClassroomItem = z.infer<typeof classroomItemSchema>;
 export const stateSchema = z
   .object({
-    schemaVersion: z.literal(2),
+    schemaVersion: z.literal(3),
+    folders: z.array(folderSchema).max(10000),
+    documents: z.array(documentSchema).max(50000),
+    classroomLinks: z.array(classroomLinkSchema).max(1000),
+    classroomItems: z.array(classroomItemSchema).max(50000),
+    integrationPreferences: z.object({
+      lastClassroomSync: z.string().datetime().nullable(),
+    }),
     courses: z.array(courseSchema).max(1000),
     tasks: z.array(taskSchema).max(50000),
     events: z.array(eventSchema).max(50000),
@@ -362,6 +458,10 @@ export const stateSchema = z
       d.scheduledSessions,
       d.studyLogs,
       d.reviewHistory,
+      d.folders,
+      d.documents,
+      d.classroomLinks,
+      d.classroomItems,
     ])
       if (new Set(list.map((x) => x.id)).size !== list.length)
         fail("Identificadores duplicados.");
@@ -369,12 +469,57 @@ export const stateSchema = z
       ...d.tasks,
       ...d.events,
       ...d.units,
+      ...d.folders,
+      ...d.documents,
+      ...d.classroomLinks,
       ...d.plans,
       ...d.scheduledSessions,
       ...d.studyLogs,
       ...(d.activeTimer ? [d.activeTimer] : []),
     ])
       if (a.courseId && !courses.has(a.courseId)) fail("Curso inexistente.");
+    const folders = new Map(d.folders.map((f) => [f.id, f]));
+    for (const f of d.folders) {
+      const seen = new Set([f.id]);
+      let parent = f.parentId;
+      while (parent) {
+        if (seen.has(parent) || !folders.has(parent)) {
+          fail("Jerarquía de carpetas inválida.");
+          break;
+        }
+        seen.add(parent);
+        parent = folders.get(parent)!.parentId;
+      }
+    }
+    for (const doc of d.documents) {
+      if (doc.folderId && !folders.has(doc.folderId))
+        fail("Carpeta inexistente.");
+      if (
+        doc.topicId &&
+        (!topics.has(doc.topicId) ||
+          units.get(topics.get(doc.topicId)!.unitId)?.courseId !== doc.courseId)
+      )
+        fail("Tema incompatible con el documento.");
+    }
+    if (
+      new Set(d.classroomLinks.map((l) => l.externalCourseId)).size !==
+      d.classroomLinks.length
+    )
+      fail("Curso Classroom duplicado.");
+    if (
+      new Set(
+        d.classroomItems.map(
+          (i) => i.externalCourseId + ":" + i.externalWorkId,
+        ),
+      ).size !== d.classroomItems.length
+    )
+      fail("Actividad Classroom duplicada.");
+    for (const i of d.classroomItems)
+      if (!d.tasks.some((t) => t.id === i.taskId))
+        fail("Tarea Classroom inexistente.");
+    for (const p of d.plans)
+      if (p.targetTaskId && !d.tasks.some((t) => t.id === p.targetTaskId))
+        fail("Objetivo del plan inexistente.");
     for (const t of d.topics) {
       if (!units.has(t.unitId)) fail("Unidad inexistente.");
       if (t.parentId) {

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Syllabus from "../components/Syllabus";
 import { topicProgress } from "../services/planner";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowDown,
   ArrowLeft,
@@ -181,7 +181,13 @@ export default function Courses() {
 }
 export function CourseDetail() {
   const { id } = useParams();
-  const [tab, setTab] = useState("overview");
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState(
+    window.location.hash.includes("temario=1") ? "syllabus" : "overview",
+  );
+  useEffect(() => {
+    if (searchParams.get("temario")) setTab("syllabus");
+  }, [searchParams]);
   const { data, commit, deleteCourse } = useStore();
   const open = useEditor();
   const navigate = useNavigate();

@@ -58,7 +58,7 @@ describe("Migración compatible de fase 1 a fase 2", () => {
     localStorage.setItem(STORAGE_KEY, raw);
     const result = loadState();
     expect(result.error).toBeNull();
-    expect(result.data.schemaVersion).toBe(2);
+    expect(result.data.schemaVersion).toBe(3);
     expect(result.data.courses).toEqual(old.courses);
     expect(result.data.tasks).toEqual(old.tasks);
     expect(result.data.events).toEqual(old.events);
@@ -76,7 +76,7 @@ describe("Migración compatible de fase 1 a fase 2", () => {
     saveState(d);
     expect(localStorage.getItem(LEGACY_BACKUP_KEY)).toBe(raw);
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schemaVersion).toBe(
-      2,
+      3,
     );
     saveState(d);
     expect(localStorage.getItem(LEGACY_BACKUP_KEY)).toBe(raw);

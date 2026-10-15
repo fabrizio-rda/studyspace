@@ -66,7 +66,9 @@ export function CompactCalendar() {
         today={parseDay(today)}
         modifiers={{
           activity: [
-            ...data.tasks.map((t) => parseDay(t.dueDate)),
+            ...data.tasks
+              .filter((t) => !!t.dueDate)
+              .map((t) => parseDay(t.dueDate)),
             ...data.scheduledSessions
               .filter((s) => s.status !== "cancelled")
               .map((s) => parseDay(s.date)),
