@@ -1,10 +1,21 @@
-# StudySpace · Fase 3
+# StudySpace · Fase 3 + cuentas independientes
 
-Espacio académico personal de Fabrizio. Mismo repositorio y GitHub Pages, sin perfiles compartidos.
+Espacios académicos privados con cuentas autenticadas independientes. Mismo repositorio y GitHub Pages; calendario combinado solo mediante invitación aceptada y visibilidad explícita.
 
 - [Aplicación](https://fabrizio-rda.github.io/studyspace/)
 - [Configurar Supabase, Drive y Classroom](docs/CONFIGURACION.md)
+- [Dos cuentas, migración y calendario compartido](docs/DOS-CUENTAS.md)
 - [Verificación y límites reales](VERIFICACION.md)
+
+## Ampliación 3.1 — dos cuentas y calendario autorizado
+
+Reutiliza el aislamiento por propietario. Una cuenta nueva autenticada puede crear los diez cursos de Catalina sin datos ficticios; una cuenta existente nunca se vuelve a inicializar. El dashboard, la planificación, la biblioteca, Google y las estadísticas siguen siendo personales. La copia local migrada se asocia a su cuenta y queda oculta al salir.
+
+La migración SQL **002** es aditiva: tres tablas y seis RPCs, sin modificar los 16 conjuntos académicos ni sus políticas. Invitación dirigida al email verificado, aceptación, cancelación y revocación; una vinculación activa de dos cuentas. Los calendarios combinados muestran únicamente los campos autorizados. Privado es el valor inicial, disponibilidad oculta título/curso/tipo y los detalles excluyen notas, documentos y resultados. No existe acceso a otra cuenta mediante un selector.
+
+El dashboard muestra Ambos cuando las cuentas están vinculadas. El calendario completo conserva vistas mensual/semanal/diaria y Mi calendario. Actualización cada 30 segundos con página visible y al recuperar el foco, sin Realtime ni caché offline compartida. Los horarios se convierten entre zonas y las fechas de día completo se conservan. Los datos del otro usuario nunca entran en AppState, el buscador global o la exportación personal.
+
+**Estado externo:** migración y cuentas reales pendientes de configuración/autorización en el proyecto del usuario. No se crearon credenciales de Catalina ni se aplicó SQL remoto. [Pasos y reversión](docs/DOS-CUENTAS.md).
 
 ## Funciones
 
@@ -28,7 +39,7 @@ La clave local `studyspace:data:v1` permanece y el contenido usa **schemaVersion
 
 Entrar en nube no sustituye el espacio local original. La caché y los recibos de migración se separan por proyecto y usuario. La importación inicial mantiene un identificador de operación para reintentar sin duplicados; verifica todos los registros devueltos. Exportar JSON incluye también Biblioteca y referencias de Classroom, pero nunca tokens ni configuración de credenciales.
 
-La migración SQL crea **16 tablas**, claves foráneas compuestas por propietario/ID, índices y RLS forzada. Los payloads JSONB conservan todos los campos versionados, con columnas de relación generadas e índices, tabla de unión de temas/planes y configuración separada. `auth.uid()` determina el propietario; las funciones son `security invoker`. El guardado reemplaza el grafo personal en una sola transacción y comprueba la revisión bajo bloqueo. No hay service_role en el frontend.
+La migración SQL de fase 3 crea **16 tablas**, claves foráneas compuestas por propietario/ID, índices y RLS forzada. Los payloads JSONB conservan todos los campos versionados, con columnas de relación generadas e índices, tabla de unión de temas/planes y configuración separada. `auth.uid()` determina el propietario; las funciones son `security invoker`. El guardado reemplaza el grafo personal en una sola transacción y comprueba la revisión bajo bloqueo. No hay service_role en el frontend.
 
 La sesión Supabase y los tokens Google viven en memoria. No se guardan access/refresh tokens en localStorage ni en JSON. Las únicas claves configurables en la interfaz son públicas. Al cambiar de cuenta se descartan formularios/búsqueda y se desconecta Google; una importación asíncrona que empezó en otro espacio se rechaza.
 
@@ -47,7 +58,7 @@ npm run preview:html
 npm run test:production
 ```
 
-GitHub Actions ejecuta pruebas DOM/unidad, migración SQL y RLS en PostgreSQL/PGlite, compilación y ocho rutas del bundle compilado en JSDOM antes de desplegar `dist/`. La prueba SQL local no certifica la configuración de un proyecto Supabase remoto. Las pruebas de SDK/API controladas no certifican OAuth escolar real. La revisión visual en navegador y las capturas siguen pendientes; no se presentan pruebas DOM como capturas.
+GitHub Actions ejecuta pruebas DOM/unidad, migración SQL y RLS en PostgreSQL/PGlite, compilación y ocho secciones más la vista compartida del bundle compilado en JSDOM antes de desplegar `dist/`. La prueba SQL local no certifica la configuración de un proyecto Supabase remoto. Las pruebas de SDK/API controladas no certifican OAuth escolar real. La revisión visual en navegador y las capturas siguen pendientes; no se presentan pruebas DOM como capturas.
 
 ## Archivos principales de fase 3
 
@@ -64,4 +75,4 @@ GitHub Actions ejecuta pruebas DOM/unidad, migración SQL y RLS en PostgreSQL/PG
 | `src/components/Integrations.tsx`             | Cuenta, conexiones, migración y configuración                |
 | `docs/CONFIGURACION.md`                       | Configuración externa y comprobaciones de uso                |
 
-No se han iniciado las fases 4 ni 5. La siguiente revisión debe cerrar las autorizaciones reales, probar dos dispositivos y revisar móvil antes de ampliar funciones.
+No se han iniciado las fases 4 ni 5. La siguiente revisión debe aplicar la migración 002 en el proyecto real, completar las autorizaciones, comprobar las dos cuentas/dispositivos y revisar móvil.

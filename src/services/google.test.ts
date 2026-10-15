@@ -209,4 +209,19 @@ describe("Adaptadores Google con SDK y red sustituidos", () => {
     expect(docs[0]).not.toHaveProperty("content");
     expect(localStorage.getItem("ephemeral-access")).toBeNull();
   });
+  it("rechaza una respuesta OAuth tardía si la cuenta cambió durante el popup", async () => {
+    vi.mocked(google.accounts.oauth2.initTokenClient).mockImplementation(
+      (c) => {
+        configuration = c;
+        return {
+          requestAccessToken: vi.fn(),
+        } as google.accounts.oauth2.TokenClient;
+      },
+    );
+    const authorization = authorizeGoogle("drive");
+    forgetGoogle();
+    callback();
+    await expect(authorization).rejects.toThrow("cuenta cambió");
+    expect(googleConnected("drive")).toBe(false);
+  });
 });

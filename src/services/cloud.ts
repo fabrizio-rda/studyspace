@@ -9,6 +9,30 @@ type Database = {
     Tables: Record<string, never>;
     Views: Record<string, never>;
     Functions: {
+      studyspace_calendar_status: {
+        Args: Record<string, never>;
+        Returns: unknown;
+      };
+      studyspace_calendar_invite: {
+        Args: { p_email: string };
+        Returns: unknown;
+      };
+      studyspace_calendar_accept: {
+        Args: { p_invite_id: string };
+        Returns: unknown;
+      };
+      studyspace_calendar_cancel: {
+        Args: { p_invite_id: string };
+        Returns: unknown;
+      };
+      studyspace_calendar_revoke: {
+        Args: Record<string, never>;
+        Returns: unknown;
+      };
+      studyspace_calendar_feed: {
+        Args: { p_start: string; p_end: string };
+        Returns: unknown;
+      };
       studyspace_read: { Args: Record<string, never>; Returns: unknown };
       studyspace_save: {
         Args: {

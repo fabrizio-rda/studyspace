@@ -94,6 +94,8 @@ const courseSchema = z.object({
   archived: z.boolean(),
   order: z.number().int().nonnegative(),
 });
+export const visibilitySchema = z.enum(["private", "busy", "details"]);
+export type Visibility = z.infer<typeof visibilitySchema>;
 const taskSchema = z
   .object({
     id,
@@ -102,6 +104,7 @@ const taskSchema = z
     courseId: id.nullable(),
     type: z.enum(["tarea", "examen", "practica", "proyecto", "lectura"]),
     dueDate: dateSchema.or(z.literal("")),
+    visibility: visibilitySchema.optional(),
     personalNotes: z.string().max(10000).optional(),
     estimatedMinutes: z.number().int().min(0).max(10000).optional(),
     time: timeSchema,
@@ -116,6 +119,7 @@ const taskSchema = z
     "Estado y fecha de finalización incompatibles",
   );
 const eventSchema = z.object({
+  visibility: visibilitySchema.optional(),
   id,
   title: z.string().trim().min(1).max(200),
   description: z.string().max(10000),
@@ -132,6 +136,9 @@ export const settingsSchema = z.object({
   showArchived: z.boolean(),
   sidebarCollapsed: z.boolean(),
   taskView: z.enum(["list", "kanban"]),
+  academicPreset: z.enum(["fabrizio", "catalina", "custom"]).optional(),
+  calendarDefaultVisibility: visibilitySchema.optional(),
+  calendarAccent: z.enum(["blue", "pink"]).optional(),
 });
 export type Course = z.infer<typeof courseSchema>;
 export type Task = z.infer<typeof taskSchema>;
@@ -290,6 +297,7 @@ const planSchema = z
     "Hay temas repetidos.",
   );
 const scheduledSchema = z.object({
+  visibility: visibilitySchema.optional(),
   id,
   courseId: id.nullable(),
   topicId: id.nullable(),

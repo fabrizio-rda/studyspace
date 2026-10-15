@@ -1,3 +1,4 @@
+import SharingSettings from "../components/SharingSettings";
 import Integrations from "../components/Integrations";
 import StudyPreferences from "../components/StudyPreferences";
 import { LEGACY_BACKUP_KEY } from "../services/storage";
@@ -23,8 +24,16 @@ import { todayIn } from "../services/dates";
 import { Card, CourseIcon } from "../components/ui";
 import { useEditor } from "../components/AppContext";
 export default function Settings() {
-  const { data, cloud, storageError, notify, updateSettings, replace, reset } =
-    useStore();
+  const {
+    data,
+    cloud,
+    localAccess,
+    storageError,
+    notify,
+    updateSettings,
+    replace,
+    reset,
+  } = useStore();
   const open = useEditor();
   const [name, setName] = useState(data.settings.name);
   const [timezone, setTimezone] = useState(data.settings.timezone);
@@ -52,9 +61,16 @@ export default function Settings() {
       const parsed = parseBackup(await f.text());
       if (
         window.confirm(
-          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos del espacio activo (nube si has iniciado sesión). Exporta una copia antes. ¿Continuar?`,
+          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos del espacio activo (nube si has iniciado sesión). Las actividades importadas se marcarán privadas; podrás compartirlas después. Exporta una copia antes. ¿Continuar?`,
         )
       ) {
+        for (const item of [
+          ...parsed.tasks,
+          ...parsed.events,
+          ...parsed.scheduledSessions,
+        ])
+          item.visibility = "private";
+        parsed.settings.calendarDefaultVisibility = "private";
         if (replace(parsed)) {
           setName(parsed.settings.name);
           setTimezone(parsed.settings.timezone);
@@ -94,6 +110,7 @@ export default function Settings() {
         </div>
       </div>
       <Integrations />
+      <SharingSettings />
       <StudyPreferences key={JSON.stringify(data.studyPreferences)} />
       <div className="settings-grid">
         <Card title="Perfil y zona horaria">
@@ -237,6 +254,7 @@ export default function Settings() {
           </div>
           <button
             className="text-btn"
+            disabled={!localAccess}
             onClick={() => {
               try {
                 const raw = localStorage.getItem(LEGACY_BACKUP_KEY);
@@ -328,7 +346,7 @@ export default function Settings() {
           Restablecer datos
         </button>
       </section>
-      <p className="version-note">StudySpace 3.0</p>
+      <p className="version-note">StudySpace 3.1</p>
     </div>
   );
 }

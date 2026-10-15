@@ -1,3 +1,5 @@
+import AccountSetup from "./AccountSetup";
+import { blankAccount } from "../services/accounts";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import {
@@ -80,7 +82,13 @@ export default function Integrations() {
       setBusy("");
     }
   }
-  const local = loadState();
+  const local = store.localAccess
+    ? loadState()
+    : {
+        data: blankAccount(),
+        error:
+          "La copia local está asociada a otra cuenta. No se mostrará ni se importará aquí.",
+      };
   const counts = recordCounts(local.data);
   const labels: Record<string, string> = {
     courses: "Cursos",
@@ -160,13 +168,14 @@ export default function Integrations() {
               ? cloud.user.email
               : "Inicia sesión para acceder al mismo espacio desde otros dispositivos."}
           </p>
+          <AccountSetup />
           {cloud.user ? (
             <>
               <p>
                 <strong>
                   {cloud.mode === "cloud"
                     ? "Espacio en la nube"
-                    : "Datos locales · cuenta sin importar"}
+                    : "Cuenta nueva · configuración pendiente"}
                 </strong>
               </p>
               <div className="integration-actions">
@@ -434,7 +443,7 @@ export default function Integrations() {
           </p>
           {cloud.verifiedCounts && (
             <p className="integration-status">
-              Importación verificada:{" "}
+              Datos de nube verificados:{" "}
               {Object.entries(cloud.verifiedCounts)
                 .map(([k, v]) => `${v} ${labels[k] ?? k}`)
                 .join(" · ")}
@@ -531,7 +540,7 @@ export default function Integrations() {
           <div className="integration-actions">
             <button
               className="btn soft"
-              disabled={!!local.error}
+              disabled={!!local.error || !store.localAccess}
               onClick={() =>
                 downloadText(
                   localStorage.getItem(STORAGE_KEY) ??
@@ -544,6 +553,7 @@ export default function Integrations() {
             </button>
             <button
               className="btn soft"
+              disabled={!store.localAccess}
               onClick={() => {
                 const raw = localStorage.getItem(PHASE3_BACKUP_KEY);
                 if (raw) downloadText(raw, "studyspace-antes-de-fase3.json");
@@ -563,26 +573,10 @@ export default function Integrations() {
                 ? "Importando y verificando…"
                 : "Importar a mi cuenta"}
             </button>
-            {cloud.user && cloud.mode === "local" && (
-              <button
-                className="btn ghost"
-                disabled={!!busy}
-                onClick={() => {
-                  if (
-                    confirm(
-                      "¿Empezar la nube con los cursos iniciales y sin importar tus tareas locales? Los datos locales se conservarán.",
-                    )
-                  )
-                    void run("empty", store.startCloud);
-                }}
-              >
-                Empezar nube sin importar
-              </button>
-            )}
           </div>
           {cloud.verifiedCounts && (
             <p role="status">
-              La importación terminó y se verificó. Datos locales conservados.
+              Los datos de la cuenta se verificaron. La copia local se conserva.
             </p>
           )}
           {error && <p role="alert">{error}</p>}

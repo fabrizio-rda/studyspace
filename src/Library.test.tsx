@@ -234,7 +234,7 @@ describe("Biblioteca y personalización", () => {
     window.location.hash = "/calendario?date=2026-10-19";
     const user = userEvent.setup();
     render(<App />);
-    await screen.findByText("Mi calendario");
+    await screen.findByRole("heading", { name: "Mi calendario" });
     const activities = document.querySelectorAll(".calendar-event");
     expect(
       Array.from(activities).filter((e) =>

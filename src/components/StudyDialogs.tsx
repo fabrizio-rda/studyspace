@@ -1,3 +1,5 @@
+import VisibilitySelect from "./VisibilitySelect";
+import type { Visibility } from "../models/schema";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import type { ActiveTimer, StudySession } from "../models/schema";
@@ -17,6 +19,9 @@ export function EditSessionDialog({
   onClose: () => void;
 }) {
   const { data, commit } = useStore();
+  const [visibility, setVisibility] = useState<Visibility>(
+    session.visibility ?? "private",
+  );
   const [date, setDate] = useState(
     postpone
       ? plusDays(
@@ -32,7 +37,7 @@ export function EditSessionDialog({
   const [error, setError] = useState("");
   function submit(e: FormEvent) {
     e.preventDefault();
-    const next = { ...session, date, time, minutes, manual: true };
+    const next = { ...session, date, time, minutes, visibility, manual: true };
     const conflict = sessionConflict(data, next, session.id);
     if (conflict) {
       setError(conflict);
@@ -95,6 +100,7 @@ export function EditSessionDialog({
             />
           </label>
         </div>
+        <VisibilitySelect value={visibility} onChange={setVisibility} />
         {error && (
           <p className="error-text" role="alert">
             {error}

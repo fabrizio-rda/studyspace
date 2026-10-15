@@ -1,4 +1,5 @@
-import { useState } from "react";
+import SharedCalendar from "../components/SharedCalendar";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   addMonths,
@@ -22,7 +23,7 @@ import { todayIn, parseDay, dateKey, displayDate } from "../services/dates";
 import { useEditor } from "../components/AppContext";
 import SessionCards from "../components/SessionCards";
 import { AddButton, Empty, Modal } from "../components/ui";
-export default function Calendar() {
+function PersonalCalendar() {
   const { data, commit } = useStore();
   const open = useEditor();
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
@@ -407,5 +408,46 @@ export default function Calendar() {
         </Modal>
       )}
     </div>
+  );
+}
+
+export default function Calendar() {
+  const [params] = useSearchParams();
+  const [scope, setScope] = useState(
+    params.get("compartido") === "1" ? "shared" : "mine",
+  );
+  useEffect(
+    () => setScope(params.get("compartido") === "1" ? "shared" : "mine"),
+    [params],
+  );
+  const initial = params.get("date");
+  return (
+    <>
+      <div className="calendar-scope">
+        <div className="tabs" aria-label="Seleccionar calendario">
+          <button
+            className={scope === "mine" ? "active" : ""}
+            onClick={() => setScope("mine")}
+          >
+            Mi calendario
+          </button>
+          <button
+            className={scope === "shared" ? "active" : ""}
+            onClick={() => setScope("shared")}
+          >
+            Calendario compartido
+          </button>
+        </div>
+      </div>
+      {scope === "mine" ? (
+        <PersonalCalendar />
+      ) : (
+        <SharedCalendar
+          initialDate={
+            dateSchema.safeParse(initial).success ? initial! : undefined
+          }
+        />
+      )}
+    </>
   );
 }

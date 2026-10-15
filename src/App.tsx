@@ -38,6 +38,7 @@ import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
 import Plans from "./pages/Plans";
 import StudySessions from "./pages/StudySessions";
+import { SharingProvider } from "./services/sharing-context";
 import Library from "./pages/Library";
 import { SyncIndicator } from "./components/Integrations";
 import { GoogleProvider } from "./services/google-context";
@@ -57,8 +58,15 @@ function WorkspaceShell() {
   return <Shell key={workspaceId} />;
 }
 function Shell() {
-  const { data, cloud, workspaceId, storageError, notice, updateSettings } =
-    useStore();
+  const {
+    data,
+    cloud,
+    workspaceId,
+    localAccess,
+    storageError,
+    notice,
+    updateSettings,
+  } = useStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [editor, setEditor] = useState<EditorState | null>(null);
@@ -369,6 +377,29 @@ function Shell() {
           </header>
           <main key={workspaceId} id="main-content" tabIndex={-1} ref={content}>
             <SyncIndicator />
+            {!cloud.user && !localAccess && (
+              <div className="storage-error">
+                Tu copia local está protegida. Inicia sesión con su cuenta para
+                recuperar tu espacio.{" "}
+                <button
+                  className="text-btn"
+                  onClick={() => navigate("/configuracion")}
+                >
+                  Iniciar sesión
+                </button>
+              </div>
+            )}
+            {cloud.mode === "setup" && (
+              <div className="storage-error">
+                Esta cuenta necesita configurar su espacio.{" "}
+                <button
+                  className="text-btn"
+                  onClick={() => navigate("/configuracion")}
+                >
+                  Configurar mi cuenta
+                </button>
+              </div>
+            )}
             {cloud.mode === "cloud" && cloud.status === "conflict" && (
               <div className="storage-error">
                 Hay cambios en otro dispositivo. Revisa Configuración para
@@ -507,9 +538,11 @@ export default function App() {
   return (
     <StoreProvider>
       <GoogleProvider>
-        <HashRouter>
-          <WorkspaceShell />
-        </HashRouter>
+        <SharingProvider>
+          <HashRouter>
+            <WorkspaceShell />
+          </HashRouter>
+        </SharingProvider>
       </GoogleProvider>
     </StoreProvider>
   );

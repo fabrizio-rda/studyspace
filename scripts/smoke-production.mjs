@@ -56,6 +56,7 @@ try {
     ["/cursos", "Mis cursos"],
     ["/calendario", "Mi calendario"],
     ["/configuracion", "Configuración"],
+    ["/calendario?compartido=1", "Calendario compartido"],
     ["/biblioteca", "Biblioteca"],
     ["/planes", "Planes de estudio"],
     ["/sesiones", "Sesiones de estudio"],
@@ -71,7 +72,7 @@ try {
   assert.equal(w.document.querySelectorAll("nav a").length, 8);
   assert.equal(errors.length, 0, errors.join("\n"));
   console.log(
-    "Producción: HTML autónomo, recursos integrados y ocho rutas ejecutados en JSDOM sin errores de ejecución. Esto no es una prueba visual de navegador.",
+    "Producción: HTML autónomo, recursos integrados y ocho secciones y la vista compartida ejecutadas en JSDOM sin errores de ejecución. Esto no es una prueba visual de navegador.",
   );
 } finally {
   dom.window.close();

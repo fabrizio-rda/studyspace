@@ -1,13 +1,13 @@
 {
   "name": "studyspace",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "test": "vitest run",
-    "test:database": "node scripts/test-database.mjs",
+    "test:database": "node scripts/test-database.mjs && node scripts/test-sharing-database.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "format": "prettier --write src *.json *.ts index.html README.md .github/workflows/deploy.yml",
     "preview:html": "node scripts/make-preview.mjs",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "framer-motion": "^12.23.0",
     "lucide-react": "^0.468.0",
     "react": "^19.2.0",

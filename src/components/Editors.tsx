@@ -5,6 +5,8 @@ import type { Task, AcademicEvent, TaskType, Course } from "../models/schema";
 import { useStore } from "../services/store";
 import { todayIn } from "../services/dates";
 import { ClassroomSource } from "./ClassroomSource";
+import VisibilitySelect from "./VisibilitySelect";
+import type { Visibility } from "../models/schema";
 import ColorPicker from "./ColorPicker";
 import { CourseIcon, Modal } from "./ui";
 export type EditorState =
@@ -40,6 +42,9 @@ function ActivityEditor({
   const { data, saveTask, saveEvent } = useStore();
   const item = editor.item;
   const event = editor.kind === "event";
+  const [visibility, setVisibility] = useState<Visibility>(
+    item?.visibility ?? data.settings.calendarDefaultVisibility ?? "private",
+  );
   const [title, setTitle] = useState(item?.title ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [courseId, setCourseId] = useState(
@@ -75,6 +80,7 @@ function ActivityEditor({
     }
     const base = {
       ...item,
+      visibility,
       id: item?.id ?? crypto.randomUUID(),
       title: title.trim(),
       description,
@@ -245,6 +251,7 @@ function ActivityEditor({
           </div>
         )}
         {item && !event && <ClassroomSource taskId={item.id} />}
+        <VisibilitySelect value={visibility} onChange={setVisibility} />
         {event && (
           <p className="form-help">
             Esta actividad aparecerá solo en el calendario. Para darle

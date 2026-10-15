@@ -1,3 +1,6 @@
+import SharedCalendar from "./SharedCalendar";
+import { useSharing } from "../services/sharing-context";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
@@ -6,7 +9,7 @@ import { dateKey, parseDay, todayIn, displayDate } from "../services/dates";
 import { ArrowButton, Card } from "./ui";
 import { useNavigate } from "react-router-dom";
 import { useEditor } from "./AppContext";
-export function CompactCalendar() {
+function PersonalCompactCalendar() {
   const { data } = useStore();
   const today = todayIn(data.settings.timezone);
   const [selected, setSelected] = useState(parseDay(today));
@@ -77,6 +80,9 @@ export function CompactCalendar() {
         }}
         modifiersClassNames={{ activity: "has-activity" }}
       />
+      <p className="calendar-share-hint">
+        <Link to="/configuracion">Configurar calendario compartido</Link>
+      </p>
       <div className="day-summary">
         <strong>{displayDate(key, "EEEE d")}</strong>
         {activities.length ? (
@@ -105,5 +111,14 @@ export function CompactCalendar() {
         </button>
       </div>
     </Card>
+  );
+}
+
+export function CompactCalendar() {
+  const sharing = useSharing();
+  return sharing.status.connection ? (
+    <SharedCalendar compact />
+  ) : (
+    <PersonalCompactCalendar />
   );
 }

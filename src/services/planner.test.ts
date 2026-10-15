@@ -425,3 +425,13 @@ describe("Revisiones tras completar la cuota inicial", () => {
     }
   });
 });
+
+it("mantiene privadas las sesiones regeneradas de planes existentes aunque cambie el valor predeterminado", () => {
+  const d = fixture();
+  const first = generateSchedule(d, NOW);
+  expect(first.sessions.length).toBeGreaterThan(0);
+  d.scheduledSessions = first.sessions;
+  d.settings.calendarDefaultVisibility = "details";
+  const next = generateSchedule(d, NOW);
+  expect(next.sessions.every((s) => s.visibility === "private")).toBe(true);
+});

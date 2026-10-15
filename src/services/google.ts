@@ -11,6 +11,7 @@ export const SCOPES = {
 };
 let tokens: Partial<Record<GoogleService, { token: string; expires: number }>> =
   {};
+let authorizationGeneration = 0;
 const loaders = new Map<string, Promise<void>>();
 function loadScript(src: string) {
   if (loaders.has(src)) return loaders.get(src)!;
@@ -51,6 +52,7 @@ export function googleConnected(service: GoogleService) {
 }
 export function authorizeGoogle(service: GoogleService): Promise<void> {
   const c = loadConfig();
+  const generation = authorizationGeneration;
   if (!c.googleClientId || !(typeof google !== "undefined" && google.accounts))
     throw new Error(
       "Configura Google Cloud y espera a que cargue la autorización.",
@@ -61,6 +63,14 @@ export function authorizeGoogle(service: GoogleService): Promise<void> {
       scope: SCOPES[service].join(" "),
       include_granted_scopes: false,
       callback: (r) => {
+        if (generation !== authorizationGeneration) {
+          reject(
+            new Error(
+              "La cuenta cambió durante la autorización. Vuelve a conectar Google.",
+            ),
+          );
+          return;
+        }
         if (r.error || !r.access_token) {
           reject(
             new Error(
@@ -102,6 +112,7 @@ export function authorizeGoogle(service: GoogleService): Promise<void> {
   });
 }
 export function forgetGoogle() {
+  authorizationGeneration++;
   tokens = {};
 }
 export async function disconnectGoogle(service: GoogleService) {

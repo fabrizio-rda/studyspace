@@ -234,4 +234,124 @@ describe("Cuenta, sincronización y migración (API sustituida en pruebas)", () 
     expect(vi.mocked(writeCloud).mock.calls[0][2]).toBe(pending);
     expect(cacheKey(account.id)).not.toContain("token");
   });
+  it("una cuenta nueva no ve tareas locales y crea los diez cursos de Catalina una sola vez", async () => {
+    const local = initialState();
+    local.settings.name = "Fabrizio local";
+    saveState(local);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    vi.mocked(readCloud).mockResolvedValue({
+      state: null,
+      revision: 0,
+      mutation_id: null,
+    });
+    vi.mocked(writeCloud).mockImplementation(async (s, rev, m) => ({
+      state: s,
+      revision: rev + 1,
+      mutation_id: m,
+    }));
+    const { result } = mount();
+    await act(() => result.current.verifyCode(account.email, "123456"));
+    expect(result.current.cloud.mode).toBe("setup");
+    expect(result.current.data.courses).toEqual([]);
+    expect(result.current.data.settings.name).toBe("Mi cuenta");
+    act(() => {
+      expect(
+        result.current.commit((d) => {
+          d.settings.name = "No";
+        }),
+      ).toBe(false);
+    });
+    await act(() => result.current.startCloud("Catalina", "catalina"));
+    expect(result.current.data.courses).toHaveLength(10);
+    expect(
+      result.current.data.courses.some((c) =>
+        /Física|Química|AP Physics/.test(c.name),
+      ),
+    ).toBe(false);
+    expect(result.current.data.settings.name).toBe("Catalina");
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(raw);
+    await expect(
+      result.current.startCloud("Catalina", "catalina"),
+    ).rejects.toThrow("vacía");
+    expect(writeCloud).toHaveBeenCalledTimes(1);
+  });
+  it("reintenta la inicialización con los mismos cursos e identificador si se pierde la respuesta", async () => {
+    vi.mocked(readCloud).mockResolvedValue({
+      state: null,
+      revision: 0,
+      mutation_id: null,
+    });
+    vi.mocked(writeCloud)
+      .mockRejectedValueOnce(Error("Respuesta perdida"))
+      .mockImplementation(async (s, rev, m) => ({
+        state: s,
+        revision: rev + 1,
+        mutation_id: m,
+      }));
+    const { result } = mount();
+    await act(() => result.current.verifyCode(account.email, "123456"));
+    await act(async () => {
+      await expect(
+        result.current.startCloud("Catalina", "catalina"),
+      ).rejects.toThrow("Respuesta perdida");
+    });
+    await act(() => result.current.startCloud("Catalina", "catalina"));
+    const calls = vi.mocked(writeCloud).mock.calls;
+    expect(calls[0][0].courses).toEqual(calls[1][0].courses);
+    expect(calls[0][2]).toBe(calls[1][2]);
+  });
+  it("tras migrar, oculta la copia local al salir y no permite importarla a otra cuenta", async () => {
+    saveState(initialState());
+    const raw = localStorage.getItem(STORAGE_KEY);
+    vi.mocked(readCloud).mockResolvedValue({
+      state: null,
+      revision: 0,
+      mutation_id: null,
+    });
+    vi.mocked(writeCloud).mockImplementation(async (s, rev, m) => ({
+      state: s,
+      revision: rev + 1,
+      mutation_id: m,
+    }));
+    const { result } = mount();
+    await act(() => result.current.verifyCode(account.email, "123456"));
+    await act(() => result.current.migrateLocal());
+    await act(() => result.current.signOut());
+    expect(result.current.data.courses).toEqual([]);
+    expect(result.current.localAccess).toBe(false);
+    vi.mocked(cloudClient().auth.verifyOtp).mockResolvedValue({
+      data: { user: { id: "owner-b", email: "c@example.test" }, session: null },
+      error: null,
+    } as unknown as Awaited<
+      ReturnType<ReturnType<typeof cloudClient>["auth"]["verifyOtp"]>
+    >);
+    await act(() => result.current.verifyCode("c@example.test", "123456"));
+    expect(result.current.localAccess).toBe(false);
+    await expect(result.current.migrateLocal()).rejects.toThrow("otra cuenta");
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(raw);
+    expect(writeCloud).toHaveBeenCalledTimes(1);
+  });
+  it("no vuelve a mostrar datos de una autenticación que terminó después de cerrar sesión", async () => {
+    let resolveRead!: (value: Awaited<ReturnType<typeof readCloud>>) => void;
+    vi.mocked(readCloud).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRead = resolve;
+        }),
+    );
+    const { result } = mount();
+    let login!: Promise<void>;
+    await act(async () => {
+      login = result.current.verifyCode(account.email, "123456");
+      await Promise.resolve();
+    });
+    expect(result.current.cloud.user?.id).toBe(account.id);
+    await act(() => result.current.signOut());
+    await act(async () => {
+      resolveRead({ state: state(), revision: 1, mutation_id: "old" });
+      await login;
+    });
+    expect(result.current.cloud.user).toBeNull();
+    expect(result.current.data.settings.name).not.toBe("Nube");
+  });
 });

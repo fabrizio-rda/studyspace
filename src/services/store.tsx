@@ -19,6 +19,15 @@ import {
   sameContent,
 } from "./cloud";
 import { parseBackup, PHASE3_BACKUP_KEY } from "./storage";
+import {
+  accountState,
+  blankAccount,
+  canUseLocal,
+  claimLocal,
+  localOwner,
+} from "./accounts";
+import type { AccountPreset } from "./accounts";
+import { loadConfig } from "./config";
 import { initialState } from "../models/schema";
 import { loadState, saveState, STORAGE_KEY } from "./storage";
 export type SyncStatus =
@@ -32,7 +41,7 @@ export type SyncStatus =
   | "error";
 export type CloudView = {
   user: { id: string; email: string } | null;
-  mode: "local" | "cloud";
+  mode: "local" | "cloud" | "setup";
   status: SyncStatus;
   error: string;
   revision: number;
@@ -47,7 +56,8 @@ type ContextValue = {
   signOut: () => Promise<void>;
   syncNow: () => Promise<void>;
   migrateLocal: () => Promise<void>;
-  startCloud: () => Promise<void>;
+  startCloud: (name?: string, preset?: AccountPreset) => Promise<void>;
+  localAccess: boolean;
   useRemote: () => Promise<void>;
 
   data: AppState;
@@ -70,7 +80,9 @@ type ContextValue = {
 };
 const Context = createContext<ContextValue | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [loaded, setLoaded] = useState(loadState);
+  const [loaded, setLoaded] = useState(() =>
+    localOwner() ? { data: blankAccount(), error: null } : loadState(),
+  );
   const [cloud, setCloud] = useState<CloudView>({
     user: null,
     mode: "local",
@@ -108,6 +120,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const current = loadState();
     if (
+      !localOwner() &&
       !current.error &&
       current.data.activeTimer?.runningSince !== null &&
       current.data.activeTimer
@@ -125,7 +138,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     const listener = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY || e.key === null) {
-        if (cloudRef.current.mode === "local") {
+        if (cloudRef.current.mode === "local" && !localOwner()) {
           setLoaded(loadState());
           notify("Se actualizaron los datos desde otra pestaña.");
         }
@@ -140,6 +153,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   function persist(data: AppState) {
     const validated = stateSchema.parse(data);
     const c = cloudRef.current;
+    if (c.mode === "setup" || (c.mode === "local" && localOwner()))
+      throw new Error(
+        "Inicia sesión y termina la configuración de tu cuenta antes de editar.",
+      );
     if (c.mode === "cloud" && c.user) {
       if (
         !navigator.onLine ||
@@ -209,7 +226,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
   async function syncNow() {
     const c = cloudRef.current;
-    if (c.mode === "local" && c.user) {
+    if (c.mode === "setup" && c.user) {
       await attach(c.user);
       return;
     }
@@ -249,6 +266,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           pending: next,
         });
         pending.current = next;
+        window.dispatchEvent(new Event("studyspace:calendar"));
         showCloud({
           revision: remote.revision,
           status: next ? "pending" : "synced",
@@ -294,15 +312,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
   async function attach(user: { id: string; email?: string }) {
     changedWorkspace();
+    const generation = epoch.current;
     pending.current = null;
+    switchData(blankAccount());
     showCloud({
       user: { id: user.id, email: user.email ?? "" },
-      mode: "local",
+      mode: "setup",
       status: "loading",
       error: "",
     });
     try {
       const remote = await readCloud();
+      if (generation !== epoch.current) return;
       const cache = readCache(user.id);
       if (remote.state) {
         if (cache?.pending) {
@@ -346,9 +367,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           status: "local",
           revision: 0,
           error:
-            "Cuenta vacía. Revisa e importa los datos locales o empieza con los cursos iniciales.",
+            "Cuenta nueva. Configura tu nombre y tus cursos; no se importarán datos de otra persona automáticamente.",
         });
     } catch (e) {
+      if (generation !== epoch.current) return;
       let cache = null;
       try {
         cache = readCache(user.id);
@@ -376,12 +398,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       } else showCloud({ status: "error", error: (e as Error).message });
     }
   }
-  async function migrate(data: AppState) {
+  async function migrate(data: AppState, fromLocal = false) {
     const c = cloudRef.current;
+    const generation = epoch.current;
     if (!c.user || c.mode === "cloud")
       throw new Error("Inicia sesión en una cuenta vacía para importar.");
     if (!navigator.onLine) throw new Error("La migración necesita conexión.");
-    const raw = localStorage.getItem(STORAGE_KEY);
+    if (fromLocal && !canUseLocal(c.user.id, loadConfig().supabaseUrl))
+      throw new Error(
+        "Esta copia local pertenece a otra cuenta. No se importó nada.",
+      );
+    const raw = fromLocal ? localStorage.getItem(STORAGE_KEY) : null;
     if (raw) {
       parseBackup(raw);
       localStorage.setItem(
@@ -391,12 +418,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (!localStorage.getItem(PHASE3_BACKUP_KEY))
         throw new Error("No se pudo verificar la copia local.");
     }
-    const normalized = {
+    const normalized = stateSchema.parse({
       ...data,
       activeTimer: data.activeTimer
         ? recoverTimer(data.activeTimer, data.activeTimer.lastSeenAt)
         : null,
-    };
+    });
     const migrationKey = cacheKey(c.user.id) + ":migration";
     if (raw) {
       const backupKey = migrationKey + ":backup";
@@ -409,6 +436,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       "SHA-256",
       new TextEncoder().encode(JSON.stringify(normalized)),
     );
+    if (generation !== epoch.current)
+      throw new Error("La cuenta cambió durante la inicialización.");
     const fingerprint = Array.from(new Uint8Array(digest))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
@@ -424,7 +453,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     );
     showCloud({ status: "loading", error: "" });
     try {
+      if (generation !== epoch.current)
+        throw new Error("La cuenta cambió durante la inicialización.");
       const result = await writeCloud(normalized, 0, mutation);
+      if (generation !== epoch.current)
+        throw new Error(
+          "La cuenta cambió. No se mostraron sus datos en otro espacio.",
+        );
       if (!result.state || !sameContent(normalized, result.state))
         throw new Error(
           "La importación no superó la verificación de integridad.",
@@ -438,6 +473,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         migrationKey,
         JSON.stringify({ fingerprint, mutation, complete: true }),
       );
+      if (fromLocal) claimLocal(c.user.id, loadConfig().supabaseUrl);
       changedWorkspace();
       switchData(result.state);
       showCloud({
@@ -450,16 +486,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             .map(([k, v]) => [k, (v as unknown[]).length]),
         ),
       });
-      notify("Importación verificada. Los datos locales se conservaron.");
+      notify(
+        fromLocal
+          ? "Importación verificada. Los datos locales se conservaron."
+          : "Espacio creado y verificado. No se copiaron datos de otra cuenta.",
+      );
     } catch (e) {
-      showCloud({ status: "error", error: (e as Error).message });
+      if (generation === epoch.current)
+        showCloud({ status: "error", error: (e as Error).message });
       throw e;
     }
   }
   function restoreLocalSession() {
     changedWorkspace();
     pending.current = null;
-    const original = loadState();
+    const original = localOwner()
+      ? { data: blankAccount(), error: null }
+      : loadState();
     stateRef.current = original.data;
     setLoaded(original);
     showCloud({
@@ -525,8 +568,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
   async function useRemote() {
     const c = cloudRef.current;
+    const generation = epoch.current;
     if (!c.user) return;
     const remote = await readCloud();
+    if (generation !== epoch.current)
+      throw new Error("La cuenta cambió durante la consulta.");
     if (!remote.state) throw new Error("La cuenta está vacía.");
     const normalized = {
       ...remote.state,
@@ -612,7 +658,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const value: ContextValue = {
     data: loaded.data,
     cloud,
-    workspaceId: cloud.mode === "cloud" ? cloud.user!.id : "local",
+    workspaceId: cloud.user ? `${cloud.mode}:${cloud.user.id}` : "local",
+    localAccess: canUseLocal(cloud.user?.id ?? null, loadConfig().supabaseUrl),
     workspaceToken: String(epoch.current),
     sendCode: async (email) => {
       const { error } = await cloudClient().auth.signInWithOtp({ email });
@@ -633,16 +680,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     migrateLocal: async () => {
       const local = loadState();
       if (local.error) throw new Error(local.error);
-      await migrate(local.data);
+      await migrate(local.data, true);
     },
-    startCloud: () => migrate(initialState()),
+    startCloud: async (name = "Fabrizio", preset = "fabrizio") => {
+      const user = cloudRef.current.user;
+      if (!user || cloudRef.current.mode !== "setup")
+        throw new Error("Solo una cuenta vacía puede inicializarse.");
+      const key = cacheKey(user.id) + ":initialization";
+      const raw = localStorage.getItem(key);
+      const previous = raw ? parseBackup(raw) : null;
+      const draft =
+        previous &&
+        previous.settings.name === name.trim() &&
+        previous.settings.academicPreset === preset
+          ? previous
+          : accountState(name, preset);
+      localStorage.setItem(key, JSON.stringify(draft));
+      await migrate(draft);
+    },
     useRemote,
     storageError: loaded.error,
     notice,
     notify,
     commit,
     replace,
-    reset: () => replace(initialState()),
+    reset: () =>
+      replace(
+        cloudRef.current.mode === "cloud"
+          ? accountState(
+              stateRef.current.settings.name,
+              stateRef.current.settings.academicPreset ?? "fabrizio",
+            )
+          : initialState(),
+      ),
     saveTask: (task) =>
       commit((d) => {
         const i = d.tasks.findIndex((x) => x.id === task.id);
