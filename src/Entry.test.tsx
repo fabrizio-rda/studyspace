@@ -148,6 +148,21 @@ it("muestra dos tarjetas y un calendario vacío sin revelar datos locales ni con
   ).toBeInTheDocument();
   expect(screen.getByLabelText("Email")).toBeInTheDocument();
 });
+it("mantiene el campo del código tras recargar sin enviar otro correo", async () => {
+  const view = render(<App />);
+  await userEvent.click(
+    screen.getByRole("link", { name: "Entrar al espacio de Fabrizio" }),
+  );
+  const u = userEvent.setup();
+  await u.type(screen.getByLabelText("Email"), a.email);
+  await u.click(screen.getByRole("button", { name: "Enviar código" }));
+  expect(screen.getByLabelText("Código recibido")).toBeInTheDocument();
+  view.unmount();
+  render(<App />);
+  expect(screen.getByLabelText("Código recibido")).toBeInTheDocument();
+  expect(screen.getByLabelText("Email")).toHaveValue(a.email);
+  expect(cloudClient().auth.signInWithOtp).toHaveBeenCalledTimes(1);
+});
 it("entra directamente si la tarjeta reconoce el UUID de la sesión restaurada", async () => {
   session = a;
   bindEntry("fabrizio", a.id);
