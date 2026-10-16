@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { deferredPage } from "./components/AsyncPage";
+import { useEffect, useRef, useState, Suspense } from "react";
 import {
   HashRouter,
   Routes,
@@ -7,7 +8,6 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
   FolderOpen,
@@ -33,14 +33,17 @@ import type { EditorState } from "./components/Editors";
 import { EditorContext } from "./components/AppContext";
 import { Modal } from "./components/ui";
 import Dashboard from "./pages/Dashboard";
-import Tasks from "./pages/Tasks";
-import Courses, { CourseDetail } from "./pages/Courses";
-import Calendar from "./pages/Calendar";
-import Settings from "./pages/Settings";
-import Plans from "./pages/Plans";
-import StudySessions from "./pages/StudySessions";
+const Tasks = deferredPage(() => import("./pages/Tasks"));
+const Courses = deferredPage(() => import("./pages/Courses"));
+const CourseDetail = deferredPage(() =>
+  import("./pages/Courses").then((m) => ({ default: m.CourseDetail })),
+);
+const Calendar = deferredPage(() => import("./pages/Calendar"));
+const Settings = deferredPage(() => import("./pages/Settings"));
+const Plans = deferredPage(() => import("./pages/Plans"));
+const StudySessions = deferredPage(() => import("./pages/StudySessions"));
 import { SharingProvider } from "./services/sharing-context";
-import Library from "./pages/Library";
+const Library = deferredPage(() => import("./pages/Library"));
 import { SyncIndicator } from "./components/Integrations";
 import { GoogleProvider } from "./services/google-context";
 import TimerRuntime from "./components/TimerRuntime";
@@ -79,6 +82,38 @@ function Shell() {
   const [searching, setSearching] = useState(false);
   const [clock, setClock] = useState(0);
   const content = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!mobile) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const nav = document.getElementById("primary-navigation");
+    const controls = () =>
+      Array.from(
+        nav?.querySelectorAll<HTMLElement>("a,button:not([disabled])") ?? [],
+      ).filter((e) => e.getClientRects().length > 0);
+    controls()[0]?.focus();
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobile(false);
+      }
+      if (event.key !== "Tab") return;
+      const list = controls(),
+        first = list[0],
+        last = list.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      document.removeEventListener("keydown", keyboard);
+      previous?.focus();
+    };
+  }, [mobile]);
   const collapsed = data.settings.sidebarCollapsed;
   const section =
     links.find((l) =>
@@ -241,7 +276,7 @@ function Shell() {
           </nav>
           <div className="sidebar-bottom">
             <div className="sidebar-note">
-              <p>Los pendientes sí se acuerdan de ti.</p>
+              <p>Cursos, tareas y sesiones.</p>
             </div>
             <button
               className="collapse-btn"
@@ -378,9 +413,21 @@ function Shell() {
               </button>
             </div>
           </header>
-          <main key={workspaceId} id="main-content" tabIndex={-1} ref={content}>
+          <main
+            inert={mobile || undefined}
+            key={workspaceId}
+            id="main-content"
+            tabIndex={-1}
+            ref={content}
+          >
             <SyncIndicator />
-            {cloud.mode === "cloud" && !cloud.writable && <p className="storage-error" role="status">Esta pestaña está en consulta. Cierra la otra pestaña de esta cuenta para editar aquí. Si tu navegador no admite Web Locks, usa un navegador actualizado.</p>}
+            {cloud.mode === "cloud" && !cloud.writable && (
+              <p className="storage-error" role="status">
+                Esta pestaña está en consulta. Cierra la otra pestaña de esta
+                cuenta para editar aquí. Si tu navegador no admite Web Locks,
+                usa un navegador actualizado.
+              </p>
+            )}
 
             {!cloud.user && !localAccess && (
               <div className="storage-error">
@@ -435,13 +482,13 @@ function Shell() {
                 </button>
               </div>
             )}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 7 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.16 }}
+            <div className="route-content" key={location.pathname}>
+              <Suspense
+                fallback={
+                  <p className="route-loading" role="status">
+                    Cargando sección…
+                  </p>
+                }
               >
                 <Routes location={location}>
                   <Route path="/" element={<Dashboard />} />
@@ -465,13 +512,13 @@ function Shell() {
                     }
                   />
                 </Routes>
-              </motion.div>
-            </AnimatePresence>
+              </Suspense>
+            </div>
           </main>
           <footer className="app-footer">
             <span>StudySpace</span>
             <p>Cursos, documentos y estudio.</p>
-            <small>FASE 03</small>
+            <small>FASE 04</small>
           </footer>
         </div>
         {adding && (
@@ -521,10 +568,34 @@ function Shell() {
             </div>
           </Modal>
         )}
-        {editConflict && <Modal title="Hay cambios en el formulario" onClose={dismissEditConflict}>
-          <p>Otro cambio afecta a los mismos campos. No guardamos ni descartamos tus datos. Descarga las tres versiones, cierra el formulario y vuelve a abrirlo para revisar el estado actual.</p>
-          <div className="modal-footer"><button className="btn primary" onClick={() => downloadText(JSON.stringify(editConflict, null, 2), "studyspace-versiones-formulario.json")}>Exportar las tres versiones</button><button className="btn soft" onClick={dismissEditConflict}>Volver al formulario</button></div>
-        </Modal>}
+        {editConflict && (
+          <Modal
+            title="Hay cambios en el formulario"
+            onClose={dismissEditConflict}
+          >
+            <p>
+              Otro cambio afecta a los mismos campos. No guardamos ni
+              descartamos tus datos. Descarga las tres versiones, cierra el
+              formulario y vuelve a abrirlo para revisar el estado actual.
+            </p>
+            <div className="modal-footer">
+              <button
+                className="btn primary"
+                onClick={() =>
+                  downloadText(
+                    JSON.stringify(editConflict, null, 2),
+                    "studyspace-versiones-formulario.json",
+                  )
+                }
+              >
+                Exportar las tres versiones
+              </button>
+              <button className="btn soft" onClick={dismissEditConflict}>
+                Volver al formulario
+              </button>
+            </div>
+          </Modal>
+        )}
         {editor && (
           <Editors
             key={`${editor.kind}-${editor.item?.id ?? ("date" in editor ? editor.date : undefined) ?? "new"}`}

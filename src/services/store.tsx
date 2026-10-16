@@ -102,7 +102,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   cloudRef.current = cloud;
   const stateRef = useRef(loaded.data);
   stateRef.current = loaded.data;
-  const [editConflict, setEditConflict] = useState<{ base: AppState; mine: AppState; remote: AppState } | null>(null);
+  const [editConflict, setEditConflict] = useState<{
+    base: AppState;
+    mine: AppState;
+    remote: AppState;
+  } | null>(null);
   const releaseWriter = useRef<(() => void) | null>(null);
   const pending = useRef<string | null>(null);
   const sending = useRef(false);
@@ -168,7 +172,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         "Inicia sesión y termina la configuración de tu cuenta antes de editar.",
       );
     if (c.mode === "cloud" && c.user) {
-      if (!c.writable) throw new Error("Otra pestaña está editando esta cuenta, o este navegador no admite bloqueo seguro. Esta vista es de consulta.");
+      if (!c.writable)
+        throw new Error(
+          "Otra pestaña está editando esta cuenta, o este navegador no admite bloqueo seguro. Esta vista es de consulta.",
+        );
       if (
         !navigator.onLine ||
         ["loading", "conflict", "offline", "error"].includes(c.status)
@@ -192,7 +199,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
   function replace(data: AppState, workspaceToken?: string) {
     try {
-      if (workspaceToken && workspaceToken !== String(epoch.current)) throw new Error("La cuenta cambió durante la importación. No se reemplazó nada.");
+      if (workspaceToken && workspaceToken !== String(epoch.current))
+        throw new Error(
+          "La cuenta cambió durante la importación. No se reemplazó nada.",
+        );
       if (data.activeTimer)
         data = { ...data, activeTimer: recoverTimer(data.activeTimer) };
       persist(data);
@@ -250,7 +260,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       return;
     }
-    if (!c.writable) { await attach(c.user); return; }
+    if (!c.writable) {
+      await attach(c.user);
+      return;
+    }
     if (c.status === "conflict") return;
     sending.current = true;
     const generation = epoch.current;
@@ -341,7 +354,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
     try {
       const release = await acquireWriter(cacheKey(user.id));
-      if (generation !== epoch.current) { release?.(); return; }
+      if (generation !== epoch.current) {
+        release?.();
+        return;
+      }
       releaseWriter.current = release;
       const writable = !!release;
       showCloud({ writable });
@@ -373,11 +389,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               ? recoverTimer(remote.state.activeTimer)
               : null,
           };
-          if (writable) saveCache(user.id, {
-            state: normalized,
-            revision: remote.revision,
-            pending: null,
-          });
+          if (writable)
+            saveCache(user.id, {
+              state: normalized,
+              revision: remote.revision,
+              pending: null,
+            });
           switchData(normalized);
           showCloud({
             mode: "cloud",
@@ -426,7 +443,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const generation = epoch.current;
     if (!c.user || c.mode === "cloud")
       throw new Error("Inicia sesión en una cuenta vacía para importar.");
-    if (!c.writable) throw new Error("Abre esta cuenta en una sola pestaña con un navegador compatible antes de inicializarla.");
+    if (!c.writable)
+      throw new Error(
+        "Abre esta cuenta en una sola pestaña con un navegador compatible antes de inicializarla.",
+      );
     if (!navigator.onLine) throw new Error("La migración necesita conexión.");
     if (fromLocal && !canUseLocal(c.user.id, loadConfig().supabaseUrl))
       throw new Error(
@@ -551,14 +571,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const client = cloudClient();
         const listener = client.auth.onAuthStateChange?.((event, session) => {
           const user = session?.user;
-          if (event === "SIGNED_OUT" || (!user && event === "INITIAL_SESSION")) {
+          if (
+            event === "SIGNED_OUT" ||
+            (!user && event === "INITIAL_SESSION")
+          ) {
             if (cloudRef.current.user) restoreLocalSession();
             return;
           }
           if (user && user.id !== cloudRef.current.user?.id) {
             // Clear the old workspace synchronously. attach yields at the lock
             // before querying auth/RPC, so the auth callback cannot deadlock.
-            void attach(user).catch(e => notify((e as Error).message));
+            void attach(user).catch((e) => notify((e as Error).message));
           }
         });
         unsubscribe = () => listener?.data.subscription.unsubscribe();
@@ -606,7 +629,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const c = cloudRef.current;
     const generation = epoch.current;
     if (!c.user) return;
-    if (sending.current || !c.writable) throw new Error("Espera al guardado activo o cierra la otra pestaña antes de reemplazar la caché.");
+    if (sending.current || !c.writable)
+      throw new Error(
+        "Espera al guardado activo o cierra la otra pestaña antes de reemplazar la caché.",
+      );
     const remote = await readCloud(c.user.id);
     if (generation !== epoch.current)
       throw new Error("La cuenta cambió durante la consulta.");
@@ -634,6 +660,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const tick = setInterval(() => {
       if (
+        document.visibilityState !== "hidden" &&
         cloudRef.current.mode === "cloud" &&
         cloudRef.current.status !== "conflict"
       )
@@ -696,7 +723,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     data: loaded.data,
     cloud,
     editConflict,
-    keepEditConflict: (base, mine, remote) => setEditConflict(structuredClone({base, mine, remote})),
+    keepEditConflict: (base, mine, remote) =>
+      setEditConflict(structuredClone({ base, mine, remote })),
     dismissEditConflict: () => setEditConflict(null),
     workspaceId: cloud.user ? `${cloud.mode}:${cloud.user.id}` : "local",
     localAccess: canUseLocal(cloud.user?.id ?? null, loadConfig().supabaseUrl),
@@ -704,7 +732,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     sendCode: async (email) => {
       const { error } = await cloudClient().auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: "https://fabrizio-rda.github.io/studyspace/" },
+        options: {
+          emailRedirectTo: "https://fabrizio-rda.github.io/studyspace/",
+        },
       });
       if (error) throw error;
     },

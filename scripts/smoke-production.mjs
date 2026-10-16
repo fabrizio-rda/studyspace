@@ -3,6 +3,41 @@ import { resolve } from "node:path";
 import assert from "node:assert/strict";
 import { JSDOM, VirtualConsole } from "jsdom";
 const root = resolve(import.meta.dirname, "..");
+// Validate public icon paths under the real GitHub Pages subdirectory.
+const production = await readFile(resolve(root, "dist/index.html"), "utf8");
+for (const name of [
+  "favicon.ico",
+  "favicon-16x16.png",
+  "favicon-32x32.png",
+  "favicon-48x48.png",
+  "apple-touch-icon.png",
+  "site.webmanifest",
+]) {
+  assert(production.includes(`./${name}`), `Ruta relativa del icono: ${name}`);
+  assert((await readFile(resolve(root, "dist", name))).length > 0);
+  assert.equal(
+    new URL(`./${name}`, "https://studyspace.test/studyspace/").pathname,
+    `/studyspace/${name}`,
+  );
+}
+for (const [name, size] of [
+  ["favicon-16x16.png", 16],
+  ["favicon-32x32.png", 32],
+  ["favicon-48x48.png", 48],
+  ["apple-touch-icon.png", 180],
+]) {
+  const bytes = await readFile(resolve(root, "dist", name));
+  assert.equal(bytes.readUInt32BE(16), size);
+  assert.equal(bytes.readUInt32BE(20), size);
+}
+const manifest = JSON.parse(
+  await readFile(resolve(root, "dist/site.webmanifest"), "utf8"),
+);
+for (const icon of manifest.icons)
+  assert((await readFile(resolve(root, "dist", icon.src))).length > 0);
+console.log(
+  "Iconos: formatos, dimensiones, manifiesto y rutas /studyspace/ verificados (sin comprobación visual de pestaña).",
+);
 const html = await readFile(
   resolve(root, "dist-preview/StudySpace.html"),
   "utf8",
@@ -63,7 +98,12 @@ try {
     ["/", "Cursos, tareas y evaluaciones."],
   ]) {
     w.location.hash = route;
-    await delay(400);
+    const deadline = Date.now() + 4000;
+    while (
+      !w.document.querySelector("main").textContent.includes(heading) &&
+      Date.now() < deadline
+    )
+      await delay(25);
     assert(
       w.document.querySelector("main").textContent.includes(heading),
       `Ruta de producción: ${route}`,

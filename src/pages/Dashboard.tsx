@@ -1,3 +1,4 @@
+import { UpcomingTasks, WeeklyTasks } from "../components/DashboardTasks";
 import TodayPlan from "../components/TodayPlan";
 import { weekStart as studyWeekStart } from "../services/dates";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +7,6 @@ import {
   BookOpen,
   CalendarDays,
   Check,
-  CirclePlus,
   Coffee,
   Hourglass,
   ListChecks,
@@ -21,11 +21,10 @@ import {
   weekStart,
 } from "../services/dates";
 import { ArrowButton, Card, Empty } from "../components/ui";
-import { TaskList } from "../components/TaskList";
 import { CompactCalendar } from "../components/CompactCalendar";
 import { useEditor } from "../components/AppContext";
 export default function Dashboard() {
-  const { data } = useStore();
+  const { data, cloud } = useStore();
   const open = useEditor();
   const navigate = useNavigate();
   const today = todayIn(data.settings.timezone);
@@ -42,9 +41,6 @@ export default function Dashboard() {
   const percent = data.tasks.length
     ? Math.round((completed.length / data.tasks.length) * 100)
     : 0;
-  const todays = data.tasks
-    .filter((t) => t.dueDate === today)
-    .sort((a, b) => a.time.localeCompare(b.time));
   const exams = [
     ...data.tasks
       .filter(
@@ -113,39 +109,7 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
-      <Card
-        title="Tareas de hoy"
-        eyebrow={displayDate(today, "EEEE, d MMMM")}
-        className="today-card"
-        action={<span className="count-pill">{todays.length}</span>}
-      >
-        {todays.length ? (
-          <TaskList
-            tasks={todays.slice(0, 5)}
-            onEdit={(item) => open({ kind: "task", item })}
-            small
-          />
-        ) : (
-          <Empty
-            title="Sin tareas para hoy"
-            description="Puedes añadir una tarea para esta fecha."
-          />
-        )}
-        <button
-          className="dashed-add"
-          onClick={() => open({ kind: "task", date: today })}
-        >
-          <CirclePlus size={17} /> Añadir tarea para hoy
-        </button>
-        {todays.length > 5 && (
-          <button
-            className="text-btn"
-            onClick={() => navigate("/tareas?range=today")}
-          >
-            Ver las {todays.length} tareas
-          </button>
-        )}
-      </Card>
+      <UpcomingTasks />
       <Card
         title="Esta semana"
         className="week-card"
@@ -339,8 +303,12 @@ export default function Dashboard() {
           Abrir temporizador
         </button>
       </section>
+      <WeeklyTasks />
       <div className="dashboard-footer">
-        <Check size={13} /> Tus cambios se guardan en este navegador.
+        <Check size={13} />{" "}
+        {cloud.mode === "cloud"
+          ? "Tus cambios se sincronizan con tu cuenta."
+          : "Tus cambios se guardan en este navegador."}
       </div>
     </div>
   );

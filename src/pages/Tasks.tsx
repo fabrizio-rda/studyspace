@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { LayoutList, Columns3, Search, SlidersHorizontal } from "lucide-react";
 import { useStore } from "../services/store";
 import { todayIn, plusDays } from "../services/dates";
-import { PRIORITIES, STATUSES } from "../models/schema";
+import { PRIORITIES, STATUSES, dateSchema } from "../models/schema";
 import { AddButton, Empty } from "../components/ui";
 import { TaskList } from "../components/TaskList";
 import { useEditor } from "../components/AppContext";
@@ -15,7 +15,12 @@ export default function Tasks() {
   const [course, setCourse] = useState(params.get("course") ?? "");
   const [priority, setPriority] = useState("");
   const [status, setStatus] = useState("");
-  const [range, setRange] = useState(params.get("range") ?? "all");
+  const selectedDate = dateSchema.safeParse(params.get("date")).success
+    ? params.get("date")!
+    : "";
+  const [range, setRange] = useState(
+    selectedDate ? "date" : (params.get("range") ?? "all"),
+  );
   const [sort, setSort] = useState("asc");
   const today = todayIn(data.settings.timezone);
   const filtered = data.tasks
@@ -29,6 +34,7 @@ export default function Tasks() {
             .toLocaleLowerCase("es")
             .includes(search.toLocaleLowerCase("es"))) &&
         (range === "all" ||
+          (range === "date" && t.dueDate === selectedDate) ||
           (range === "today" && t.dueDate === today) ||
           (range === "week" &&
             t.dueDate >= today &&
@@ -59,6 +65,11 @@ export default function Tasks() {
         </div>
         <AddButton label="Nueva tarea" onClick={() => open({ kind: "task" })} />
       </div>
+      {range === "date" && (
+        <p className="form-help">
+          Tareas del {selectedDate}. Selecciona Todas para ver el resto.
+        </p>
+      )}
       <div className="card task-workspace">
         <div className="task-toolbar">
           <div className="tabs">

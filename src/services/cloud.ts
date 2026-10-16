@@ -92,23 +92,53 @@ export function decodeSnapshot(value: unknown): CloudSnapshot {
 let identity: string | null = null;
 let requests = new AbortController();
 export function bindCloudIdentity(user: string | null) {
-  requests.abort(); requests = new AbortController(); identity = user;
+  requests.abort();
+  requests = new AbortController();
+  identity = user;
 }
-async function credentials(expected: string | undefined = identity ?? undefined) {
+async function credentials(
+  expected: string | undefined = identity ?? undefined,
+) {
   const scope = requests;
   const client = cloudClient();
   const { data, error } = await client.auth.getSession();
-  if (error || !data.session || (expected && data.session.user.id !== expected) || (identity && data.session.user.id !== identity) || scope.signal.aborted)
-    throw new Error("La sesión cambió. Vuelve a abrir tu espacio antes de guardar.");
+  if (
+    error ||
+    !data.session ||
+    (expected && data.session.user.id !== expected) ||
+    (identity && data.session.user.id !== identity) ||
+    scope.signal.aborted
+  )
+    throw new Error(
+      "La sesión cambió. Vuelve a abrir tu espacio antes de guardar.",
+    );
+  // Verify the signed token's subject, not only the persisted user object.
+  const verified = await client.auth.getClaims(data.session.access_token);
+  if (
+    verified.error ||
+    verified.data?.claims.sub !== data.session.user.id ||
+    (expected && verified.data?.claims.sub !== expected) ||
+    scope.signal.aborted
+  )
+    throw new Error("No se pudo comprobar la identidad de esta sesión.");
   return { client, token: data.session.access_token, signal: scope.signal };
 }
-export async function cloudRpc<N extends keyof Database["public"]["Functions"]>(name: N, args?: Database["public"]["Functions"][N]["Args"]) {
+export async function cloudRpc<N extends keyof Database["public"]["Functions"]>(
+  name: N,
+  args?: Database["public"]["Functions"][N]["Args"],
+) {
   const { client, token, signal } = await credentials();
-  return client.rpc(name, args as never).setHeader("Authorization", `Bearer ${token}`).abortSignal(signal);
+  return client
+    .rpc(name, args as never)
+    .setHeader("Authorization", `Bearer ${token}`)
+    .abortSignal(signal);
 }
 export async function readCloud(expected?: string) {
   const { client, token, signal } = await credentials(expected);
-  const { data, error } = await client.rpc("studyspace_read").setHeader("Authorization", `Bearer ${token}`).abortSignal(signal);
+  const { data, error } = await client
+    .rpc("studyspace_read")
+    .setHeader("Authorization", `Bearer ${token}`)
+    .abortSignal(signal);
   if (error) throw new Error(error.message);
   return decodeSnapshot(data);
 }
@@ -128,11 +158,14 @@ export async function writeCloud(
 ) {
   const validated = stateSchema.parse(cloudSnapshot(state));
   const { client, token, signal } = await credentials(expected);
-  const { data, error } = await client.rpc("studyspace_save", {
-    p_state: validated,
-    p_expected_revision: revision,
-    p_mutation_id: mutation,
-  }).setHeader("Authorization", `Bearer ${token}`).abortSignal(signal);
+  const { data, error } = await client
+    .rpc("studyspace_save", {
+      p_state: validated,
+      p_expected_revision: revision,
+      p_mutation_id: mutation,
+    })
+    .setHeader("Authorization", `Bearer ${token}`)
+    .abortSignal(signal);
   if (error)
     throw new Error(
       error.message.includes("REVISION_CONFLICT")

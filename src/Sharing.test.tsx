@@ -1,8 +1,19 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import { render, renderHook, screen, waitFor, within, act } from "@testing-library/react";
+import {
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+  act,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { SharingProvider, useSharing, useSharedFeed } from "./services/sharing-context";
+import {
+  SharingProvider,
+  useSharing,
+  useSharedFeed,
+} from "./services/sharing-context";
 import SharedCalendar from "./components/SharedCalendar";
 import SharingSettings from "./components/SharingSettings";
 import AccountSetup from "./components/AccountSetup";
@@ -327,21 +338,33 @@ describe("Calendario e invitaciones con backend controlado", () => {
   });
 });
 
-it("recupera estado y feed después de desconectar durante solicitudes pendientes", async()=>{
- let resolveStatus!: (v: SharingStatus)=>void;
- vi.mocked(sharingStatus).mockImplementationOnce(()=>new Promise(r=>{resolveStatus=r}));
- const first=renderHook(()=>useSharing(),{wrapper:Wrapper});
- act(()=>window.dispatchEvent(new Event("offline")));
- await act(async()=>resolveStatus(status));
- await act(()=>first.result.current.refresh());
- expect(first.result.current.status.connection?.id).toBe(link);
- first.unmount();
- let resolveFeed!: (v: {connected:boolean;events:SharedEvent[]})=>void;
- vi.mocked(calendarFeed).mockImplementationOnce(()=>new Promise(r=>{resolveFeed=r}));
- const second=renderHook(()=>useSharedFeed("2026-10-01","2026-10-31"),{wrapper:Wrapper});
- await waitFor(()=>expect(second.result.current.loading).toBe(true));
- act(()=>window.dispatchEvent(new Event("offline")));
- await act(async()=>resolveFeed({connected:true,events}));
- await act(async()=>window.dispatchEvent(new Event("online")));
- await waitFor(()=>expect(second.result.current.events.length).toBe(3));
+it("recupera estado y feed después de desconectar durante solicitudes pendientes", async () => {
+  let resolveStatus!: (v: SharingStatus) => void;
+  vi.mocked(sharingStatus).mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolveStatus = r;
+      }),
+  );
+  const first = renderHook(() => useSharing(), { wrapper: Wrapper });
+  act(() => window.dispatchEvent(new Event("offline")));
+  await act(async () => resolveStatus(status));
+  await act(() => first.result.current.refresh());
+  expect(first.result.current.status.connection?.id).toBe(link);
+  first.unmount();
+  let resolveFeed!: (v: { connected: boolean; events: SharedEvent[] }) => void;
+  vi.mocked(calendarFeed).mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolveFeed = r;
+      }),
+  );
+  const second = renderHook(() => useSharedFeed("2026-10-01", "2026-10-31"), {
+    wrapper: Wrapper,
+  });
+  await waitFor(() => expect(second.result.current.loading).toBe(true));
+  act(() => window.dispatchEvent(new Event("offline")));
+  await act(async () => resolveFeed({ connected: true, events }));
+  await act(async () => window.dispatchEvent(new Event("online")));
+  await waitFor(() => expect(second.result.current.events.length).toBe(3));
 });

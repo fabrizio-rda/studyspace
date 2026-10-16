@@ -45,7 +45,7 @@ export default function Courses() {
           <h1>Mis cursos</h1>
           <p>
             {data.courses.filter((c) => !c.archived).length} cursos activos.
-            Todo lo que aprendes, conectado.
+            Tareas, temario y materiales por curso.
           </p>
         </div>
         <AddButton

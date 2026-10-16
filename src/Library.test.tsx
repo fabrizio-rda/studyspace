@@ -18,7 +18,9 @@ describe("Biblioteca y personalización", () => {
   it("crea subcarpetas, añade, busca, mueve y abre una referencia sin Google", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole("button", { name: "Nueva carpeta" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Nueva carpeta" }),
+    );
     let modal = await dialog();
     await user.type(
       within(modal).getByLabelText("Nombre de carpeta"),
@@ -34,7 +36,9 @@ describe("Biblioteca y personalización", () => {
     await user.click(
       await screen.findByRole("button", { name: /Física.*0 documentos/ }),
     );
-    await user.click(screen.getByRole("button", { name: "Nueva carpeta" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Nueva carpeta" }),
+    );
     modal = await dialog();
     await user.type(
       within(modal).getByLabelText("Nombre de carpeta"),

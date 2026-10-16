@@ -138,7 +138,7 @@ strong {
   font-size: 12px;
 }
 .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   font-weight: 750;
   color: #79717c;
@@ -179,7 +179,7 @@ strong {
 .small-btn {
   min-height: 32px;
   padding: 7px 11px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .icon-btn {
   width: 32px;
@@ -201,7 +201,7 @@ strong {
   align-items: center;
   gap: 5px;
   color: #7861a7;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   padding: 5px 0;
 }
@@ -209,7 +209,7 @@ strong {
   color: #584278;
 }
 .count-pill {
-  font-size: 11px;
+  font-size: 12px;
   background: #e0edf8;
   color: #75628f;
   min-width: 24px;
@@ -223,7 +223,7 @@ strong {
 .badge {
   display: inline-block;
   border-radius: 6px;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   padding: 4px 7px;
   background: #eee5f4;
@@ -310,13 +310,13 @@ strong {
 }
 .brand small {
   display: block;
-  font-size: 6px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 1.75px;
   margin-top: 2px;
 }
 .nav-eyebrow {
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 1.9px;
   margin: 0 15px 13px;
@@ -379,7 +379,7 @@ strong {
   font-size: 12px;
 }
 .sidebar-note p {
-  font-size: 10px;
+  font-size: 12px;
   color: #716173;
   line-height: 1.7;
   margin-top: 5px;
@@ -389,7 +389,7 @@ strong {
   align-items: center;
   gap: 9px;
   margin: 0 auto 22px;
-  font-size: 10px;
+  font-size: 12px;
   color: #6f5c70;
   padding: 6px;
 }
@@ -410,14 +410,14 @@ strong {
 }
 .sidebar-profile strong {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .sidebar-profile small {
   display: block;
-  font-size: 8px;
+  font-size: 12px;
   margin-top: 2px;
   color: #796576;
 }
@@ -449,7 +449,7 @@ strong {
   font-weight: 750;
 }
 .topbar-title small {
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   font-weight: 500;
 }
@@ -485,7 +485,7 @@ strong {
   background: transparent;
   border: 0;
   width: 100%;
-  font-size: 10px;
+  font-size: 12px;
   box-shadow: none;
 }
 .search-clear {
@@ -493,7 +493,7 @@ strong {
   padding: 0;
 }
 .topbar-date {
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   white-space: nowrap;
 }
@@ -520,7 +520,7 @@ strong {
   align-items: center;
   justify-content: space-between;
   padding: 3px 8px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 .search-results > button {
@@ -538,12 +538,12 @@ strong {
   background: #f1e9f6;
 }
 .search-results small {
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   flex-shrink: 0;
 }
 .search-results p {
-  font-size: 11px;
+  font-size: 12px;
   padding: 15px;
 }
 .app-footer {
@@ -554,7 +554,7 @@ strong {
   margin-top: 30px;
   padding: 18px 4px;
   color: #746a7b;
-  font-size: 9px;
+  font-size: 12px;
 }
 .app-footer > span {
   font-weight: 800;
@@ -563,7 +563,7 @@ strong {
 }
 .app-footer small {
   margin-left: auto;
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 1.5px;
 }
 .mobile-toggle,
@@ -628,7 +628,7 @@ main:focus {
   margin-bottom: 17px;
 }
 .card-head .eyebrow {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: #746a7b;
@@ -662,7 +662,7 @@ main:focus {
 }
 
 .welcome p {
-  font-size: 11px;
+  font-size: 12px;
   color: #7c6a7e;
   margin-top: 12px;
 }
@@ -671,7 +671,7 @@ main:focus {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  font-size: 8px;
+  font-size: 12px;
   color: #826f80;
   margin-top: 20px;
 }
@@ -683,7 +683,7 @@ main:focus {
   border-radius: 20px;
   padding: 7px 10px;
   color: #75637a;
-  font-size: 9px;
+  font-size: 12px;
 }
 .study-art {
   position: absolute;
@@ -835,13 +835,13 @@ main:focus {
   color: #655a6c;
 }
 .empty p {
-  font-size: 11px;
+  font-size: 12px;
   color: #746a7b;
   max-width: 260px;
   line-height: 1.8;
 }
 .empty .text-btn {
-  font-size: 10px;
+  font-size: 12px;
 }
 .dashed-add {
   border: 1px dashed #adc9e2;
@@ -852,7 +852,7 @@ main:focus {
   justify-content: center;
   gap: 7px;
   padding: 11px;
-  font-size: 10px;
+  font-size: 12px;
   width: 100%;
   margin-top: 13px;
 }
@@ -871,7 +871,7 @@ main:focus {
   line-height: 1.1;
 }
 .big-number span {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0;
   color: #746a7b;
@@ -911,7 +911,7 @@ main:focus {
   border-radius: 8px;
 }
 .bar-column small {
-  font-size: 8px;
+  font-size: 12px;
   color: #746a7b;
 }
 
@@ -943,7 +943,7 @@ main:focus {
   font-size: 15px;
 }
 .progress-ring span {
-  font-size: 8px;
+  font-size: 12px;
   color: #746a7b;
 }
 .progress-legend {
@@ -951,7 +951,7 @@ main:focus {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  font-size: 8px;
+  font-size: 12px;
   color: #746a7b;
   white-space: nowrap;
 }
@@ -981,7 +981,7 @@ main:focus {
   flex-direction: column;
   gap: 11px;
   padding: 6px 1px;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
 }
 .quick-grid > button:hover {
@@ -1029,13 +1029,13 @@ main:focus {
   --rdp-day_button-width: 30px;
   --rdp-selected-border: 0;
   --rdp-today-color: #8a6bb8;
-  font-size: 11px;
+  font-size: 12px;
   margin: 0 auto;
   width: fit-content;
   max-width: 100%;
 }
 .rdp-month_caption {
-  font-size: 11px;
+  font-size: 12px;
   text-transform: capitalize;
   height: 44px;
   padding-left: 3px;
@@ -1055,13 +1055,13 @@ main:focus {
   fill: #6289b2;
 }
 .rdp-weekday {
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 600;
   color: #746a7b;
   padding: 8px 0;
 }
 .rdp-day_button {
-  font-size: 10px;
+  font-size: 12px;
   border-radius: 9px;
   position: relative;
 }
@@ -1097,29 +1097,29 @@ main:focus {
   padding-top: 13px;
 }
 .day-summary > strong {
-  font-size: 10px;
+  font-size: 12px;
   text-transform: capitalize;
 }
 .day-summary > p {
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   margin: 7px 0 6px;
 }
 .day-summary .text-btn {
-  font-size: 9px;
+  font-size: 12px;
 }
 .mini-activity {
   display: flex;
   gap: 7px;
   align-items: center;
   width: 100%;
-  font-size: 10px;
+  font-size: 12px;
   padding: 8px 0;
   text-align: left;
 }
 .mini-activity small {
   margin-left: auto;
-  font-size: 8px;
+  font-size: 12px;
   color: #746a7b;
 }
 .exams-card {
@@ -1154,7 +1154,7 @@ main:focus {
   flex-shrink: 0;
 }
 .exam-date small {
-  font-size: 8px;
+  font-size: 12px;
   text-transform: uppercase;
 }
 .exam-date strong {
@@ -1165,18 +1165,18 @@ main:focus {
   flex: 1;
 }
 .exam-info strong {
-  font-size: 11px;
+  font-size: 12px;
   display: block;
   overflow-wrap: anywhere;
 }
 .exam-info small {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 3px;
 }
 .exam-countdown {
-  font-size: 9px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1188,7 +1188,7 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   padding-top: 12px;
   margin-top: 8px;
@@ -1224,11 +1224,11 @@ main:focus {
   font-size: 13px;
 }
 .plan-heading .badge {
-  font-size: 7px;
+  font-size: 12px;
   background: #d0e3f3;
 }
 .plan-card p {
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 5px;
   max-width: 400px;
@@ -1249,12 +1249,12 @@ main:focus {
   color: #647c96;
 }
 .timer-card .eyebrow {
-  font-size: 6px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: #746a7b;
 }
 .timer-card p {
-  font-size: 8px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 5px;
 }
@@ -1277,7 +1277,7 @@ main:focus {
   justify-content: center;
   gap: 5px;
   color: #746a7b;
-  font-size: 8px;
+  font-size: 12px;
   margin-top: 1px;
 }
 .page-heading {
@@ -1321,7 +1321,7 @@ main:focus {
 .tabs > button {
   padding: 8px 12px;
   border-radius: 9px;
-  font-size: 11px;
+  font-size: 12px;
   color: #746a7b;
 }
 .tabs > button.active {
@@ -1343,7 +1343,7 @@ main:focus {
   align-items: center;
   justify-content: center;
   padding: 7px 10px;
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   border-radius: 7px;
 }
@@ -1364,24 +1364,24 @@ main:focus {
   min-width: 170px;
 }
 .filters select {
-  font-size: 10px;
+  font-size: 12px;
   padding: 8px 9px;
   max-width: 180px;
 }
 .filters input {
-  font-size: 11px;
+  font-size: 12px;
 }
 .results-count {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 7px 20px 15px;
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
 }
 .results-count .text-btn {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 12px;
 }
 .task-list {
   width: 100%;
@@ -1434,13 +1434,13 @@ main:focus {
   display: flex;
   gap: 5px;
   align-items: center;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 5px;
   flex-wrap: wrap;
 }
 .task-description {
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1456,7 +1456,7 @@ main:focus {
   gap: 6px;
 }
 .task-date {
-  font-size: 9px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1483,7 +1483,7 @@ main:focus {
   color: #746a7b;
 }
 .status-select {
-  font-size: 9px;
+  font-size: 12px;
   padding: 6px 5px;
   background: #f6efe8;
   border-color: #eae0d8;
@@ -1502,13 +1502,13 @@ main:focus {
   align-items: flex-start;
 }
 .small .task-title {
-  font-size: 11px;
+  font-size: 12px;
 }
 .small .task-meta {
-  font-size: 8px;
+  font-size: 12px;
 }
 .small .task-date {
-  font-size: 8px;
+  font-size: 12px;
   margin-top: 3px;
 }
 .small .check-btn {
@@ -1533,12 +1533,12 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 10px;
+  font-size: 12px;
   margin-bottom: 15px;
 }
 .kanban-column > h2 .count-pill {
   margin-left: auto;
-  font-size: 9px;
+  font-size: 12px;
   min-height: 20px;
 }
 .kanban-column > h2 .course-dot {
@@ -1574,7 +1574,7 @@ main:focus {
 }
 .kanban-empty {
   padding: 15px 4px;
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   text-align: center;
 }
@@ -1589,7 +1589,7 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
   color: #746a7b;
 }
 .checkbox-label input {
@@ -1598,7 +1598,7 @@ main:focus {
   height: 14px;
 }
 .courses-toolbar .muted {
-  font-size: 10px;
+  font-size: 12px;
 }
 .course-grid {
   display: grid;
@@ -1656,7 +1656,7 @@ main:focus {
   min-height: 23px;
 }
 .course-open p {
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.8;
   color: #746a7b;
   margin-top: 8px;
@@ -1671,12 +1671,12 @@ main:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 18px;
 }
 .course-next {
-  font-size: 8px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1745,7 +1745,7 @@ main:focus {
   padding: 14px 0;
   border-bottom: 1px solid var(--line);
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
 }
 .simple-list > button:last-child {
   border: 0;
@@ -1786,7 +1786,7 @@ main:focus {
 }
 .calendar-controls select {
   max-width: 180px;
-  font-size: 10px;
+  font-size: 12px;
   padding: 7px;
 }
 .calendar-grid {
@@ -1804,7 +1804,7 @@ main:focus {
 .weekday-row > span {
   text-align: center;
   padding: 12px 5px;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
 }
 .calendar-cell {
@@ -1834,7 +1834,7 @@ main:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 12px;
   padding: 2px 4px;
   width: 100%;
   margin-bottom: 3px;
@@ -1865,7 +1865,7 @@ main:focus {
   display: block;
   padding: 4px;
   border-radius: 4px;
-  font-size: 8px;
+  font-size: 12px;
   line-height: 1.5;
   text-align: left;
   width: 100%;
@@ -1878,7 +1878,7 @@ main:focus {
   white-space: nowrap;
 }
 .calendar-event small {
-  font-size: 7px;
+  font-size: 12px;
 }
 .event-done > span {
   text-decoration: line-through;
@@ -1887,7 +1887,7 @@ main:focus {
 .calendar-day-details {
   margin-top: auto;
   align-self: flex-start;
-  font-size: 7px;
+  font-size: 12px;
   padding: 3px 2px;
   color: #746a7b;
   opacity: 0;
@@ -1935,7 +1935,7 @@ main:focus {
   border: 0;
 }
 .agenda-time {
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   min-width: 65px;
 }
@@ -1957,19 +1957,19 @@ main:focus {
   overflow-wrap: anywhere;
 }
 .agenda-content small {
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   display: block;
   margin-top: 4px;
 }
 .agenda-content p {
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 5px;
   overflow-wrap: anywhere;
 }
 .calendar-note {
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   padding: 0 22px 20px;
   line-height: 1.8;
@@ -1998,7 +1998,7 @@ main:focus {
   color: #7e6b90;
 }
 .storage-notice p {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.8;
   margin-top: 5px;
   max-width: 850px;
@@ -2012,10 +2012,10 @@ main:focus {
   border-bottom: 1px solid var(--line);
 }
 .setting-row strong {
-  font-size: 11px;
+  font-size: 12px;
 }
 .setting-row p {
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 5px;
 }
@@ -2072,10 +2072,10 @@ main:focus {
   margin-right: 12px;
 }
 .theme-preview strong {
-  font-size: 10px;
+  font-size: 12px;
 }
 .theme-preview p {
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 4px;
 }
@@ -2087,7 +2087,7 @@ main:focus {
 .backup-stats > span {
   display: flex;
   flex-direction: column;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   gap: 3px;
 }
@@ -2103,7 +2103,7 @@ main:focus {
   margin-bottom: 16px;
 }
 .form-help {
-  font-size: 10px;
+  font-size: 12px;
   color: #746a7b;
   line-height: 1.8;
   display: flex;
@@ -2130,7 +2130,7 @@ main:focus {
   padding: 9px 0;
   border-bottom: 1px solid var(--line);
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
 }
 .settings-course-list .course-icon {
   height: 31px;
@@ -2158,7 +2158,7 @@ main:focus {
   color: #746a7b;
 }
 .reset-zone p {
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.8;
   color: #746a7b;
   margin-top: 6px;
@@ -2167,7 +2167,7 @@ main:focus {
 .version-note {
   text-align: center;
   color: #746a7b;
-  font-size: 9px;
+  font-size: 12px;
   padding-top: 25px;
 }
 .modal {
@@ -2200,7 +2200,7 @@ main:focus {
   letter-spacing: -0.7px;
 }
 .modal-head .eyebrow {
-  font-size: 7px;
+  font-size: 12px;
   color: #746a7b;
 }
 .modal-head .icon-btn {
@@ -2216,13 +2216,13 @@ main:focus {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
   min-width: 0;
 }
 .editor-form label > .optional {
   display: contents;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   font-weight: 500;
 }
@@ -2289,7 +2289,7 @@ main:focus {
   border-radius: 9px;
 }
 .error-text {
-  font-size: 11px;
+  font-size: 12px;
   color: #ae6275;
   background: #f9e7e8;
   padding: 10px;
@@ -2368,7 +2368,7 @@ main:focus {
 }
 .add-options small {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
   color: #746a7b;
   margin-top: 5px;
 }
@@ -2432,7 +2432,7 @@ main:focus {
     --rdp-day_button-width: 34px;
   }
   .rdp-day_button {
-    font-size: 11px;
+    font-size: 12px;
   }
   .progress-ring {
     width: 145px;
@@ -2446,7 +2446,7 @@ main:focus {
     height: 57px;
   }
   .quick-grid > button {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 @media (max-width: 1250px) {
@@ -2471,7 +2471,7 @@ main:focus {
     letter-spacing: 1.4px;
   }
   .sidebar nav a {
-    font-size: 11px;
+    font-size: 12px;
     gap: 10px;
     padding: 13px 12px;
   }
@@ -2489,7 +2489,7 @@ main:focus {
     width: 190px;
   }
   .topbar-date {
-    font-size: 9px;
+    font-size: 12px;
   }
   .dashboard {
     gap: 14px;
@@ -2509,7 +2509,7 @@ main:focus {
     max-width: 85%;
   }
   .welcome p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .study-art {
     right: 1%;
@@ -2519,7 +2519,7 @@ main:focus {
   }
   .welcome-bottom {
     gap: 7px;
-    font-size: 7px;
+    font-size: 12px;
   }
   .card h2 {
     font-size: 13px;
@@ -2537,7 +2537,7 @@ main:focus {
     margin-top: 20px;
   }
   .progress-legend {
-    font-size: 7px;
+    font-size: 12px;
     gap: 6px;
   }
   .rdp-root {
@@ -2548,7 +2548,7 @@ main:focus {
     padding: 16px;
   }
   .timer-card h2 {
-    font-size: 11px;
+    font-size: 12px;
   }
   .timer-card .eyebrow {
     letter-spacing: 0.5px;
@@ -2563,11 +2563,11 @@ main:focus {
     gap: 9px;
   }
   .task-side .task-date {
-    font-size: 8px;
+    font-size: 12px;
   }
   .status-select {
     max-width: 94px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .collapsed {
     --sidebar: 82px;
@@ -2749,7 +2749,7 @@ main:focus {
     font-size: 27px;
   }
   .page-heading p:not(.eyebrow) {
-    font-size: 11px;
+    font-size: 12px;
   }
   .course-hero {
     flex-wrap: wrap;
@@ -2768,7 +2768,7 @@ main:focus {
     gap: 7px;
   }
   .detail-actions .btn {
-    font-size: 10px;
+    font-size: 12px;
     padding: 8px 11px;
   }
   .calendar-toolbar {
@@ -2840,7 +2840,7 @@ main:focus {
     height: 37px;
   }
   .sidebar .brand small {
-    font-size: 6px;
+    font-size: 12px;
     letter-spacing: 1.7px;
   }
   .sidebar nav a {
@@ -2889,7 +2889,7 @@ main:focus {
   }
   .topbar-title {
     gap: 6px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .topbar-actions {
     gap: 9px;
@@ -2906,19 +2906,19 @@ main:focus {
     display: block;
   }
   .topbar .input-with-icon input {
-    font-size: 11px;
+    font-size: 12px;
     padding: 10px 0;
   }
   .add-top {
     min-height: 34px;
     padding: 8px 10px;
-    font-size: 10px;
+    font-size: 12px;
     border-radius: 9px;
   }
   .profile-btn {
     width: 30px;
     height: 30px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .topbar-actions .global-search {
     display: block;
@@ -2995,12 +2995,12 @@ main:focus {
   }
 
   .welcome p {
-    font-size: 10px;
+    font-size: 12px;
     max-width: 235px;
     line-height: 1.8;
   }
   .welcome-bottom {
-    font-size: 7px;
+    font-size: 12px;
     gap: 7px;
     margin-top: 17px;
     max-width: 230px;
@@ -3047,7 +3047,7 @@ main:focus {
     font-size: 28px;
   }
   .big-number span {
-    font-size: 8px;
+    font-size: 12px;
   }
   .progress-ring {
     width: 110px;
@@ -3058,7 +3058,7 @@ main:focus {
   .progress-legend {
     flex-direction: column;
     gap: 3px;
-    font-size: 7px;
+    font-size: 12px;
   }
   .quick-card {
     grid-row: 4;
@@ -3073,7 +3073,7 @@ main:focus {
     border-radius: 13px;
   }
   .quick-grid > button {
-    font-size: 8px;
+    font-size: 12px;
   }
   .compact-calendar {
     grid-column: span 2;
@@ -3090,7 +3090,7 @@ main:focus {
     font-size: 12px;
   }
   .rdp-day_button {
-    font-size: 11px;
+    font-size: 12px;
   }
   .exams-card {
     grid-column: span 2;
@@ -3107,7 +3107,7 @@ main:focus {
     padding: 18px;
   }
   .plan-card p {
-    font-size: 9px;
+    font-size: 12px;
   }
   .dashboard-footer {
     margin-top: 5px;
@@ -3130,16 +3130,16 @@ main:focus {
     font-size: 26px;
   }
   .page-heading .eyebrow {
-    font-size: 7px;
+    font-size: 12px;
     letter-spacing: 1px;
   }
   .page-heading p:not(.eyebrow) {
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.8;
     max-width: 245px;
   }
   .page-heading > .btn {
-    font-size: 9px;
+    font-size: 12px;
     padding: 8px 10px;
     min-height: 34px;
     gap: 4px;
@@ -3157,11 +3157,11 @@ main:focus {
     gap: 2px;
   }
   .tabs > button {
-    font-size: 9px;
+    font-size: 12px;
     padding: 7px;
   }
   .segmented button {
-    font-size: 9px;
+    font-size: 12px;
     padding: 6px 7px;
   }
   .filters {
@@ -3172,31 +3172,31 @@ main:focus {
     flex-basis: 100%;
   }
   .filters select {
-    font-size: 9px;
+    font-size: 12px;
     max-width: calc(50% - 4px);
     flex: 1 0 calc(50% - 4px);
   }
   .results-count {
     padding: 8px 13px 12px;
-    font-size: 9px;
+    font-size: 12px;
   }
   .task-row {
     padding: 14px 13px;
   }
   .task-title {
-    font-size: 11px;
+    font-size: 12px;
   }
   .task-meta {
-    font-size: 8px;
+    font-size: 12px;
   }
   .task-workspace .task-side {
     gap: 6px;
   }
   .task-workspace .task-side .task-date {
-    font-size: 8px;
+    font-size: 12px;
   }
   .task-workspace .task-row .status-select {
-    font-size: 8px;
+    font-size: 12px;
     max-width: 95px;
   }
   .task-workspace .task-row .row-actions {
@@ -3207,7 +3207,7 @@ main:focus {
     height: 26px;
   }
   .task-workspace .task-row .badge {
-    font-size: 7px;
+    font-size: 12px;
   }
   .kanban {
     padding: 0 13px 13px;
@@ -3235,7 +3235,7 @@ main:focus {
     margin-bottom: 16px;
   }
   .courses-toolbar .muted {
-    font-size: 9px;
+    font-size: 12px;
   }
   .course-hero {
     padding: 19px;
@@ -3253,18 +3253,18 @@ main:focus {
     font-size: 22px;
   }
   .course-hero .eyebrow {
-    font-size: 6px;
+    font-size: 12px;
     letter-spacing: 1px;
   }
   .course-hero > div {
     flex-basis: calc(100% - 65px);
   }
   .course-description {
-    font-size: 10px;
+    font-size: 12px;
   }
   .course-hero > .btn {
     margin-left: 61px;
-    font-size: 10px;
+    font-size: 12px;
     padding: 7px 12px;
     min-height: 32px;
   }
@@ -3294,7 +3294,7 @@ main:focus {
     gap: 8px;
   }
   .calendar-controls select {
-    font-size: 9px;
+    font-size: 12px;
     max-width: 170px;
     width: 49%;
   }
@@ -3311,7 +3311,7 @@ main:focus {
     font-size: 12px;
   }
   .selected-heading .btn {
-    font-size: 9px;
+    font-size: 12px;
   }
   .calendar-agenda > article {
     gap: 7px;
@@ -3319,20 +3319,20 @@ main:focus {
   }
   .agenda-time {
     min-width: 54px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .agenda-content strong {
-    font-size: 11px;
+    font-size: 12px;
   }
   .agenda-content small {
-    font-size: 8px;
+    font-size: 12px;
   }
   .calendar-agenda .icon-btn {
     width: 26px;
     height: 26px;
   }
   .calendar-note {
-    font-size: 8px;
+    font-size: 12px;
     padding: 0 16px 16px;
   }
   .settings-grid {
@@ -3343,10 +3343,10 @@ main:focus {
     gap: 11px;
   }
   .storage-notice strong {
-    font-size: 10px;
+    font-size: 12px;
   }
   .storage-notice p {
-    font-size: 9px;
+    font-size: 12px;
   }
   .storage-notice > svg {
     width: 20px;
@@ -3355,20 +3355,20 @@ main:focus {
     gap: 30px;
   }
   .backup-actions > .btn {
-    font-size: 10px;
+    font-size: 12px;
     padding: 10px 12px;
   }
   .theme-preview strong {
-    font-size: 9px;
+    font-size: 12px;
   }
   .reset-zone {
     padding: 19px;
   }
   .reset-zone p {
-    font-size: 9px;
+    font-size: 12px;
   }
   .settings-page .card > .muted {
-    font-size: 11px;
+    font-size: 12px;
   }
   .modal {
     padding: 21px;
@@ -3394,16 +3394,16 @@ main:focus {
     padding: 9px;
   }
   .editor-form label {
-    font-size: 11px;
+    font-size: 12px;
   }
   .form-help {
-    font-size: 9px;
+    font-size: 12px;
   }
   .modal-footer .btn {
-    font-size: 11px;
+    font-size: 12px;
   }
   .toast {
-    font-size: 11px;
+    font-size: 12px;
     width: max-content;
   }
   .app-footer {
@@ -3412,7 +3412,7 @@ main:focus {
     gap: 7px;
   }
   .app-footer small {
-    font-size: 6px;
+    font-size: 12px;
     letter-spacing: 1px;
   }
 }
@@ -3434,7 +3434,7 @@ main:focus {
 .course-open p,
 .page-heading p:not(.eyebrow),
 .task-description {
-  font-size: 11px;
+  font-size: 12px;
 }
 .calendar-note,
 .form-help {
@@ -3456,7 +3456,7 @@ main:focus {
 .sidebar-note p {
   margin: 0;
   color: #294e71;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
 }
 .progress-ring strong {

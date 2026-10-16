@@ -34,11 +34,22 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 const heldLocks = new Set<string>();
-Object.defineProperty(navigator, "locks", { configurable: true, value: {
-  request: async (name: string, _options: unknown, callback: (lock: object | null) => Promise<void>) => {
-    await Promise.resolve();
-    if (heldLocks.has(name)) return callback(null);
-    heldLocks.add(name);
-    try { await callback({ name }); } finally { heldLocks.delete(name); }
+Object.defineProperty(navigator, "locks", {
+  configurable: true,
+  value: {
+    request: async (
+      name: string,
+      _options: unknown,
+      callback: (lock: object | null) => Promise<void>,
+    ) => {
+      await Promise.resolve();
+      if (heldLocks.has(name)) return callback(null);
+      heldLocks.add(name);
+      try {
+        await callback({ name });
+      } finally {
+        heldLocks.delete(name);
+      }
+    },
   },
-}});
+});

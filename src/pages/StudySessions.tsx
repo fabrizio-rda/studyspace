@@ -39,6 +39,7 @@ export default function StudySessions() {
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState("pending");
   const [courseFilter, setCourseFilter] = useState("");
+  const [historyPage, setHistoryPage] = useState(0);
   const timer = data.activeTimer;
   const today = todayIn(data.settings.timezone);
   const week = weekStart(today);
@@ -54,6 +55,10 @@ export default function StudySessions() {
   const topics = courseTopics(data, courseId || null);
   const records = data.studyLogs.filter(
     (l) => !courseFilter || l.courseId === courseFilter,
+  );
+  const historyIndex = Math.min(
+    historyPage,
+    Math.max(0, Math.ceil(records.length / 30) - 1),
   );
   const todayMinutes = data.studyLogs
     .filter((l) => l.date === today)
@@ -125,7 +130,7 @@ export default function StudySessions() {
       </div>
       <div className="timer-layout">
         <Card
-          title={timer ? "Temporizador activo" : "Iniciar sesión"}
+          title={timer ? "Temporizador activo" : "Nueva sesión de estudio"}
           className="timer-panel"
         >
           <div className="timer-mode-label">
@@ -386,7 +391,10 @@ export default function StudySessions() {
           <select
             aria-label="Curso de sesiones"
             value={courseFilter}
-            onChange={(e) => setCourseFilter(e.target.value)}
+            onChange={(e) => {
+              setCourseFilter(e.target.value);
+              setHistoryPage(0);
+            }}
           >
             <option value="">Todos los cursos</option>
             {data.courses.map((c) => (
@@ -407,7 +415,10 @@ export default function StudySessions() {
             <button
               key={k}
               className={tab === k ? "active" : ""}
-              onClick={() => setTab(k)}
+              onClick={() => {
+                setTab(k);
+                setHistoryPage(0);
+              }}
             >
               {v}
             </button>
@@ -418,6 +429,7 @@ export default function StudySessions() {
             <div className="study-history">
               {[...records]
                 .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                .slice(historyIndex * 30, (historyIndex + 1) * 30)
                 .map((l) => (
                   <article key={l.id}>
                     <strong>{l.topicName}</strong>
@@ -434,6 +446,27 @@ export default function StudySessions() {
                     {l.notes && <p>{l.notes}</p>}
                   </article>
                 ))}
+              {records.length > 30 && (
+                <nav className="pagination" aria-label="Páginas de registros">
+                  <button
+                    className="btn soft"
+                    disabled={historyIndex === 0}
+                    onClick={() => setHistoryPage(historyIndex - 1)}
+                  >
+                    Anterior
+                  </button>
+                  <span>
+                    {historyIndex + 1} de {Math.ceil(records.length / 30)}
+                  </span>
+                  <button
+                    className="btn soft"
+                    disabled={(historyIndex + 1) * 30 >= records.length}
+                    onClick={() => setHistoryPage(historyIndex + 1)}
+                  >
+                    Siguiente
+                  </button>
+                </nav>
+              )}
             </div>
           ) : (
             <Empty title="No hay tiempo de estudio registrado" />

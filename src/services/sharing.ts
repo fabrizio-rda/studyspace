@@ -124,26 +124,23 @@ export async function sharingStatus() {
   return sharingStatusSchema.parse(data);
 }
 export async function inviteCalendar(email: string) {
-  const { data, error } = await cloudRpc(
-    "studyspace_calendar_invite",
-    { p_email: email.trim() },
-  );
+  const { data, error } = await cloudRpc("studyspace_calendar_invite", {
+    p_email: email.trim(),
+  });
   fail(error);
   return z.object({ id: z.string().uuid() }).parse(data);
 }
 export async function acceptCalendar(id: string) {
-  const { data, error } = await cloudRpc(
-    "studyspace_calendar_accept",
-    { p_invite_id: id },
-  );
+  const { data, error } = await cloudRpc("studyspace_calendar_accept", {
+    p_invite_id: id,
+  });
   fail(error);
   return sharingStatusSchema.parse(data);
 }
 export async function cancelCalendar(id: string) {
-  const { data, error } = await cloudRpc(
-    "studyspace_calendar_cancel",
-    { p_invite_id: id },
-  );
+  const { data, error } = await cloudRpc("studyspace_calendar_cancel", {
+    p_invite_id: id,
+  });
   fail(error);
   return sharingStatusSchema.parse(data);
 }

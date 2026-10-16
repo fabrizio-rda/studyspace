@@ -87,6 +87,17 @@ export function classroomDeadline(work: CourseWork, tz: string) {
     time: work.dueTime ? `${p("hour")}:${p("minute")}` : "",
   };
 }
+export function materialId(course: string, work: string, identity: string) {
+  // FNV-1a 128-bit is a bounded, stable deduplication key, not an auth token.
+  let hash = 0x6c62272e07bb014262b821756295c58dn;
+  for (const byte of new TextEncoder().encode(
+    JSON.stringify([course, work, identity]),
+  ))
+    hash =
+      ((hash ^ BigInt(byte)) * 0x1000000000000000000013bn) &
+      ((1n << 128n) - 1n);
+  return `material:${hash.toString(16).padStart(32, "0")}`;
+}
 export function mergeClassroom(
   data: AppState,
   course: string,
@@ -178,7 +189,26 @@ export function mergeClassroom(
             : (m.link?.url ?? m.youtubeVideo?.alternateLink ?? "")),
       );
       if (!url) continue;
-      const externalId = `${course}:${work.id}:${index}`.slice(0, 300);
+      // Stable source identity; never bind a reference to its array position.
+      // Full IDs are retained so long identifiers cannot collide by truncation.
+      const identity = f?.id ? `drive:${f.id}` : `url:${url}`;
+      const externalId = materialId(course, work.id, identity);
+      const legacyId = `${course}:${work.id}:${index}`.slice(0, 300);
+      const legacy = data.documents.find(
+        (d) =>
+          d.source === "classroom" &&
+          d.externalId === legacyId &&
+          d.url === url,
+      );
+      // Also recognize a legacy material moved to another index by its URL.
+      const moved = data.documents.find(
+        (d) =>
+          d.source === "classroom" &&
+          d.externalId?.startsWith(`${course}:${work.id}:`) &&
+          d.url === url,
+      );
+      const existing = legacy ?? moved;
+      if (existing) existing.externalId = externalId;
       const previous = data.documents.find(
         (d) => d.source === "classroom" && d.externalId === externalId,
       );

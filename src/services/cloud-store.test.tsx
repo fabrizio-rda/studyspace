@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { StoreProvider, useStore } from "./store";
 import { initialState } from "../models/schema";
+import { accountState } from "./accounts";
 import { STORAGE_KEY, saveState } from "./storage";
 import {
   cloudClient,
@@ -16,7 +17,10 @@ vi.mock("./cloud", async (importOriginal) => ({
   readCloud: vi.fn(),
   writeCloud: vi.fn(),
 }));
-let authEvent: (event: string, session: { user: typeof account } | null) => void;
+let authEvent: (
+  event: string,
+  session: { user: typeof account } | null,
+) => void;
 const account = { id: "owner-a", email: "owner@example.com" };
 const state = () => {
   const d = initialState();
@@ -34,7 +38,10 @@ beforeEach(() => {
   );
   vi.mocked(cloudClient).mockReturnValue({
     auth: {
-      onAuthStateChange: vi.fn(callback => { authEvent = callback; return {data:{subscription:{unsubscribe: vi.fn()}}}; }),
+      onAuthStateChange: vi.fn((callback) => {
+        authEvent = callback;
+        return { data: { subscription: { unsubscribe: vi.fn() } } };
+      }),
       signInWithOtp: vi.fn(async () => ({ error: null })),
       verifyOtp: vi.fn(async () => ({ data: { user: account }, error: null })),
       signOut: vi.fn(async () => ({ error: null })),
@@ -360,44 +367,109 @@ describe("Cuenta, sincronización y migración (API sustituida en pruebas)", () 
 
 describe("Fase 4: eventos, pestañas y operaciones tardías", () => {
   it("restaura INITIAL_SESSION y TOKEN_REFRESHED sin depender de SIGNED_IN", async () => {
-    vi.mocked(readCloud).mockResolvedValue({state: state(), revision: 1, mutation_id: "m"});
-    const {result}=mount();
-    await act(async()=>{authEvent("TOKEN_REFRESHED",{user:account}); await new Promise(r=>setTimeout(r,10));});
+    vi.mocked(readCloud).mockResolvedValue({
+      state: state(),
+      revision: 1,
+      mutation_id: "m",
+    });
+    const { result } = mount();
+    await act(async () => {
+      authEvent("TOKEN_REFRESHED", { user: account });
+      await new Promise((r) => setTimeout(r, 10));
+    });
     expect(result.current.cloud.user?.id).toBe(account.id);
     expect(result.current.data.settings.name).toBe("Nube");
-    const reads=vi.mocked(readCloud).mock.calls.length;
-    await act(async()=>authEvent("INITIAL_SESSION",{user:account}));
+    const reads = vi.mocked(readCloud).mock.calls.length;
+    await act(async () => authEvent("INITIAL_SESSION", { user: account }));
     expect(readCloud).toHaveBeenCalledTimes(reads);
   });
-  it("oculta de inmediato la identidad anterior y rechaza respuestas antiguas",async()=>{
+  it("oculta de inmediato la identidad anterior y rechaza respuestas antiguas", async () => {
     let resolve!: (v: Awaited<ReturnType<typeof readCloud>>) => void;
-    vi.mocked(readCloud).mockReturnValueOnce(new Promise(r=>{resolve=r}));
-    const {result}=mount();
-    act(()=>authEvent("SIGNED_IN",{user:account}));
-    await act(async()=>{await Promise.resolve()});
-    vi.mocked(readCloud).mockResolvedValue({state:{...state(),settings:{...state().settings,name:"Catalina"}},revision:1,mutation_id:"b"});
-    const other={id:"owner-b",email:"b@example.test"};
-    await act(async()=>{authEvent("SIGNED_IN",{user:other});await new Promise(r=>setTimeout(r,10));});
-    await act(async()=>resolve({state:state(),revision:1,mutation_id:"a"}));
+    vi.mocked(readCloud).mockReturnValueOnce(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
+    const { result } = mount();
+    act(() => authEvent("SIGNED_IN", { user: account }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    vi.mocked(readCloud).mockResolvedValue({
+      state: {
+        ...state(),
+        settings: { ...state().settings, name: "Catalina" },
+      },
+      revision: 1,
+      mutation_id: "b",
+    });
+    const other = { id: "owner-b", email: "b@example.test" };
+    await act(async () => {
+      authEvent("SIGNED_IN", { user: other });
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    await act(async () =>
+      resolve({ state: state(), revision: 1, mutation_id: "a" }),
+    );
     expect(result.current.cloud.user?.id).toBe("owner-b");
     expect(result.current.data.settings.name).toBe("Catalina");
-    await act(async()=>authEvent("SIGNED_OUT",null));
+    await act(async () => authEvent("SIGNED_OUT", null));
     expect(result.current.cloud.user).toBeNull();
     expect(result.current.data.settings.name).not.toBe("Catalina");
   });
-  it("una segunda pestaña no escribe ni reemplaza pendientes y toma el bloqueo al cerrar la primera",async()=>{
-    vi.mocked(readCloud).mockResolvedValue({state:state(),revision:1,mutation_id:"m"});
-    const a=mount(),b=mount();
-    await act(()=>a.result.current.verifyCode(account.email,"123456"));
-    act(()=>{a.result.current.commit(d=>{d.settings.name="Pendiente A"});});
-    const original=localStorage.getItem(cacheKey(account.id));
-    await act(()=>b.result.current.verifyCode(account.email,"123456"));
+  it("una segunda pestaña no escribe ni reemplaza pendientes y toma el bloqueo al cerrar la primera", async () => {
+    vi.mocked(readCloud).mockResolvedValue({
+      state: state(),
+      revision: 1,
+      mutation_id: "m",
+    });
+    const a = mount(),
+      b = mount();
+    await act(() => a.result.current.verifyCode(account.email, "123456"));
+    act(() => {
+      a.result.current.commit((d) => {
+        d.settings.name = "Pendiente A";
+      });
+    });
+    const original = localStorage.getItem(cacheKey(account.id));
+    await act(() => b.result.current.verifyCode(account.email, "123456"));
     expect(b.result.current.cloud.writable).toBe(false);
-    act(()=>expect(b.result.current.commit(d=>{d.settings.name="No"})).toBe(false));
+    act(() =>
+      expect(
+        b.result.current.commit((d) => {
+          d.settings.name = "No";
+        }),
+      ).toBe(false),
+    );
     expect(localStorage.getItem(cacheKey(account.id))).toBe(original);
-    await act(async()=>{ a.unmount(); await new Promise(r=>setTimeout(r,0)); });
-    await act(()=>b.result.current.syncNow());
+    await act(async () => {
+      a.unmount();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await act(() => b.result.current.syncNow());
     expect(b.result.current.cloud.writable).toBe(true);
     expect(b.result.current.data.settings.name).toBe("Pendiente A");
   });
+});
+
+it("restablece el perfil Catalina con diez cursos y Cambridge propio", async () => {
+  const remote = accountState("Catalina", "catalina");
+  vi.mocked(readCloud).mockResolvedValue({
+    state: remote,
+    revision: 1,
+    mutation_id: "c",
+  });
+  const { result } = mount();
+  await act(() => result.current.verifyCode(account.email, "123456"));
+  act(() => expect(result.current.reset()).toBe(true));
+  expect(result.current.data.settings.name).toBe("Catalina");
+  expect(result.current.data.courses).toHaveLength(10);
+  expect(
+    result.current.data.courses.filter(
+      (c) => c.name === "Cambridge C1 Advanced",
+    ),
+  ).toHaveLength(1);
+  expect(
+    result.current.data.courses.some((c) => c.name.includes("Physics")),
+  ).toBe(false);
 });
