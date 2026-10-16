@@ -1,3 +1,7 @@
+# StudySpace · Fase 4 (propuesta)
+
+La fase 4 se prepara en una rama y un pull request. No se publica hasta su revisión y autorización. [Cambios, pruebas y límites](docs/FASE4.md).
+
 # StudySpace · Fase 3 + cuentas independientes
 
 Espacios académicos privados con cuentas autenticadas independientes. Mismo repositorio y GitHub Pages; calendario combinado solo mediante invitación aceptada y visibilidad explícita.
@@ -25,7 +29,7 @@ El buscador global agrupa cursos, tareas, Classroom, actividades, temas, planes,
 
 ## Integraciones: implementación disponible, autorización externa pendiente
 
-**Supabase:** email OTP en memoria, caché por cuenta, importación local a cuenta vacía con IDs estables, respaldo y verificación de contenido/recuentos. RPC transaccional con revisión esperada y clave de reintento. Si otro dispositivo guardó una revisión más reciente, detiene el envío y conserva los cambios para exportar/revisar. No combina espacios automáticamente. Los datos de la cuenta no se muestran al cerrar sesión.
+**Supabase:** email OTP con sesión persistente, caché por cuenta, importación local a cuenta vacía con IDs estables, respaldo y verificación de contenido/recuentos. RPC transaccional con revisión esperada y clave de reintento. Si otro dispositivo guardó una revisión más reciente, detiene el envío y conserva los cambios para exportar/revisar. No combina espacios automáticamente. Los datos de la cuenta no se muestran al cerrar sesión.
 
 **Drive:** GIS, Picker y Drive API con `drive.file`, selección explícita y referencias de metadatos. No se copian contenidos privados ni se mueven/eliminan originales. Se abre el archivo original en otra pestaña; no se promete preview incrustado de archivos privados.
 
@@ -41,9 +45,9 @@ Entrar en nube no sustituye el espacio local original. La caché y los recibos d
 
 La migración SQL de fase 3 crea **16 tablas**, claves foráneas compuestas por propietario/ID, índices y RLS forzada. Los payloads JSONB conservan todos los campos versionados, con columnas de relación generadas e índices, tabla de unión de temas/planes y configuración separada. `auth.uid()` determina el propietario; las funciones son `security invoker`. El guardado reemplaza el grafo personal en una sola transacción y comprueba la revisión bajo bloqueo. No hay service_role en el frontend.
 
-La sesión Supabase y los tokens Google viven en memoria. No se guardan access/refresh tokens en localStorage ni en JSON. Las únicas claves configurables en la interfaz son públicas. Al cambiar de cuenta se descartan formularios/búsqueda y se desconecta Google; una importación asíncrona que empezó en otro espacio se rechaza.
+La sesión Supabase persiste en el navegador mediante el SDK y puede incluir access/refresh tokens en su almacenamiento de sesión. Los tokens de Google permanecen únicamente en memoria. Ninguna credencial se incluye en las exportaciones académicas JSON. Las únicas claves configurables en la interfaz son públicas. Al cambiar de cuenta se descartan formularios/búsqueda y se desconecta Google; una importación asíncrona que empezó en otro espacio se rechaza.
 
-Sin conexión puede consultarse la caché de la sesión ya autenticada y abierta. Editar en modo nube requiere conexión. Un guardado que pierde conexión queda persistido para reintento, conservando su revisión y operación. No existe edición offline, PWA, service worker ni auto-merge de conflictos. Recargar exige autenticarse de nuevo. En modo local siguen funcionando las herramientas sin Google. El temporizador se recupera pausado al consultar la nube en otro dispositivo.
+Sin conexión puede consultarse la caché de la sesión ya autenticada y abierta. Editar en modo nube requiere conexión. Un guardado que pierde conexión queda persistido para reintento, conservando su revisión y operación. No existe edición offline, PWA, service worker ni auto-merge de conflictos. Una sesión válida se recupera al recargar, incluido el caso de renovación del token. En modo local siguen funcionando las herramientas sin Google. El temporizador se recupera pausado al consultar la nube en otro dispositivo.
 
 ## Desarrollo y verificación
 

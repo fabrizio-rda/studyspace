@@ -74,8 +74,10 @@ export function SharingProvider({ children }: { children: ReactNode }) {
     const focus = () => {
       if (Date.now() - last.current > 1000) void refresh();
     };
+    const online = () => void refresh();
     const offline = () => {
       request.current++;
+      busy.current = false;
       setState({
         key: active,
         status: emptySharing,
@@ -85,13 +87,13 @@ export function SharingProvider({ children }: { children: ReactNode }) {
       });
     };
     window.addEventListener("focus", focus);
-    window.addEventListener("online", focus);
+    window.addEventListener("online", online);
     window.addEventListener("offline", offline);
     return () => {
       request.current++;
       clearInterval(tick);
       window.removeEventListener("focus", focus);
-      window.removeEventListener("online", focus);
+      window.removeEventListener("online", online);
       window.removeEventListener("offline", offline);
     };
   }, [active, workspaceToken]);
@@ -189,8 +191,10 @@ export function useSharedFeed(start: string, end: string) {
     const focus = () => {
       if (Date.now() - last.current > 1000) void refresh();
     };
+    const online = () => void refresh();
     const offline = () => {
       serial.current++;
+      busy.current = false;
       setState({
         key,
         events: [],
@@ -200,14 +204,14 @@ export function useSharedFeed(start: string, end: string) {
       });
     };
     window.addEventListener("focus", focus);
-    window.addEventListener("online", focus);
+    window.addEventListener("online", online);
     window.addEventListener("offline", offline);
     window.addEventListener("studyspace:calendar", focus);
     return () => {
       serial.current++;
       clearInterval(interval);
       window.removeEventListener("focus", focus);
-      window.removeEventListener("online", focus);
+      window.removeEventListener("online", online);
       window.removeEventListener("offline", offline);
       window.removeEventListener("studyspace:calendar", focus);
     };

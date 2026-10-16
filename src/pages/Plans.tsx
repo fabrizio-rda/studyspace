@@ -1,3 +1,5 @@
+import { mergeEdit } from "../services/editing";
+import { stateSchema } from "../models/schema";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -342,7 +344,8 @@ function PlanWizard({
     difficulties: Record<string, Topic["difficulty"]>,
   ) => void;
 }) {
-  const { data } = useStore();
+  const { data, keepEditConflict } = useStore();
+  const [baseline] = useState(() => structuredClone(data));
   const [step, setStep] = useState(0);
   const [name, setName] = useState(item?.name ?? "");
   const [goal, setGoal] = useState(item?.goal ?? "");
@@ -400,27 +403,49 @@ function PlanWizard({
       setError("Selecciona al menos un día con tiempo disponible.");
       return;
     }
-    onReview(
-      {
-        id: item?.id ?? crypto.randomUUID(),
-        name: name.trim(),
-        goal,
-        courseId: courseId || null,
-        startDate: start,
-        targetDate: target,
-        targetTaskId: targetTaskId || null,
-        deadlineWarning: "",
-        topicIds,
-        availability,
-        sessionMinutes: duration,
-        priority,
-        reviewPercent,
-        status: item?.status ?? "active",
-        createdAt: item?.createdAt ?? new Date().toISOString(),
-      },
-      difficulties,
-    );
+
+    const proposed: StudyPlan = {
+      id: item?.id ?? crypto.randomUUID(),
+      name: name.trim(),
+      goal,
+      courseId: courseId || null,
+      startDate: start,
+      targetDate: target,
+      targetTaskId: targetTaskId || null,
+      deadlineWarning: "",
+      topicIds,
+      availability,
+      sessionMinutes: duration,
+      priority,
+      reviewPercent,
+      status: item?.status ?? "active",
+      createdAt: item?.createdAt ?? new Date().toISOString(),
+    };
+    const mine = structuredClone(baseline);
+    const index = mine.plans.findIndex((p) => p.id === proposed.id);
+    if (index < 0) mine.plans.push(proposed);
+    else mine.plans[index] = proposed;
+    for (const topic of mine.topics)
+      if (difficulties[topic.id]) topic.difficulty = difficulties[topic.id];
+    try {
+      const merged = stateSchema.parse(mergeEdit(baseline, mine, data));
+      onReview(
+        merged.plans.find((p) => p.id === proposed.id)!,
+        Object.fromEntries(
+          Object.keys(difficulties).map((id) => [
+            id,
+            merged.topics.find((t) => t.id === id)!.difficulty,
+          ]),
+        ),
+      );
+    } catch {
+      keepEditConflict(baseline, mine, data);
+      setError(
+        "Hay cambios incompatibles. Exporta las versiones y revisa el plan actual antes de continuar.",
+      );
+    }
   }
+
   return (
     <Modal
       title={item ? "Editar plan de estudio" : "Crear plan de estudio"}

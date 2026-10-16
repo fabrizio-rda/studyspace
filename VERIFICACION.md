@@ -1,3 +1,47 @@
+# Verificación · Fase 4 (rama de revisión, sin publicar)
+
+Validación final acotada del PR #1: [casos, correcciones y pasos manuales](docs/VALIDACION-PR1.md).
+
+Resultados obtenidos sobre la propuesta de fase 4. Los registros de fases anteriores se conservan debajo como historial, no como descripción del estado actual.
+
+| Comprobación                | Resultado                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Instalación limpia `npm ci` | Aprobada                                                                                                     |
+| Árbol `npm ls --all`        | Aprobado, sin dependencias inválidas                                                                         |
+| `npm test`                  | 119/119 pruebas, 18 archivos                                                                                 |
+| `npm run test:database`     | 14 comprobaciones académicas + 66 de calendario, PGlite aislado                                              |
+| `npx tsc --noEmit`          | Aprobada                                                                                                     |
+| `npm run build`             | Aprobada                                                                                                     |
+| `npm run preview:html`      | Aprobada, HTML autónomo de revisión                                                                          |
+| `npm run test:production`   | Aprobada: iconos, tamaños, manifiesto, rutas bajo `/studyspace/`, ocho secciones y vista compartida en JSDOM |
+| `npm audit`                 | 0 vulnerabilidades reportadas                                                                                |
+| `npm audit --omit=dev`      | 0 vulnerabilidades reportadas                                                                                |
+| `git diff --check`          | Aprobada                                                                                                     |
+
+Regresiones permanentes: renovación y recuperación de sesión, cambio de UUID, respuestas antiguas, sujeto firmado de JWT, credencial fijada y cancelación de RPC, dos pestañas y recuperación del bloqueo, formularios concurrentes, conexión perdida durante consultas compartidas, reorganización de materiales, perfil Catalina, límites de fechas, paneles de tareas, paginación y reintento de carga de páginas.
+
+JavaScript inicial: 793.94 kB / 232.29 kB gzip frente a 996.10 kB / 292.02 kB gzip de la versión auditada (aproximadamente 20 % menos). Es el archivo inicial, no la suma de todos los módulos. CSS: 91.25 kB / 19.10 kB gzip. Los módulos secundarios se descargan al visitar sus páginas.
+
+Advertencias que permanecen:
+
+- Vite: `Some chunks are larger than 650 kB after minification.` El archivo inicial continúa sobre ese umbral; no se elevó el umbral para ocultarlo.
+- `whatwg-encoding@3.1.1` aparece deprecado como dependencia de desarrollo de JSDOM. No produjo fallos y no forma parte de la aplicación publicada.
+- El entorno de ejecución emite `Unknown env config "http-proxy"`. Es configuración del entorno, no una variable añadida al proyecto.
+
+Vitest se actualizó de 3.2.7 a 4.1.11 compatible con Node 22. Se retiró Framer Motion después de reemplazar la única transición que lo utilizaba por CSS. Se reconciliaron las versiones declaradas de dos entradas del lock con sus tarballs originales verificados (`jsesc` y `@csstools/css-color-parser`), sin alterar sus URL ni integridad; una nueva instalación limpia y `npm ls --all` confirmaron un árbol válido.
+
+## Límites de verificación
+
+No se realizaron escrituras en Supabase de producción, cambios SQL/RLS, cuentas nuevas, invitaciones reales, autorizaciones escolares ni pruebas físicas entre dispositivos. El esquema académico sigue siendo 3. Las pruebas SQL no son cuentas reales y JSDOM no valida diseño visual.
+
+La previsualización administrada requiere una habilidad de control de navegador que no está disponible en este entorno. Quedan pendientes capturas comparativas, revisión visual a 390/320 px y escritorio, y comprobación del favicon en una pestaña. No se afirma validación en un teléfono físico ni lector de pantalla. Revisar esos puntos antes de autorizar merge y publicación.
+
+La disponibilidad del favicon en Google depende del rastreo y de la regla por hostname; no está garantizada. Ver docs/FASE4.md.
+
+---
+
+# Registro histórico de fases anteriores
+
 # Verificación — StudySpace 3.1, cuentas y calendario compartido
 
 15 de octubre de 2026. Mismo repositorio y URL de GitHub Pages.

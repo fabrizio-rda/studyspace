@@ -251,3 +251,26 @@ describe("Esquema 3, Biblioteca y Classroom", () => {
     expect(localStorage.getItem("studyspace:public-config:v1")).toBeNull();
   });
 });
+
+it("materiales mantienen identidad, nombre, carpeta y enlace al reorganizarlos, también desde IDs antiguos", () => {
+  const d = linked();
+  const a = { link: { url: "https://example.com/a", title: "Material A" } },
+    b = { link: { url: "https://example.com/b", title: "Material B" } };
+  mergeClassroom(d, work.courseId, [
+    { work: { ...work, materials: [a, b] }, submissionState: "NEW" },
+  ]);
+  const before = structuredClone(d.documents);
+  d.documents[0].externalId = `${work.courseId}:${work.id}:0`;
+  d.documents[1].externalId = `${work.courseId}:${work.id}:1`;
+  mergeClassroom(d, work.courseId, [
+    { work: { ...work, materials: [b, a] }, submissionState: "NEW" },
+  ]);
+  expect(d.documents).toHaveLength(2);
+  for (const doc of before) {
+    const after = d.documents.find((x) => x.id === doc.id)!;
+    expect(after.name).toBe(doc.name);
+    expect(after.url).toBe(doc.url);
+    expect(after.externalId).toMatch(/^material:/);
+  }
+  expect(stateSchema.safeParse(d).success).toBe(true);
+});

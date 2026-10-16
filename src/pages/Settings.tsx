@@ -1,3 +1,4 @@
+import { useFormStore } from "../services/form-store";
 import SharingSettings from "../components/SharingSettings";
 import Integrations from "../components/Integrations";
 import StudyPreferences from "../components/StudyPreferences";
@@ -32,8 +33,12 @@ export default function Settings() {
     notify,
     updateSettings,
     replace,
+    workspaceToken,
     reset,
   } = useStore();
+  const activeWorkspace = useRef(workspaceToken);
+  activeWorkspace.current = workspaceToken;
+  const form = useFormStore();
   const open = useEditor();
   const [name, setName] = useState(data.settings.name);
   const [timezone, setTimezone] = useState(data.settings.timezone);
@@ -49,7 +54,10 @@ export default function Settings() {
       return;
     }
     setError("");
-    updateSettings({ name: name.trim(), timezone });
+    form.commit((d) => {
+      d.settings.name = name.trim();
+      d.settings.timezone = timezone;
+    }, "Preferencias guardadas");
   }
   async function importFile(input: HTMLInputElement) {
     const f = input.files?.[0];
@@ -58,7 +66,10 @@ export default function Settings() {
     try {
       if (f.size > 20_000_000)
         throw new Error("El archivo supera el límite de 20 MB.");
+      const workspace = form.workspaceToken;
       const parsed = parseBackup(await f.text());
+      if (workspace !== activeWorkspace.current)
+        throw new Error("La cuenta cambió durante la lectura.");
       if (
         window.confirm(
           `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos del espacio activo (nube si has iniciado sesión). Las actividades importadas se marcarán privadas; podrás compartirlas después. Exporta una copia antes. ¿Continuar?`,
@@ -71,7 +82,7 @@ export default function Settings() {
         ])
           item.visibility = "private";
         parsed.settings.calendarDefaultVisibility = "private";
-        if (replace(parsed)) {
+        if (replace(parsed, workspace)) {
           setName(parsed.settings.name);
           setTimezone(parsed.settings.timezone);
         }
@@ -88,12 +99,49 @@ export default function Settings() {
       <div className="page-heading">
         <div>
           <h1>Configuración</h1>
-          <p>Pequeños ajustes para estudiar a tu manera.</p>
+          <p>Cuenta, estudio y copias de seguridad.</p>
         </div>
         <span className="settings-mark">
           <ShieldCheck size={30} />
         </span>
       </div>
+      <nav
+        className="settings-navigation"
+        aria-label="Secciones de configuración"
+      >
+        <button
+          className="btn soft"
+          onClick={() =>
+            document.getElementById("integraciones")?.scrollIntoView()
+          }
+        >
+          Cuenta
+        </button>
+        <button
+          className="btn soft"
+          onClick={() => {
+            const e = document.getElementById("estudio") as HTMLDetailsElement;
+            e.open = true;
+            e.scrollIntoView();
+          }}
+        >
+          Estudio
+        </button>
+        <button
+          className="btn soft"
+          onClick={() => document.getElementById("perfil")?.scrollIntoView()}
+        >
+          Perfil
+        </button>
+        <button
+          className="btn soft"
+          onClick={() =>
+            document.querySelector(".backup-card")?.scrollIntoView()
+          }
+        >
+          Copias
+        </button>
+      </nav>
       <div className="storage-notice">
         <HardDrive size={24} />
         <div>
@@ -111,9 +159,12 @@ export default function Settings() {
       </div>
       <Integrations />
       <SharingSettings />
-      <StudyPreferences key={JSON.stringify(data.studyPreferences)} />
-      <div className="settings-grid">
-        <Card title="Perfil y zona horaria">
+      <details id="estudio">
+        <summary>Disponibilidad, Pomodoro y repasos</summary>
+        <StudyPreferences />
+      </details>
+      <div className="settings-grid" id="perfil">
+        <Card title="Perfil y zona horaria" className="profile-settings">
           <form onSubmit={save} className="editor-form">
             <label>
               Nombre mostrado
@@ -317,36 +368,41 @@ export default function Settings() {
           </div>
         </Card>
       </div>
-      <section className="reset-zone">
-        <div>
-          <h2>Volver a empezar</h2>
-          <p>
-            Elimina tus tareas, actividades, temarios, planes, sesiones,
-            repasos, carpetas, referencias de documentos y Classroom y cursos
-            personalizados. Restaura los once cursos iniciales y las
-            preferencias predeterminadas.
-          </p>
-        </div>
-        <button
-          className="btn danger"
-          onClick={() => {
-            if (
-              window.confirm(
-                "¿Restablecer TODOS los datos del espacio activo de StudySpace? Si estás en modo nube, también reemplaza sus datos. Se eliminarán todas las tareas, actividades, temarios, planes, sesiones, repasos, carpetas, referencias de documentos, Classroom y personalizaciones. Exporta una copia antes. Esta acción no se puede deshacer.",
-              )
-            ) {
-              if (reset()) {
-                setName("Fabrizio");
-                setTimezone("America/Lima");
+      <details className="reset-advanced">
+        <summary>Opciones avanzadas · restablecimiento</summary>
+        <section className="reset-zone">
+          <div>
+            <h2>Volver a empezar</h2>
+            <p>
+              Elimina tus tareas, actividades, temarios, planes, sesiones,
+              repasos, carpetas, referencias de documentos y Classroom y cursos
+              personalizados. Restaura los cursos iniciales de tu perfil y las
+              preferencias predeterminadas.
+            </p>
+          </div>
+          <button
+            className="btn danger"
+            onClick={() => {
+              if (
+                window.confirm(
+                  "¿Restablecer TODOS los datos del espacio activo de StudySpace? Si estás en modo nube, también reemplaza sus datos. Se eliminarán todas las tareas, actividades, temarios, planes, sesiones, repasos, carpetas, referencias de documentos, Classroom y personalizaciones. Exporta una copia antes. Esta acción no se puede deshacer.",
+                )
+              ) {
+                if (reset()) {
+                  setName(
+                    cloud.mode === "cloud" ? data.settings.name : "Fabrizio",
+                  );
+                  setTimezone("America/Lima");
+                }
               }
-            }
-          }}
-        >
-          <RotateCcw size={16} />
-          Restablecer datos
-        </button>
-      </section>
-      <p className="version-note">StudySpace 3.1</p>
+            }}
+          >
+            <RotateCcw size={16} />
+            Restablecer datos
+          </button>
+        </section>
+      </details>
+      <p className="version-note">StudySpace 4</p>
     </div>
   );
 }

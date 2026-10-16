@@ -1,0 +1,222 @@
+/* Phase 4: extend the existing layout without replacing its visual system. */
+.muted,
+.form-help,
+.task-meta,
+.task-date,
+.sync-indicator,
+.app-footer {
+  color: #655e6c;
+}
+.sidebar {
+  overflow-y: auto;
+}
+.nav-eyebrow {
+  letter-spacing: 1px;
+}
+.upcoming-card {
+  justify-content: flex-start;
+}
+.upcoming-group + .upcoming-group {
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 16px;
+}
+.upcoming-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.upcoming-heading h3 {
+  margin-right: auto;
+  font-size: 16px;
+}
+.upcoming-heading > span {
+  font-size: 12px;
+  color: #655e6c;
+}
+.task-group-date,
+.compact-empty {
+  font-size: 12px;
+  color: #655e6c;
+  margin: 6px 0 10px;
+}
+.compact-empty {
+  padding: 10px 0;
+}
+.upcoming-card .task-row {
+  min-width: 0;
+}
+.upcoming-card .task-title {
+  overflow-wrap: anywhere;
+}
+.weekly-tasks {
+  grid-column: 1/-1;
+}
+.weekly-task-scroll {
+  max-height: 350px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.weekly-task-scroll section + section {
+  margin-top: 14px;
+}
+.weekly-task-scroll h3 {
+  text-transform: capitalize;
+  font-size: 13px;
+  color: #655e6c;
+}
+.weekly-tasks .btn {
+  margin-top: 12px;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.settings-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+.settings-navigation a {
+  color: #315b91;
+  background: #dfebf5;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.settings-page details > summary {
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 650;
+  padding: 14px 0;
+}
+.settings-page details[open] > summary {
+  margin-bottom: 12px;
+}
+.settings-page #perfil,
+.settings-page #estudio,
+.settings-page #copias,
+.settings-page #calendario-compartido {
+  scroll-margin-top: 24px;
+}
+.route-loading {
+  padding: 32px;
+  font-size: 14px;
+  color: #655e6c;
+}
+.modal {
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+}
+.modal-footer {
+  flex-wrap: wrap;
+}
+.modal p {
+  overflow-wrap: anywhere;
+}
+.global-search {
+  min-width: 0;
+}
+.global-search input {
+  min-width: 0;
+  width: 100%;
+}
+.card,
+.page,
+.main-wrapper {
+  min-width: 0;
+}
+@media (max-width: 850px) {
+  .weekly-tasks {
+    grid-column: 1/-1;
+    grid-row: auto;
+  }
+}
+@media (max-width: 600px) {
+  .btn,
+  .icon-btn,
+  .check-btn,
+  .text-btn {
+    min-height: 44px;
+  }
+  .icon-btn,
+  .check-btn {
+    min-width: 44px;
+  }
+  .sidebar nav a {
+    min-height: 44px;
+  }
+  .sidebar:not(.mobile-open) {
+    visibility: hidden;
+  }
+  .sidebar.mobile-open {
+    visibility: visible;
+  }
+  .today-card {
+    min-height: 0;
+  }
+  .upcoming-card .task-row {
+    flex-wrap: wrap;
+  }
+  .upcoming-card .task-side {
+    margin-left: auto;
+  }
+  .weekly-tasks {
+    grid-column: 1/-1;
+  }
+  .weekly-task-scroll {
+    max-height: 360px;
+  }
+  .modal {
+    padding: 20px 16px;
+  }
+  .modal .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-footer .btn {
+    flex: 1 1 140px;
+  }
+  .rdp-root {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .task-toolbar,
+  .filters,
+  .calendar-toolbar {
+    flex-wrap: wrap;
+  }
+  .calendar-workspace {
+    max-width: 100%;
+  }
+  .calendar-grid {
+    overflow-wrap: anywhere;
+  }
+  .sidebar-note {
+    display: none !important;
+  }
+}
+
+.route-content {
+  animation: route-enter 0.16s ease-out;
+}
+@keyframes route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-content {
+    animation: none;
+  }
+}

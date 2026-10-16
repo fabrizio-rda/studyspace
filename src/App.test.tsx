@@ -19,6 +19,10 @@ async function route(path: string) {
   });
   await act(pause);
   await act(pause);
+  await waitFor(() =>
+    expect(document.querySelector(".route-loading")).toBeNull(),
+  );
+  await waitFor(() => expect(document.querySelector("main h1")).toBeTruthy());
   await waitFor(() => expect(document.querySelector("main")).toBeTruthy());
 }
 async function createTask(

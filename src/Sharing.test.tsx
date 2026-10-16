@@ -1,8 +1,19 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within, act } from "@testing-library/react";
+import {
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+  act,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { SharingProvider } from "./services/sharing-context";
+import {
+  SharingProvider,
+  useSharing,
+  useSharedFeed,
+} from "./services/sharing-context";
 import SharedCalendar from "./components/SharedCalendar";
 import SharingSettings from "./components/SharingSettings";
 import AccountSetup from "./components/AccountSetup";
@@ -325,4 +336,82 @@ describe("Calendario e invitaciones con backend controlado", () => {
       screen.getByRole("link", { name: "Configurar calendario compartido" }),
     ).toBeInTheDocument();
   });
+});
+
+it("recupera estado y feed después de desconectar durante solicitudes pendientes", async () => {
+  let resolveStatus!: (v: SharingStatus) => void;
+  vi.mocked(sharingStatus).mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolveStatus = r;
+      }),
+  );
+  const first = renderHook(() => useSharing(), { wrapper: Wrapper });
+  act(() => window.dispatchEvent(new Event("offline")));
+  await act(async () => resolveStatus(status));
+  await act(() => first.result.current.refresh());
+  expect(first.result.current.status.connection?.id).toBe(link);
+  first.unmount();
+  let resolveFeed!: (v: { connected: boolean; events: SharedEvent[] }) => void;
+  vi.mocked(calendarFeed).mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolveFeed = r;
+      }),
+  );
+  const second = renderHook(() => useSharedFeed("2026-10-01", "2026-10-31"), {
+    wrapper: Wrapper,
+  });
+  await waitFor(() => expect(second.result.current.loading).toBe(true));
+  act(() => window.dispatchEvent(new Event("offline")));
+  await act(async () => resolveFeed({ connected: true, events }));
+  await act(async () => window.dispatchEvent(new Event("online")));
+  await waitFor(() => expect(second.result.current.events.length).toBe(3));
+});
+
+it("no encadena cargas de estado/feed tras reconectar y mantiene el intervalo de 30 segundos", async () => {
+  vi.mocked(sharingStatus).mockClear();
+  vi.mocked(calendarFeed).mockClear();
+  vi.useFakeTimers();
+  const flush = async () => {
+    for (let i = 0; i < 15; i++) await Promise.resolve();
+  };
+  try {
+    const a = renderHook(() => useSharedFeed("2026-10-01", "2026-10-31"), {
+      wrapper: Wrapper,
+    });
+    await act(flush);
+    expect(sharingStatus).toHaveBeenCalledTimes(1);
+    expect(calendarFeed).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      window.dispatchEvent(new Event("offline"));
+      await flush();
+    });
+    await act(async () => {
+      for (let i = 0; i < 20; i++) window.dispatchEvent(new Event("online"));
+      await flush();
+    });
+    expect(a.result.current.events).toHaveLength(3);
+    expect(a.result.current.loading).toBe(false);
+    expect(sharingStatus).toHaveBeenCalledTimes(2);
+    expect(calendarFeed).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(29999);
+    });
+    expect(sharingStatus).toHaveBeenCalledTimes(2);
+    expect(calendarFeed).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(sharingStatus).toHaveBeenCalledTimes(3);
+    expect(calendarFeed).toHaveBeenCalledTimes(3);
+    a.unmount();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+    expect(sharingStatus).toHaveBeenCalledTimes(3);
+    expect(calendarFeed).toHaveBeenCalledTimes(3);
+  } finally {
+    vi.useRealTimers();
+  }
 });

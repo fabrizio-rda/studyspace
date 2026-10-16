@@ -27,6 +27,10 @@ async function route(path: string) {
   });
   await act(pause);
   await act(pause);
+  await waitFor(() =>
+    expect(document.querySelector(".route-loading")).toBeNull(),
+  );
+  await waitFor(() => expect(document.querySelector("main h1")).toBeTruthy());
 }
 function fixture() {
   const d = initialState();
@@ -75,7 +79,7 @@ describe("Fase 2: recorridos de estudio", () => {
     const u = userEvent.setup();
     const app = render(<App />);
     await route("/cursos/course-1");
-    await u.click(screen.getByRole("tab", { name: "Temario" }));
+    await u.click(await screen.findByRole("tab", { name: "Temario" }));
     await u.click(screen.getByRole("button", { name: "Nueva unidad" }));
     let dialog = screen.getByRole("dialog");
     await u.type(within(dialog).getByLabelText("Nombre"), "Unidad nuclear");
@@ -105,7 +109,7 @@ describe("Fase 2: recorridos de estudio", () => {
     ).toBe(0);
     app.unmount();
     render(<App />);
-    await u.click(screen.getByRole("tab", { name: "Temario" }));
+    await u.click(await screen.findByRole("tab", { name: "Temario" }));
     expect(screen.getByText("Isótopos")).toBeInTheDocument();
     expect(screen.getByText(/1\/2 completados/)).toBeInTheDocument();
   }, 15000);
@@ -300,6 +304,7 @@ describe("Fase 2: recorridos de estudio", () => {
     const u = userEvent.setup();
     render(<App />);
     await route("/configuracion");
+    await u.click(screen.getByText("Disponibilidad, Pomodoro y repasos"));
     fireEvent.change(screen.getByLabelText("Disponibilidad global el Lunes"), {
       target: { value: "45" },
     });

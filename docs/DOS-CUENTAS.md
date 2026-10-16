@@ -4,7 +4,7 @@ Esta ampliación sigue en la misma aplicación y **no inicia la fase 4**. Reutil
 
 ## Estado real de la entrega
 
-El código y la migración se verifican con identidades de prueba aisladas. El entorno de desarrollo no tiene acceso a tu proyecto Supabase, a los datos de tu navegador ni a una cuenta real de Catalina. Por tanto, no se afirma haber registrado a Catalina, vinculado sus cuentas ni aplicado SQL sobre tu base real. Las autorizaciones Google de fase 3 también deben completarse si aún faltan.
+El código y la migración se verifican con identidades de prueba aisladas. La auditoría posterior consultó metadatos y permisos de Supabase en modo lectura. No se accedió a tu almacenamiento privado de Chrome ni existe todavía una cuenta real de Catalina creada por estas pruebas. Por tanto, no se afirma haber registrado a Catalina, vinculado sus cuentas ni aplicado SQL sobre tu base real. Las autorizaciones Google de fase 3 también deben completarse si aún faltan.
 
 ## 1. Preparar la base de datos sin reiniciarla
 
@@ -114,3 +114,14 @@ Estas comprobaciones reales quedan pendientes hasta tener el proyecto configurad
 Las 16 tablas académicas conservan las políticas `auth.uid() = owner_id` y sus FKs compuestas. Las tres tablas nuevas tienen RLS forzada y acceso directo denegado a `anon`/`authenticated`; solo las funciones comprobadas gestionan las relaciones. Las funciones de compartición son `security definer` con `search_path` vacío, validación de identidad y consulta explícita de campos autorizados. No se amplía el acceso a tablas privadas ni se usan secretos en el frontend. El feed no admite un `user_id` arbitrario: obtiene a los participantes de la vinculación del usuario autenticado.
 
 Referencias: [funciones y permisos Supabase](https://supabase.com/docs/guides/database/functions), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [zonas horarias date-fns-tz](https://github.com/marnusw/date-fns-tz).
+
+## Comprobación de incorporación en fase 4
+
+1. Catalina abre StudySpace en su computadora y configura la misma URL y clave **pública** del proyecto. No usa credenciales de Fabrizio.
+2. Autentica su propio correo real y elige su nombre y el perfil Catalina: diez cursos, incluido Cambridge C1 Advanced. No debe importar la copia local de Fabrizio.
+3. Comprueba que su espacio está vacío de tareas, planes y sesiones ajenos; Cambridge tiene sus propios identificadores y progreso.
+4. Fabrizio crea una invitación dirigida a ese correo verificado. Catalina revisa la identidad y acepta desde su propia sesión.
+5. Comprobar primero una actividad que ambos decidan compartir: privado no se entrega; disponibilidad solo muestra Ocupado; detalles nunca incluye notas, documentos ni resultados. Revocar debe impedir las siguientes consultas.
+6. En equipos compartidos, cerrar sesión. La sesión Supabase se conserva en el navegador mientras no se cierre; cambiar de UUID oculta inmediatamente el espacio anterior y cancela solicitudes pendientes.
+
+Este procedimiento queda preparado, **no ejecutado con cuentas reales**. No se creó la cuenta de Catalina ni se enviaron invitaciones. SMTP, permisos institucionales Google y pruebas entre dispositivos reales siguen requiriendo configuración y validación de sus propietarios.

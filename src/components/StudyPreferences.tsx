@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useStore } from "../services/store";
+import { useFormStore } from "../services/form-store";
 import { MASTERY, WEEKDAYS, studyPreferencesSchema } from "../models/schema";
 import type { StudyPreferences as Preferences } from "../models/schema";
 import { plusDays, todayIn } from "../services/dates";
@@ -8,7 +8,7 @@ import { nowMinute, sessionConflict, toMinute } from "../services/planner";
 import { Card } from "./ui";
 import SchedulePreview from "./SchedulePreview";
 export default function StudyPreferences() {
-  const { data, commit } = useStore();
+  const { data, commit } = useFormStore();
   const [pref, setPref] = useState<Preferences>(
     structuredClone(data.studyPreferences),
   );

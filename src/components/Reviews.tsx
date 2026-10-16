@@ -19,12 +19,18 @@ export default function Reviews({
   const navigate = useNavigate();
   const [view, setView] = useState(dueOnly ? "due" : "all");
   const [preview, setPreview] = useState(false);
+  const [page, setPage] = useState(0);
   const today = todayIn(data.settings.timezone);
   const topics = data.topics
     .filter(
       (t) => t.nextReviewDate && (view !== "due" || t.nextReviewDate <= today),
     )
     .sort((a, b) => a.nextReviewDate!.localeCompare(b.nextReviewDate!));
+  const perPage = compact ? 8 : 30;
+  const currentPage = Math.min(
+    page,
+    Math.max(0, Math.ceil(topics.length / perPage) - 1),
+  );
   return (
     <Card
       title={dueOnly ? "Repasos pendientes" : "Repasos próximos"}
@@ -44,13 +50,19 @@ export default function Reviews({
         <div className="tabs study-tabs">
           <button
             className={view === "all" ? "active" : ""}
-            onClick={() => setView("all")}
+            onClick={() => {
+              setView("all");
+              setPage(0);
+            }}
           >
             Próximos
           </button>
           <button
             className={view === "due" ? "active" : ""}
-            onClick={() => setView("due")}
+            onClick={() => {
+              setView("due");
+              setPage(0);
+            }}
           >
             Pendientes
           </button>
@@ -58,79 +70,97 @@ export default function Reviews({
       )}
       {topics.length ? (
         <div className="review-list">
-          {topics.slice(0, compact ? 8 : 30).map((t) => {
-            const course = data.courses.find(
-              (c) => c.id === topicCourse(data, t),
-            );
-            const scheduled = data.scheduledSessions.find(
-              (s) =>
-                s.topicId === t.id &&
-                s.kind === "review" &&
-                s.status === "pending",
-            );
-            return (
-              <article key={t.id}>
-                <div>
-                  <strong>{t.name}</strong>
-                  <p>
-                    {course?.name ?? "Sin curso"} ·{" "}
-                    {displayDate(t.nextReviewDate!)}
-                  </p>
-                  <small>
-                    {MASTERY[t.mastery]} · {t.reviewCount} repasos registrados
-                  </small>
-                  {scheduled && (
+          {topics
+            .slice(currentPage * perPage, (currentPage + 1) * perPage)
+            .map((t) => {
+              const course = data.courses.find(
+                (c) => c.id === topicCourse(data, t),
+              );
+              const scheduled = data.scheduledSessions.find(
+                (s) =>
+                  s.topicId === t.id &&
+                  s.kind === "review" &&
+                  s.status === "pending",
+              );
+              return (
+                <article key={t.id}>
+                  <div>
+                    <strong>{t.name}</strong>
                     <p>
-                      Programado: {displayDate(scheduled.date)} ·{" "}
-                      {scheduled.time}
+                      {course?.name ?? "Sin curso"} ·{" "}
+                      {displayDate(t.nextReviewDate!)}
                     </p>
-                  )}
-                </div>
-                <button
-                  className="icon-btn"
-                  aria-label={`Iniciar repaso de ${t.name}`}
-                  title="Iniciar repaso libre ahora"
-                  onClick={() => {
-                    if (data.activeTimer) {
-                      notify("Recupera o descarta el temporizador actual.");
-                      navigate("/sesiones");
-                      return;
-                    }
-                    if (
-                      scheduled &&
-                      scheduled.date !== today &&
-                      !window.confirm(
-                        "Este repaso tiene una sesión programada. ¿Estudiarlo ahora y vincular el registro a esa sesión?",
+                    <small>
+                      {MASTERY[t.mastery]} · {t.reviewCount} repasos registrados
+                    </small>
+                    {scheduled && (
+                      <p>
+                        Programado: {displayDate(scheduled.date)} ·{" "}
+                        {scheduled.time}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    className="icon-btn"
+                    aria-label={`Iniciar repaso de ${t.name}`}
+                    title="Iniciar repaso libre ahora"
+                    onClick={() => {
+                      if (data.activeTimer) {
+                        notify("Recupera o descarta el temporizador actual.");
+                        navigate("/sesiones");
+                        return;
+                      }
+                      if (
+                        scheduled &&
+                        scheduled.date !== today &&
+                        !window.confirm(
+                          "Este repaso tiene una sesión programada. ¿Estudiarlo ahora y vincular el registro a esa sesión?",
+                        )
                       )
-                    )
-                      return;
-                    const ok = commit((d) => {
-                      if (d.activeTimer)
-                        throw new Error("Ya hay una sesión activa.");
-                      d.activeTimer = createTimer(d, {
-                        courseId: topicCourse(d, t),
-                        topicId: t.id,
-                        planId: scheduled?.planId ?? null,
-                        sessionId: scheduled?.id ?? null,
-                        minutes:
-                          scheduled?.minutes ??
-                          Math.min(20, d.studyPreferences.preferredMinutes),
-                        mode: "continuous",
-                        kind: "review",
-                      });
-                    }, "Repaso iniciado");
-                    if (ok) navigate("/sesiones");
-                  }}
-                >
-                  <Play size={16} />
-                </button>
-              </article>
-            );
-          })}
-          {topics.length > (compact ? 8 : 30) && (
-            <p className="form-help">
-              Mostrando {compact ? 8 : 30} de {topics.length} repasos.
-            </p>
+                        return;
+                      const ok = commit((d) => {
+                        if (d.activeTimer)
+                          throw new Error("Ya hay una sesión activa.");
+                        d.activeTimer = createTimer(d, {
+                          courseId: topicCourse(d, t),
+                          topicId: t.id,
+                          planId: scheduled?.planId ?? null,
+                          sessionId: scheduled?.id ?? null,
+                          minutes:
+                            scheduled?.minutes ??
+                            Math.min(20, d.studyPreferences.preferredMinutes),
+                          mode: "continuous",
+                          kind: "review",
+                        });
+                      }, "Repaso iniciado");
+                      if (ok) navigate("/sesiones");
+                    }}
+                  >
+                    <Play size={16} />
+                  </button>
+                </article>
+              );
+            })}
+          {topics.length > perPage && (
+            <nav className="pagination" aria-label="Páginas de repasos">
+              <button
+                className="btn soft"
+                disabled={currentPage === 0}
+                onClick={() => setPage(currentPage - 1)}
+              >
+                Anterior
+              </button>
+              <span>
+                {currentPage + 1} de {Math.ceil(topics.length / perPage)}
+              </span>
+              <button
+                className="btn soft"
+                disabled={(currentPage + 1) * perPage >= topics.length}
+                onClick={() => setPage(currentPage + 1)}
+              >
+                Siguiente
+              </button>
+            </nav>
           )}
         </div>
       ) : (

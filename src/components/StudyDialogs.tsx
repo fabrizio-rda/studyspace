@@ -1,3 +1,4 @@
+import { useFormStore } from "../services/form-store";
 import VisibilitySelect from "./VisibilitySelect";
 import type { Visibility } from "../models/schema";
 import { useState } from "react";
@@ -18,7 +19,7 @@ export function EditSessionDialog({
   postpone?: boolean;
   onClose: () => void;
 }) {
-  const { data, commit } = useStore();
+  const { data, commit } = useFormStore();
   const [visibility, setVisibility] = useState<Visibility>(
     session.visibility ?? "private",
   );
