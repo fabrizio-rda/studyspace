@@ -1,8 +1,8 @@
+import { useFormStore } from "../services/form-store";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { COLORS, ICONS, PRIORITIES, STATUSES, TYPES } from "../models/schema";
 import type { Task, AcademicEvent, TaskType, Course } from "../models/schema";
-import { useStore } from "../services/store";
 import { todayIn } from "../services/dates";
 import { ClassroomSource } from "./ClassroomSource";
 import VisibilitySelect from "./VisibilitySelect";
@@ -39,7 +39,7 @@ function ActivityEditor({
   editor: Exclude<EditorState, { kind: "course" }>;
   onClose: () => void;
 }) {
-  const { data, saveTask, saveEvent } = useStore();
+  const { data, saveTask, saveEvent } = useFormStore();
   const item = editor.item;
   const event = editor.kind === "event";
   const [visibility, setVisibility] = useState<Visibility>(
@@ -286,7 +286,7 @@ function CourseEditor({
   item?: Course;
   onClose: () => void;
 }) {
-  const { data, saveCourse } = useStore();
+  const { data, saveCourse } = useFormStore();
   const [name, setName] = useState(item?.name ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [color, setColor] = useState(item?.color ?? COLORS[0]);

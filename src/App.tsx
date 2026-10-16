@@ -25,6 +25,7 @@ import {
   Settings2,
   X,
 } from "lucide-react";
+import { downloadText } from "./services/storage";
 import { StoreProvider, useStore } from "./services/store";
 import { todayIn, displayDate } from "./services/dates";
 import { Editors } from "./components/Editors";
@@ -61,6 +62,8 @@ function Shell() {
   const {
     data,
     cloud,
+    editConflict,
+    dismissEditConflict,
     workspaceId,
     localAccess,
     storageError,
@@ -377,6 +380,8 @@ function Shell() {
           </header>
           <main key={workspaceId} id="main-content" tabIndex={-1} ref={content}>
             <SyncIndicator />
+            {cloud.mode === "cloud" && !cloud.writable && <p className="storage-error" role="status">Esta pestaña está en consulta. Cierra la otra pestaña de esta cuenta para editar aquí. Si tu navegador no admite Web Locks, usa un navegador actualizado.</p>}
+
             {!cloud.user && !localAccess && (
               <div className="storage-error">
                 Tu copia local está protegida. Inicia sesión con su cuenta para
@@ -516,6 +521,10 @@ function Shell() {
             </div>
           </Modal>
         )}
+        {editConflict && <Modal title="Hay cambios en el formulario" onClose={dismissEditConflict}>
+          <p>Otro cambio afecta a los mismos campos. No guardamos ni descartamos tus datos. Descarga las tres versiones, cierra el formulario y vuelve a abrirlo para revisar el estado actual.</p>
+          <div className="modal-footer"><button className="btn primary" onClick={() => downloadText(JSON.stringify(editConflict, null, 2), "studyspace-versiones-formulario.json")}>Exportar las tres versiones</button><button className="btn soft" onClick={dismissEditConflict}>Volver al formulario</button></div>
+        </Modal>}
         {editor && (
           <Editors
             key={`${editor.kind}-${editor.item?.id ?? ("date" in editor ? editor.date : undefined) ?? "new"}`}

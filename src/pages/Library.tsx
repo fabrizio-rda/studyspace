@@ -1,3 +1,4 @@
+import { useFormStore } from "../services/form-store";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useSearchParams, Link } from "react-router-dom";
@@ -484,7 +485,7 @@ function FolderEditor({
   parentId: string | null;
   onClose: () => void;
 }) {
-  const { data, commit } = useStore();
+  const { data, commit } = useFormStore();
   const [name, setName] = useState(item?.name ?? "");
   const [parent, setParent] = useState(item?.parentId ?? parentId ?? "");
   const [course, setCourse] = useState(
@@ -592,7 +593,7 @@ function DocumentEditor({
   courseId: string | null;
   onClose: () => void;
 }) {
-  const { data, commit } = useStore();
+  const { data, commit } = useFormStore();
   const [name, setName] = useState(item?.name ?? "");
   const [url, setUrl] = useState(item?.url ?? "");
   const [folder, setFolder] = useState(item?.folderId ?? folderId ?? "");

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { planningFingerprint } from "../services/planner";
+import { useEffect, useState, useRef } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -343,6 +344,7 @@ function PlanWizard({
   ) => void;
 }) {
   const { data } = useStore();
+  const baseline = useRef(planningFingerprint(data));
   const [step, setStep] = useState(0);
   const [name, setName] = useState(item?.name ?? "");
   const [goal, setGoal] = useState(item?.goal ?? "");
@@ -400,6 +402,7 @@ function PlanWizard({
       setError("Selecciona al menos un día con tiempo disponible.");
       return;
     }
+    if (planningFingerprint(data) !== baseline.current) { setError("Los datos cambiaron mientras editabas. Conserva tus cambios y vuelve a abrir el plan con la versión actual antes de programarlo."); return; }
     onReview(
       {
         id: item?.id ?? crypto.randomUUID(),

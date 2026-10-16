@@ -1,3 +1,4 @@
+import { useFormStore } from "../services/form-store";
 import SharingSettings from "../components/SharingSettings";
 import Integrations from "../components/Integrations";
 import StudyPreferences from "../components/StudyPreferences";
@@ -32,8 +33,12 @@ export default function Settings() {
     notify,
     updateSettings,
     replace,
+    workspaceToken,
     reset,
   } = useStore();
+  const activeWorkspace = useRef(workspaceToken);
+  activeWorkspace.current = workspaceToken;
+  const form = useFormStore();
   const open = useEditor();
   const [name, setName] = useState(data.settings.name);
   const [timezone, setTimezone] = useState(data.settings.timezone);
@@ -49,7 +54,7 @@ export default function Settings() {
       return;
     }
     setError("");
-    updateSettings({ name: name.trim(), timezone });
+    form.commit(d => { d.settings.name = name.trim(); d.settings.timezone = timezone; }, "Preferencias guardadas");
   }
   async function importFile(input: HTMLInputElement) {
     const f = input.files?.[0];
@@ -58,7 +63,9 @@ export default function Settings() {
     try {
       if (f.size > 20_000_000)
         throw new Error("El archivo supera el límite de 20 MB.");
+      const workspace = form.workspaceToken;
       const parsed = parseBackup(await f.text());
+      if (workspace !== activeWorkspace.current) throw new Error("La cuenta cambió durante la lectura.");
       if (
         window.confirm(
           `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos del espacio activo (nube si has iniciado sesión). Las actividades importadas se marcarán privadas; podrás compartirlas después. Exporta una copia antes. ¿Continuar?`,
@@ -71,7 +78,7 @@ export default function Settings() {
         ])
           item.visibility = "private";
         parsed.settings.calendarDefaultVisibility = "private";
-        if (replace(parsed)) {
+        if (replace(parsed, workspace)) {
           setName(parsed.settings.name);
           setTimezone(parsed.settings.timezone);
         }

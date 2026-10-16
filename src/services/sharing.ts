@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fromZonedTime, formatInTimeZone } from "date-fns-tz";
-import { cloudClient } from "./cloud";
+import { cloudRpc } from "./cloud";
 import { dateSchema, validTimezone, visibilitySchema } from "../models/schema";
 const accent = z.enum(["blue", "pink"]);
 const invite = z
@@ -119,12 +119,12 @@ function fail(error: { message: string } | null) {
   if (error) throw new Error(sharingError(error.message));
 }
 export async function sharingStatus() {
-  const { data, error } = await cloudClient().rpc("studyspace_calendar_status");
+  const { data, error } = await cloudRpc("studyspace_calendar_status");
   fail(error);
   return sharingStatusSchema.parse(data);
 }
 export async function inviteCalendar(email: string) {
-  const { data, error } = await cloudClient().rpc(
+  const { data, error } = await cloudRpc(
     "studyspace_calendar_invite",
     { p_email: email.trim() },
   );
@@ -132,7 +132,7 @@ export async function inviteCalendar(email: string) {
   return z.object({ id: z.string().uuid() }).parse(data);
 }
 export async function acceptCalendar(id: string) {
-  const { data, error } = await cloudClient().rpc(
+  const { data, error } = await cloudRpc(
     "studyspace_calendar_accept",
     { p_invite_id: id },
   );
@@ -140,7 +140,7 @@ export async function acceptCalendar(id: string) {
   return sharingStatusSchema.parse(data);
 }
 export async function cancelCalendar(id: string) {
-  const { data, error } = await cloudClient().rpc(
+  const { data, error } = await cloudRpc(
     "studyspace_calendar_cancel",
     { p_invite_id: id },
   );
@@ -148,7 +148,7 @@ export async function cancelCalendar(id: string) {
   return sharingStatusSchema.parse(data);
 }
 export async function revokeCalendar() {
-  const { data, error } = await cloudClient().rpc("studyspace_calendar_revoke");
+  const { data, error } = await cloudRpc("studyspace_calendar_revoke");
   fail(error);
   return sharingStatusSchema.parse(data);
 }
@@ -172,7 +172,7 @@ export async function calendarFeed(
   end: string,
   timezone: string,
 ) {
-  const { data, error } = await cloudClient().rpc("studyspace_calendar_feed", {
+  const { data, error } = await cloudRpc("studyspace_calendar_feed", {
     p_start: start,
     p_end: end,
   });

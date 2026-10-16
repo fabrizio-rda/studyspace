@@ -7,6 +7,8 @@ import type {
   AcademicEvent,
   Settings,
 } from "../models/schema";
+import { acquireWriter } from "./tab-lock";
+import { bindCloudIdentity } from "./cloud";
 import { recoverTimer, timerElapsed } from "./study";
 import { stateSchema } from "../models/schema";
 import {
@@ -46,9 +48,13 @@ export type CloudView = {
   error: string;
   revision: number;
   verifiedCounts: Record<string, number> | null;
+  writable: boolean;
 };
 type ContextValue = {
   cloud: CloudView;
+  editConflict: { base: AppState; mine: AppState; remote: AppState } | null;
+  keepEditConflict: (base: AppState, mine: AppState, remote: AppState) => void;
+  dismissEditConflict: () => void;
   workspaceId: string;
   workspaceToken: string;
   sendCode: (email: string) => Promise<void>;
@@ -69,7 +75,7 @@ type ContextValue = {
     message?: string | null,
     workspaceToken?: string,
   ) => boolean;
-  replace: (data: AppState) => boolean;
+  replace: (data: AppState, workspaceToken?: string) => boolean;
   reset: () => boolean;
   saveTask: (task: Task) => boolean;
   saveEvent: (event: AcademicEvent) => boolean;
@@ -90,11 +96,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     error: "",
     revision: 0,
     verifiedCounts: null,
+    writable: true,
   });
   const cloudRef = useRef(cloud);
   cloudRef.current = cloud;
   const stateRef = useRef(loaded.data);
   stateRef.current = loaded.data;
+  const [editConflict, setEditConflict] = useState<{ base: AppState; mine: AppState; remote: AppState } | null>(null);
+  const releaseWriter = useRef<(() => void) | null>(null);
   const pending = useRef<string | null>(null);
   const sending = useRef(false);
   const epoch = useRef(0);
@@ -108,6 +117,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
   function changedWorkspace() {
     epoch.current++;
+    setEditConflict(null);
     window.dispatchEvent(new Event("studyspace:workspace"));
   }
   const [notice, setNotice] = useState("");
@@ -158,6 +168,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         "Inicia sesión y termina la configuración de tu cuenta antes de editar.",
       );
     if (c.mode === "cloud" && c.user) {
+      if (!c.writable) throw new Error("Otra pestaña está editando esta cuenta, o este navegador no admite bloqueo seguro. Esta vista es de consulta.");
       if (
         !navigator.onLine ||
         ["loading", "conflict", "offline", "error"].includes(c.status)
@@ -179,8 +190,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       switchData(validated);
     }
   }
-  function replace(data: AppState) {
+  function replace(data: AppState, workspaceToken?: string) {
     try {
+      if (workspaceToken && workspaceToken !== String(epoch.current)) throw new Error("La cuenta cambió durante la importación. No se reemplazó nada.");
       if (data.activeTimer)
         data = { ...data, activeTimer: recoverTimer(data.activeTimer) };
       persist(data);
@@ -238,6 +250,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       return;
     }
+    if (!c.writable) { await attach(c.user); return; }
     if (c.status === "conflict") return;
     sending.current = true;
     const generation = epoch.current;
@@ -247,8 +260,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     showCloud({ status: mutation ? "saving" : "loading", error: "" });
     try {
       const remote = mutation
-        ? await writeCloud(snapshot, c.revision, mutation)
-        : await readCloud();
+        ? await writeCloud(snapshot, c.revision, mutation, user)
+        : await readCloud(user);
       if (generation !== epoch.current) return;
       if (!remote.state)
         throw new Error(
@@ -307,24 +320,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         });
       }
     } finally {
-      sending.current = false;
+      if (generation === epoch.current) sending.current = false;
     }
   }
   async function attach(user: { id: string; email?: string }) {
     changedWorkspace();
+    bindCloudIdentity(user.id);
+    releaseWriter.current?.();
+    releaseWriter.current = null;
+    sending.current = false;
     const generation = epoch.current;
     pending.current = null;
     switchData(blankAccount());
     showCloud({
       user: { id: user.id, email: user.email ?? "" },
       mode: "setup",
+      writable: false,
       status: "loading",
       error: "",
     });
     try {
-      const remote = await readCloud();
+      const release = await acquireWriter(cacheKey(user.id));
+      if (generation !== epoch.current) { release?.(); return; }
+      releaseWriter.current = release;
+      const writable = !!release;
+      showCloud({ writable });
+      const remote = await readCloud(user.id);
       if (generation !== epoch.current) return;
-      const cache = readCache(user.id);
+      const cache = writable ? readCache(user.id) : null;
       if (remote.state) {
         if (cache?.pending) {
           saveCache(user.id, cache);
@@ -350,7 +373,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               ? recoverTimer(remote.state.activeTimer)
               : null,
           };
-          saveCache(user.id, {
+          if (writable) saveCache(user.id, {
             state: normalized,
             revision: remote.revision,
             pending: null,
@@ -403,6 +426,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const generation = epoch.current;
     if (!c.user || c.mode === "cloud")
       throw new Error("Inicia sesión en una cuenta vacía para importar.");
+    if (!c.writable) throw new Error("Abre esta cuenta en una sola pestaña con un navegador compatible antes de inicializarla.");
     if (!navigator.onLine) throw new Error("La migración necesita conexión.");
     if (fromLocal && !canUseLocal(c.user.id, loadConfig().supabaseUrl))
       throw new Error(
@@ -455,7 +479,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       if (generation !== epoch.current)
         throw new Error("La cuenta cambió durante la inicialización.");
-      const result = await writeCloud(normalized, 0, mutation);
+      const result = await writeCloud(normalized, 0, mutation, c.user.id);
       if (generation !== epoch.current)
         throw new Error(
           "La cuenta cambió. No se mostraron sus datos en otro espacio.",
@@ -498,6 +522,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }
   function restoreLocalSession() {
+    bindCloudIdentity(null);
+    releaseWriter.current?.();
+    releaseWriter.current = null;
+    sending.current = false;
     changedWorkspace();
     pending.current = null;
     const original = localOwner()
@@ -512,6 +540,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       error: "",
       revision: 0,
       verifiedCounts: null,
+      writable: true,
     });
   }
   useEffect(() => {
@@ -521,15 +550,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       try {
         const client = cloudClient();
         const listener = client.auth.onAuthStateChange?.((event, session) => {
-          if (event === "SIGNED_IN" && session?.user && !cloudRef.current.user) {
-            // Do not await an RPC inside the auth callback: it can deadlock auth initialization.
-            setTimeout(() => {
-              if (!cloudRef.current.user) void attach(session.user).catch((e) => notify((e as Error).message));
-            }, 0);
+          const user = session?.user;
+          if (event === "SIGNED_OUT" || (!user && event === "INITIAL_SESSION")) {
+            if (cloudRef.current.user) restoreLocalSession();
+            return;
           }
-          if (event === "SIGNED_OUT" && cloudRef.current.user) {
-            restoreLocalSession();
-            notify("Sesión cerrada. Los datos de nube quedan ocultos.");
+          if (user && user.id !== cloudRef.current.user?.id) {
+            // Clear the old workspace synchronously. attach yields at the lock
+            // before querying auth/RPC, so the auth callback cannot deadlock.
+            void attach(user).catch(e => notify((e as Error).message));
           }
         });
         unsubscribe = () => listener?.data.subscription.unsubscribe();
@@ -541,6 +570,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     window.addEventListener("studyspace:config", listen);
     return () => {
       unsubscribe?.();
+      releaseWriter.current?.();
       window.removeEventListener("studyspace:config", listen);
     };
   }, []);
@@ -576,7 +606,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const c = cloudRef.current;
     const generation = epoch.current;
     if (!c.user) return;
-    const remote = await readCloud();
+    if (sending.current || !c.writable) throw new Error("Espera al guardado activo o cierra la otra pestaña antes de reemplazar la caché.");
+    const remote = await readCloud(c.user.id);
     if (generation !== epoch.current)
       throw new Error("La cuenta cambió durante la consulta.");
     if (!remote.state) throw new Error("La cuenta está vacía.");
@@ -664,6 +695,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const value: ContextValue = {
     data: loaded.data,
     cloud,
+    editConflict,
+    keepEditConflict: (base, mine, remote) => setEditConflict(structuredClone({base, mine, remote})),
+    dismissEditConflict: () => setEditConflict(null),
     workspaceId: cloud.user ? `${cloud.mode}:${cloud.user.id}` : "local",
     localAccess: canUseLocal(cloud.user?.id ?? null, loadConfig().supabaseUrl),
     workspaceToken: String(epoch.current),
@@ -682,7 +716,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       if (error) throw error;
       if (!data.user) throw new Error("No se inició sesión.");
-      await attach(data.user);
+      if (cloudRef.current.user?.id !== data.user.id) await attach(data.user);
+      else if (cloudRef.current.status === "loading") await attach(data.user);
     },
     signOut,
     syncNow,

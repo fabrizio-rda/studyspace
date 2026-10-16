@@ -1,3 +1,4 @@
+import { useFormStore } from "../services/form-store";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { FormEvent } from "react";
@@ -386,7 +387,7 @@ function ContentEditor({
   courseId: string | null;
   onClose: () => void;
 }) {
-  const { commit } = useStore();
+  const { commit } = useFormStore();
   const item = editor.item;
   const [name, setName] = useState(item?.name ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
