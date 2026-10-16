@@ -137,6 +137,22 @@ function Access({
   const ready =
     cloud.mode === "cloud" && !["loading", "saving"].includes(cloud.status);
   const recognized = cloud.user && entryBindings()[profile] === cloud.user.id;
+  // A valid session already identifies the owner. Bind an unrecognized card
+  // automatically only when its academic profile does not contradict the
+  // selected card. A known binding to another UUID is never overwritten.
+  useEffect(() => {
+    if (!cloud.user || mismatch || recognized) return;
+    if (
+      !(cloud.mode === "cloud" && ready) &&
+      !(cloud.mode === "setup" && cloud.status === "local")
+    ) return;
+    try {
+      bindEntry(profile, cloud.user.id);
+      refreshBinding((n) => n + 1);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }, [cloud.user?.id, cloud.mode, cloud.status, ready, recognized, mismatch, profile]);
   useEffect(() => {
     if (cloud.user && ready && recognized && !mismatch)
       enter(profile, cloud.user.id);
@@ -188,33 +204,7 @@ function Access({
                   fixedPreset={profile}
                 />
               ) : (
-                <>
-                  <p>
-                    La sesión <strong>{cloud.user.email}</strong> todavía no
-                    tiene un espacio académico. Confirma que corresponde a{" "}
-                    {person.name} antes de crear sus cursos.
-                  </p>
-                  <button
-                    className="btn primary"
-                    onClick={() => {
-                      try {
-                        bindEntry(profile, cloud.user!.id);
-                        refreshBinding((n) => n + 1);
-                      } catch (e) {
-                        setError((e as Error).message);
-                      }
-                    }}
-                  >
-                    Confirmar cuenta de {person.name}
-                  </button>
-                  <button
-                    className="btn soft"
-                    disabled={busy}
-                    onClick={() => void run(store.signOut)}
-                  >
-                    Iniciar sesión con otro correo
-                  </button>
-                </>
+                <p role="status">Preparando el espacio de {person.name}…</p>
               )
             ) : (
               <>
@@ -233,37 +223,7 @@ function Access({
           ) : recognized ? (
             <p role="status">Abriendo tu espacio…</p>
           ) : (
-            <>
-              <p>
-                Confirma que la sesión <strong>{cloud.user.email}</strong>{" "}
-                corresponde a {person.name}.
-              </p>
-              <p className="form-help">
-                Se recordará su identidad en este navegador. Esto no cambia el
-                propietario de los datos.
-              </p>
-              <button
-                className="btn primary"
-                disabled={!ready || busy}
-                onClick={() => {
-                  try {
-                    bindEntry(profile, cloud.user!.id);
-                    enter(profile, cloud.user!.id);
-                  } catch (e) {
-                    setError((e as Error).message);
-                  }
-                }}
-              >
-                Confirmar y entrar como {person.name}
-              </button>
-              <button
-                className="btn soft"
-                disabled={busy}
-                onClick={() => void run(store.signOut)}
-              >
-                Iniciar sesión con otro correo
-              </button>
-            </>
+            <p role="status">Abriendo el espacio de {person.name}…</p>
           )
         ) : (
           <>
