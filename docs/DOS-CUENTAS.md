@@ -1,6 +1,6 @@
 # Dos cuentas independientes y calendario compartido
 
-Esta ampliación sigue en la misma aplicación y **no inicia la fase 4**. Reutiliza los propietarios y las políticas de fase 3; no mueve datos de Fabrizio a Catalina ni permite entrar en otra cuenta con un selector. La configuración de cursos iniciales solo aparece después de autenticar una cuenta vacía.
+StudySpace mantiene dos espacios en la misma aplicación. Reutiliza los propietarios, las políticas de fase 3 y las protecciones de fase 4; no mueve datos de Fabrizio a Catalina. La portada encamina al acceso autenticado de la cuenta seleccionada. Los cursos iniciales solo se configuran después de autenticar y confirmar una cuenta vacía.
 
 ## Estado real de la entrega
 
@@ -29,6 +29,8 @@ No hace falta añadir `service_role`, secretos ni una nueva aplicación OAuth. L
 ### Reversión
 
 El archivo de reversión elimina únicamente funciones, invitaciones y relaciones de calendario. **Revoca las vinculaciones y elimina su historial**, por eso debe usarse solo por el administrador después de respaldar esa información y confirmar que quiere retirarla. No elimina cursos, tareas, sesiones, documentos ni datos de Auth. La reversión se prueba localmente comparando los estados académicos completos antes y después.
+
+La nueva [portada](PORTADA.md) pide elegir la persona y confirmar una vez su UUID autenticado por navegador. Las tarjetas no sustituyen el inicio de sesión.
 
 ## 2. Fabrizio conserva su cuenta
 

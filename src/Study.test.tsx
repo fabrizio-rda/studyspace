@@ -1,3 +1,4 @@
+import { localEntry } from "./test-entry";
 import {
   act,
   fireEvent,
@@ -71,7 +72,8 @@ function fixture() {
 beforeEach(() => {
   vi.restoreAllMocks();
   localStorage.clear();
-  window.location.hash = "/";
+  localEntry();
+  window.location.hash = "/espacio";
   vi.spyOn(window, "confirm").mockReturnValue(true);
 });
 describe("Fase 2: recorridos de estudio", () => {

@@ -1,3 +1,9 @@
+# Verificación · portada (rama de revisión)
+
+[Flujo y límites de esta entrega](docs/PORTADA.md). Suite actual: 130 pruebas en 19 archivos; 11 regresiones de acceso/portada añadidas. TypeScript, compilación y smoke de producción comprobados en esta rama. El calendario con contenido se prueba con respuestas controladas; no se afirma validación visual, sesiones reales ni dos dispositivos. Dependencias y SQL sin cambios. GitHub Actions ejecuta también los 80 controles SQL aislados y omite el despliegue de PR.
+
+Los registros siguientes corresponden a la entrega de fase 4 y conservan sus métricas históricas.
+
 # Verificación · Fase 4 (rama de revisión, sin publicar)
 
 Validación final acotada del PR #1: [casos, correcciones y pasos manuales](docs/VALIDACION-PR1.md).

@@ -1,6 +1,10 @@
-# StudySpace · Fase 4 (propuesta)
+# StudySpace · portada y espacios personales
 
-La fase 4 se prepara en una rama y un pull request. No se publica hasta su revisión y autorización. [Cambios, pruebas y límites](docs/FASE4.md).
+Nueva portada en revisión: selector de Fabrizio/Catalina y calendario conjunto de consulta, conservando las cuentas independientes. [Flujo, privacidad, avatares y verificación](docs/PORTADA.md). Sin publicación automática.
+
+## Base existente: fase 4
+
+La portada parte de la fase 4 integrada mediante el PR #1. [Cambios, pruebas y límites de esa fase](docs/FASE4.md).
 
 # StudySpace · Fase 3 + cuentas independientes
 
@@ -15,7 +19,7 @@ Espacios académicos privados con cuentas autenticadas independientes. Mismo rep
 
 Reutiliza el aislamiento por propietario. Una cuenta nueva autenticada puede crear los diez cursos de Catalina sin datos ficticios; una cuenta existente nunca se vuelve a inicializar. El dashboard, la planificación, la biblioteca, Google y las estadísticas siguen siendo personales. La copia local migrada se asocia a su cuenta y queda oculta al salir.
 
-La migración SQL **002** es aditiva: tres tablas y seis RPCs, sin modificar los 16 conjuntos académicos ni sus políticas. Invitación dirigida al email verificado, aceptación, cancelación y revocación; una vinculación activa de dos cuentas. Los calendarios combinados muestran únicamente los campos autorizados. Privado es el valor inicial, disponibilidad oculta título/curso/tipo y los detalles excluyen notas, documentos y resultados. No existe acceso a otra cuenta mediante un selector.
+La migración SQL **002** es aditiva: tres tablas y seis RPCs, sin modificar los 16 conjuntos académicos ni sus políticas. Invitación dirigida al email verificado, aceptación, cancelación y revocación; una vinculación activa de dos cuentas. Los calendarios combinados muestran únicamente los campos autorizados. Privado es el valor inicial, disponibilidad oculta título/curso/tipo y los detalles excluyen notas, documentos y resultados. El selector encamina al inicio de sesión y exige el UUID correspondiente; elegir un nombre no concede acceso a otra cuenta.
 
 El dashboard muestra Ambos cuando las cuentas están vinculadas. El calendario completo conserva vistas mensual/semanal/diaria y Mi calendario. Actualización cada 30 segundos con página visible y al recuperar el foco, sin Realtime ni caché offline compartida. Los horarios se convierten entre zonas y las fechas de día completo se conservan. Los datos del otro usuario nunca entran en AppState, el buscador global o la exportación personal.
 

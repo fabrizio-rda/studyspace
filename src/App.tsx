@@ -47,8 +47,9 @@ const Library = deferredPage(() => import("./pages/Library"));
 import { SyncIndicator } from "./components/Integrations";
 import { GoogleProvider } from "./services/google-context";
 import TimerRuntime from "./components/TimerRuntime";
+import EntryRouter from "./pages/Entry";
 const links = [
-  { to: "/", label: "Inicio", icon: House },
+  { to: "/espacio", label: "Inicio", icon: House },
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/tareas", label: "Mis tareas", icon: ListChecks },
   { to: "/cursos", label: "Mis cursos", icon: BookOpen },
@@ -117,8 +118,8 @@ function Shell() {
   const collapsed = data.settings.sidebarCollapsed;
   const section =
     links.find((l) =>
-      l.to === "/"
-        ? location.pathname === "/"
+      l.to === "/espacio"
+        ? ["/espacio", "/local"].includes(location.pathname)
         : location.pathname.startsWith(l.to),
     )?.label ?? "StudySpace";
   useEffect(() => {
@@ -219,7 +220,6 @@ function Shell() {
         className={`app-shell ${collapsed ? "collapsed" : ""} ${data.settings.compact ? "is-compact" : ""}`}
         data-clock={clock}
       >
-        <TimerRuntime />
         <a
           className="skip-link"
           href="#main-content"
@@ -258,6 +258,9 @@ function Shell() {
             <X size={20} />
           </button>
           <p className="nav-eyebrow">MI ESPACIO</p>
+          <NavLink className="entry-return" to="/">
+            Cambiar de espacio
+          </NavLink>
           <nav>
             {links.map((l) => (
               <NavLink
@@ -491,7 +494,8 @@ function Shell() {
                 }
               >
                 <Routes location={location}>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/espacio" element={<Dashboard />} />
+                  <Route path="/local" element={<Dashboard />} />
                   <Route path="/tareas" element={<Tasks />} />
                   <Route path="/calendario" element={<Calendar />} />
                   <Route path="/cursos" element={<Courses />} />
@@ -620,7 +624,8 @@ export default function App() {
       <GoogleProvider>
         <SharingProvider>
           <HashRouter>
-            <WorkspaceShell />
+            <TimerRuntime />
+            <EntryRouter workspace={<WorkspaceShell />} />
           </HashRouter>
         </SharingProvider>
       </GoogleProvider>
