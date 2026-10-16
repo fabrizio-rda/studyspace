@@ -82,10 +82,22 @@ try {
   await delay(300);
   const w = dom.window;
   assert(
+    w.document.querySelector("main").textContent.includes("Elige tu espacio"),
+  );
+  assert.equal(w.document.querySelectorAll(".entry-profile").length, 2);
+  assert(
     w.document
       .querySelector("main")
-      .textContent.includes("Cursos, tareas y evaluaciones."),
+      .textContent.includes("Calendario conjunto"),
   );
+  w.location.hash = "/acceso/catalina";
+  await delay(100);
+  assert(
+    w.document.querySelector("main").textContent.includes("Acceso de Catalina"),
+  );
+  // Explicitly choose the preserved local workspace for CRUD route smoke.
+  w.location.hash = "/local";
+  await delay(100);
   for (const [route, heading] of [
     ["/tareas", "Mis tareas"],
     ["/cursos", "Mis cursos"],
@@ -95,7 +107,7 @@ try {
     ["/biblioteca", "Biblioteca"],
     ["/planes", "Planes de estudio"],
     ["/sesiones", "Sesiones de estudio"],
-    ["/", "Cursos, tareas y evaluaciones."],
+    ["/espacio", "Cursos, tareas y evaluaciones."],
   ]) {
     w.location.hash = route;
     const deadline = Date.now() + 4000;

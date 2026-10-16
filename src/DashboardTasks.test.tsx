@@ -1,3 +1,4 @@
+import { localEntry } from "./test-entry";
 import {
   render,
   screen,
@@ -13,7 +14,8 @@ import { saveState, loadState } from "./services/storage";
 import { todayIn, plusDays, weekStart } from "./services/dates";
 beforeEach(() => {
   localStorage.clear();
-  window.location.hash = "/";
+  localEntry();
+  window.location.hash = "/espacio";
   vi.spyOn(window, "confirm").mockReturnValue(true);
 });
 it("agrupa tareas reales por hoy y mañana y añade con la fecha del grupo", async () => {

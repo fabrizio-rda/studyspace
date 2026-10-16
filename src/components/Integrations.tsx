@@ -1,3 +1,4 @@
+import AccountSignIn from "./AccountSignIn";
 import AccountSetup from "./AccountSetup";
 import { blankAccount } from "../services/accounts";
 import { useState } from "react";
@@ -58,9 +59,6 @@ export default function Integrations() {
   const { data, cloud, notify, commit } = store;
   const google = useGoogle();
   const [config, setConfig] = useState(loadConfig);
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [migration, setMigration] = useState(false);
@@ -201,76 +199,7 @@ export default function Integrations() {
               </p>
             </>
           ) : (
-            <form
-              className="editor-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void run("auth", () =>
-                  sent
-                    ? store.verifyCode(email.trim(), code.trim())
-                    : store.sendCode(email.trim()).then(() => setSent(true)),
-                );
-              }}
-            >
-              <label>
-                Email
-                <input
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={sent}
-                />
-              </label>
-              {sent && (
-                <label>
-                  Código recibido
-                  <input
-                    required
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    minLength={6}
-                    maxLength={12}
-                  />
-                </label>
-              )}
-              <button
-                className="btn primary"
-                disabled={!!busy || !config.supabaseUrl || !config.supabaseKey}
-              >
-                {busy === "auth"
-                  ? "Conectando…"
-                  : sent
-                    ? "Iniciar sesión"
-                    : "Enviar código"}
-              </button>
-              {sent && (
-                <button
-                  type="button"
-                  className="text-btn"
-                  onClick={() => {
-                    setSent(false);
-                    setCode("");
-                  }}
-                >
-                  Cambiar email / solicitar otro código
-                </button>
-              )}
-              {error && (
-                <p className="integration-error" role="alert" aria-live="assertive" style={{ marginTop: 12, overflowWrap: "anywhere" }}>
-                  No se pudo completar el acceso: {error}
-                </p>
-              )}
-              {!config.supabaseUrl && (
-                <p className="form-help">
-                  Falta configurar Supabase. Consulta la guía y los campos de
-                  abajo.
-                </p>
-              )}
-            </form>
+            <AccountSignIn key={config.supabaseUrl + config.supabaseKey} />
           )}
           {cloud.error && (
             <p role="status" className="integration-status">

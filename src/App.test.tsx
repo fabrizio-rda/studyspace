@@ -1,3 +1,4 @@
+import { localEntry } from "./test-entry";
 import {
   act,
   fireEvent,
@@ -44,7 +45,8 @@ async function createTask(
 }
 beforeEach(() => {
   localStorage.clear();
-  window.location.hash = "/";
+  localEntry();
+  window.location.hash = "/espacio";
   vi.spyOn(window, "confirm").mockReturnValue(true);
 });
 describe("StudySpace: recorridos de usuario", () => {

@@ -1,10 +1,20 @@
 import { useState } from "react";
 import { useStore } from "../services/store";
 import type { AccountPreset } from "../services/accounts";
-export default function AccountSetup() {
+export default function AccountSetup({
+  initialName = "",
+  initialPreset = "catalina",
+  fixedPreset,
+}: {
+  initialName?: string;
+  initialPreset?: AccountPreset;
+  fixedPreset?: AccountPreset;
+}) {
   const { cloud, startCloud } = useStore();
-  const [name, setName] = useState("");
-  const [preset, setPreset] = useState<AccountPreset>("catalina");
+  const [name, setName] = useState(initialName);
+  const [preset, setPreset] = useState<AccountPreset>(
+    fixedPreset ?? initialPreset,
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   if (cloud.mode !== "setup") return null;
@@ -44,6 +54,7 @@ export default function AccountSetup() {
           Cursos iniciales
           <select
             value={preset}
+            disabled={!!fixedPreset}
             onChange={(e) => setPreset(e.target.value as AccountPreset)}
           >
             <option value="catalina">Catalina · 10 cursos</option>

@@ -1,3 +1,4 @@
+import { localEntry } from "./test-entry";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -7,6 +8,7 @@ import { mergeClassroom } from "./services/classroom";
 import { initialState } from "./models/schema";
 beforeEach(() => {
   localStorage.clear();
+  localEntry();
   window.location.hash = "/biblioteca";
   vi.restoreAllMocks();
   vi.spyOn(window, "confirm").mockReturnValue(true);
