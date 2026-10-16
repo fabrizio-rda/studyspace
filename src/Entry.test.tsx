@@ -130,6 +130,8 @@ it("muestra dos tarjetas y un calendario vacío sin revelar datos locales ni con
   expect(
     screen.getByRole("heading", { name: "Calendario conjunto" }),
   ).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Mes anterior" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Mes siguiente" })).toBeInTheDocument();
   expect(
     screen.queryByText("Tarea privada de fabrizio"),
   ).not.toBeInTheDocument();
@@ -287,12 +289,12 @@ it("la portada solo muestra actividades compartidas y oculta incluso los detalle
     ],
   });
   render(<App />);
-  expect(await screen.findByText("Actividad compartida")).toBeInTheDocument();
+  expect((await screen.findAllByText("Actividad compartida")).length).toBeGreaterThan(0);
   expect(screen.queryByText("Examen privado")).not.toBeInTheDocument();
   expect(
     screen.queryByText("Detalle sensible del ocupado"),
   ).not.toBeInTheDocument();
-  expect(screen.getByText("Ocupado")).toBeInTheDocument();
+  expect(screen.getAllByText("Ocupado").length).toBeGreaterThan(0);
   expect(
     screen.queryByRole("button", { name: /Editar/ }),
   ).not.toBeInTheDocument();
