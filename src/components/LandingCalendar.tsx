@@ -56,16 +56,16 @@ export default function LandingCalendar() {
     <section className="entry-calendar" aria-labelledby="joint-title">
       <div className="entry-calendar-heading">
         <div>
-          <span className="entry-eyebrow">AGENDA COMPARTIDA</span>
+          <span className="entry-eyebrow">ACTIVIDADES DE AMBOS</span>
           <h2 id="joint-title">
             <CalendarDays size={22} />
-            Calendario conjunto
+            Calendario
           </h2>
         </div>
         {connected && (
           <button
             className="btn soft"
-            aria-label="Actualizar calendario conjunto"
+            aria-label="Actualizar calendario"
             onClick={() => {
               void sharing.refresh();
               void feed.refresh();
