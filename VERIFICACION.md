@@ -6,7 +6,7 @@ Resultados obtenidos sobre la propuesta de fase 4. Los registros de fases anteri
 | --------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Instalación limpia `npm ci` | Aprobada                                                                                                     |
 | Árbol `npm ls --all`        | Aprobado, sin dependencias inválidas                                                                         |
-| `npm test`                  | 103/103 pruebas, 17 archivos                                                                                 |
+| `npm test`                  | 104/104 pruebas, 17 archivos                                                                                 |
 | `npm run test:database`     | 14 comprobaciones académicas + 66 de calendario, PGlite aislado                                              |
 | `npx tsc --noEmit`          | Aprobada                                                                                                     |
 | `npm run build`             | Aprobada                                                                                                     |
@@ -18,7 +18,7 @@ Resultados obtenidos sobre la propuesta de fase 4. Los registros de fases anteri
 
 Regresiones permanentes: renovación y recuperación de sesión, cambio de UUID, respuestas antiguas, sujeto firmado de JWT, credencial fijada y cancelación de RPC, dos pestañas y recuperación del bloqueo, formularios concurrentes, conexión perdida durante consultas compartidas, reorganización de materiales, perfil Catalina, límites de fechas, paneles de tareas, paginación y reintento de carga de páginas.
 
-JavaScript inicial: 793.27 kB / 232.00 kB gzip frente a 996.10 kB / 292.02 kB gzip de la versión auditada (aproximadamente 20 % menos). Es el archivo inicial, no la suma de todos los módulos. CSS: 91.25 kB / 19.10 kB gzip. Los módulos secundarios se descargan al visitar sus páginas.
+JavaScript inicial: 793.52 kB / 232.10 kB gzip frente a 996.10 kB / 292.02 kB gzip de la versión auditada (aproximadamente 20 % menos). Es el archivo inicial, no la suma de todos los módulos. CSS: 91.25 kB / 19.10 kB gzip. Los módulos secundarios se descargan al visitar sus páginas.
 
 Advertencias que permanecen:
 

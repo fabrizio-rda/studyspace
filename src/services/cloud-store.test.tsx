@@ -473,3 +473,22 @@ it("restablece el perfil Catalina con diez cursos y Cambridge propio", async () 
     result.current.data.courses.some((c) => c.name.includes("Physics")),
   ).toBe(false);
 });
+
+it("comparte la carga de cuenta entre el evento SIGNED_IN y la verificación OTP", async () => {
+  vi.mocked(readCloud).mockResolvedValue({
+    state: state(),
+    revision: 1,
+    mutation_id: "m",
+  });
+  vi.mocked(cloudClient().auth.verifyOtp).mockImplementation(async () => {
+    authEvent("SIGNED_IN", { user: account });
+    return { data: { user: account }, error: null } as Awaited<
+      ReturnType<ReturnType<typeof cloudClient>["auth"]["verifyOtp"]>
+    >;
+  });
+  const { result } = mount();
+  await act(() => result.current.verifyCode(account.email, "123456"));
+  expect(result.current.cloud.writable).toBe(true);
+  expect(result.current.cloud.status).toBe("synced");
+  expect(readCloud).toHaveBeenCalledTimes(1);
+});

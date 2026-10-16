@@ -45,7 +45,7 @@ Las páginas secundarias se cargan bajo demanda. La transición de rutas pasa a 
 
 ## Verificación y límites
 
-Resultados finales: 103/103 pruebas en 17 archivos, 80 comprobaciones SQL aisladas, TypeScript, compilación, HTML de revisión y humo de producción aprobados; ambos npm audit sin vulnerabilidades. El registro completo y advertencias están en VERIFICACION.md. JSDOM comprueba funcionamiento y navegación, no el aspecto visual. PGlite utiliza usuarios sintéticos aislados y no valida las cuentas reales.
+Resultados finales: 104/104 pruebas en 17 archivos, 80 comprobaciones SQL aisladas, TypeScript, compilación, HTML de revisión y humo de producción aprobados; ambos npm audit sin vulnerabilidades. El registro completo y advertencias están en VERIFICACION.md. JSDOM comprueba funcionamiento y navegación, no el aspecto visual. PGlite utiliza usuarios sintéticos aislados y no valida las cuentas reales.
 
 Este entorno no ofrece la habilidad de control de navegador requerida por la previsualización administrada. No se inició un servidor alternativo ni se instalaron navegadores. Quedan pendientes capturas comparativas, revisión visual de escritorio/móvil y favicon en pestaña antes de aprobar la publicación. No se afirma prueba en teléfono físico, lector de pantalla ni dos dispositivos reales.
 

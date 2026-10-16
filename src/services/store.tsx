@@ -108,6 +108,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     remote: AppState;
   } | null>(null);
   const releaseWriter = useRef<(() => void) | null>(null);
+  const attaching = useRef<{ id: string; operation: Promise<void> } | null>(
+    null,
+  );
   const pending = useRef<string | null>(null);
   const sending = useRef(false);
   const epoch = useRef(0);
@@ -336,7 +339,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (generation === epoch.current) sending.current = false;
     }
   }
-  async function attach(user: { id: string; email?: string }) {
+  function attach(user: { id: string; email?: string }) {
+    // OTP verification and the SDK event can refer to the same in-flight
+    // attachment. Share it instead of cancelling and competing for our lock.
+    if (
+      attaching.current?.id === user.id &&
+      cloudRef.current.user?.id === user.id &&
+      cloudRef.current.status === "loading"
+    )
+      return attaching.current.operation;
+    const operation = attachWorkspace(user);
+    attaching.current = { id: user.id, operation };
+    return operation;
+  }
+  async function attachWorkspace(user: { id: string; email?: string }) {
     changedWorkspace();
     bindCloudIdentity(user.id);
     releaseWriter.current?.();
