@@ -1,33 +1,57 @@
 import { useState } from "react";
-import { addDays, startOfWeek } from "date-fns";
+import {
+  addDays,
+  addMonths,
+  differenceInCalendarDays,
+  endOfMonth,
+  endOfWeek,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
 import { ArrowLeft, ArrowRight, CalendarDays, RefreshCw } from "lucide-react";
 import { useStore } from "../services/store";
 import { useSharing, useSharedFeed } from "../services/sharing-context";
 import { dateKey, parseDay, todayIn, displayDate } from "../services/dates";
+
+const weekdays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
 export default function LandingCalendar() {
   const { data, cloud } = useStore();
   const sharing = useSharing();
   const [offset, setOffset] = useState(0);
-  const start = addDays(
-    startOfWeek(parseDay(todayIn(data.settings.timezone)), { weekStartsOn: 1 }),
-    offset * 7,
+  const [selected, setSelected] = useState<string | null>(null);
+  const today = todayIn(data.settings.timezone);
+  const month = startOfMonth(addMonths(parseDay(today), offset));
+  const first = startOfWeek(month, { weekStartsOn: 1 });
+  const last = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
+  const from = dateKey(first);
+  const to = dateKey(last);
+  const days = Array.from(
+    { length: differenceInCalendarDays(last, first) + 1 },
+    (_, index) => dateKey(addDays(first, index)),
   );
-  const from = dateKey(start),
-    to = dateKey(addDays(start, 6));
   const feed = useSharedFeed(from, to);
   const connected = cloud.mode === "cloud" && !!sharing.status.connection;
-  // The existing authenticated feed includes one's own private entries. The
-  // entrance deliberately excludes them and redacts even one's own busy items.
+  // The shared feed can include the signed-in owner's private events.
+  // Never expose those on the landing page, even to that same owner.
   const events = connected
     ? feed.events
-        .filter((e) => e.visibility !== "private")
-        .map((e) =>
-          e.visibility === "busy"
-            ? { ...e, title: "Ocupado", courseName: null }
-            : e,
+        .filter((event) => event.visibility !== "private")
+        .map((event) =>
+          event.visibility === "busy"
+            ? { ...event, title: "Ocupado", courseName: null }
+            : event,
         )
     : [];
+  const activeDay =
+    selected && selected >= from && selected <= to
+      ? selected
+      : offset === 0
+        ? today
+        : dateKey(month);
+  const activeEvents = events.filter((event) => event.date === activeDay);
   const error = sharing.error || feed.error;
+
   return (
     <section className="entry-calendar" aria-labelledby="joint-title">
       <div className="entry-calendar-heading">
@@ -52,94 +76,119 @@ export default function LandingCalendar() {
           </button>
         )}
       </div>
-      {!connected ? (
-        <div className="entry-calendar-empty" role="status">
-          <CalendarDays size={30} />
-          <h3>
-            {sharing.loading
-              ? "Consultando vinculación…"
-              : "Aún no hay un calendario conjunto disponible"}
-          </h3>
-          <p>
-            {error ||
+      <div className="entry-month-controls">
+        <button
+          className="icon-btn"
+          aria-label="Mes anterior"
+          onClick={() => {
+            setSelected(null);
+            setOffset((value) => value - 1);
+          }}
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <h3>{displayDate(dateKey(month), "MMMM yyyy")}</h3>
+        <button
+          className="icon-btn"
+          aria-label="Mes siguiente"
+          onClick={() => {
+            setSelected(null);
+            setOffset((value) => value + 1);
+          }}
+        >
+          <ArrowRight size={18} />
+        </button>
+        {offset !== 0 && (
+          <button
+            className="text-btn"
+            onClick={() => {
+              setSelected(null);
+              setOffset(0);
+            }}
+          >
+            Hoy
+          </button>
+        )}
+      </div>
+      {!connected && (
+        <p className="entry-calendar-status" role="status">
+          {sharing.loading
+            ? "Consultando vinculación…"
+            : error ||
               (cloud.user
-                ? "Aparecerá cuando ambas cuentas estén vinculadas mediante una invitación aceptada."
-                : "Inicia sesión en uno de los espacios. Cuando ambas cuentas estén vinculadas, aquí aparecerán sus actividades compartidas.")}
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="entry-week-controls">
-            <button
-              className="icon-btn"
-              aria-label="Semana conjunta anterior"
-              onClick={() => setOffset((n) => n - 1)}
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <p>
-              {displayDate(from, "d MMM")} — {displayDate(to, "d MMM yyyy")}
-            </p>
-            <button
-              className="icon-btn"
-              aria-label="Semana conjunta siguiente"
-              onClick={() => setOffset((n) => n + 1)}
-            >
-              <ArrowRight size={18} />
-            </button>
-            <button className="text-btn" onClick={() => setOffset(0)}>
-              Esta semana
-            </button>
-          </div>
-          {error ? (
-            <p className="integration-error" role="alert">
-              {error}
-            </p>
-          ) : feed.loading ? (
-            <p role="status">Consultando actividades…</p>
-          ) : events.length ? (
-            <div className="entry-agenda">
-              {Array.from({ length: 7 }, (_, i) =>
-                dateKey(addDays(start, i)),
-              ).map((day) => {
-                const list = events.filter((e) => e.date === day);
-                if (!list.length) return null;
-                return (
-                  <section
-                    key={day}
-                    className="entry-agenda-day"
-                    aria-label={displayDate(day, "EEEE d MMMM")}
-                  >
-                    <h3>{displayDate(day, "EEE d")}</h3>
-                    <ul>
-                      {list.map((e) => (
-                        <li key={`${e.ownerId}:${e.id}`}>
-                          <span
-                            className={`entry-owner ${e.ownerAccent === "pink" ? "catalina" : "fabrizio"}`}
-                          >
-                            {e.ownerName}
-                          </span>
-                          <time>{e.time || "Todo el día"}</time>
-                          <strong>{e.title}</strong>
-                          {e.courseName && <small>{e.courseName}</small>}
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="entry-week-empty">
-              No hay actividades compartidas esta semana.
-            </p>
-          )}
-          <p className="entry-calendar-note">
-            Solo actividades compartidas · Consulta · La edición se realiza
-            dentro de cada espacio.
-          </p>
-        </>
+                ? "Las actividades compartidas aparecerán cuando ambos espacios estén vinculados."
+                : "Inicia sesión en uno de los espacios para consultar las actividades compartidas.")}
+        </p>
       )}
+      {connected && error && (
+        <p className="integration-error" role="alert">{error}</p>
+      )}
+      {connected && feed.loading && (
+        <p className="entry-calendar-status" role="status">
+          Consultando actividades…
+        </p>
+      )}
+      <div className="entry-month-calendar">
+        <div className="entry-month-weekdays" aria-hidden="true">
+          {weekdays.map((day) => <span key={day}>{day}</span>)}
+        </div>
+        <div className="entry-month-grid">
+          {days.map((day) => {
+            const items = events.filter((event) => event.date === day);
+            const outside = day.slice(0, 7) !== dateKey(month).slice(0, 7);
+            return (
+              <button
+                type="button"
+                key={day}
+                className={`entry-month-day${outside ? " outside" : ""}${day === today ? " today" : ""}${day === activeDay ? " selected" : ""}`}
+                aria-label={`${displayDate(day, "EEEE d MMMM")}, ${items.length} actividades compartidas`}
+                aria-pressed={day === activeDay}
+                onClick={() => setSelected(day)}
+              >
+                <span className="entry-month-number">{Number(day.slice(-2))}</span>
+                <span className="entry-month-events">
+                  {items.slice(0, 2).map((event) => (
+                    <span
+                      key={`${event.ownerId}:${event.id}`}
+                      className={`entry-month-event ${event.ownerAccent === "pink" ? "catalina" : "fabrizio"}`}
+                      title={`${event.ownerName}: ${event.title}`}
+                    >
+                      <span className="entry-month-event-text">
+                        {event.title}
+                      </span>
+                    </span>
+                  ))}
+                  {items.length > 2 && (
+                    <span className="entry-month-more">+{items.length - 2} más</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="entry-month-detail" aria-live="polite">
+        <h3>{displayDate(activeDay, "EEEE d 'de' MMMM")}</h3>
+        {activeEvents.length ? (
+          <ul>
+            {activeEvents.map((event) => (
+              <li key={`${event.ownerId}:${event.id}`}>
+                <span className={`entry-owner ${event.ownerAccent === "pink" ? "catalina" : "fabrizio"}`}>
+                  {event.ownerName}
+                </span>
+                <time>{event.time || "Todo el día"}</time>
+                <strong>{event.title}</strong>
+                {event.courseName && <small>{event.courseName}</small>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="entry-week-empty">Sin actividades compartidas este día.</p>
+        )}
+      </div>
+      <p className="entry-calendar-note">
+        Solo actividades compartidas · Consulta · Las actividades privadas no aparecen aquí.
+      </p>
     </section>
   );
 }
