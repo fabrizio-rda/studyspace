@@ -1,8 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
+import { StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { StoreProvider, useStore } from "./store";
 import { initialState } from "../models/schema";
 import { accountState } from "./accounts";
+import { createTimer } from "./study";
 import { STORAGE_KEY, saveState } from "./storage";
 import {
   cloudClient,
@@ -491,4 +493,305 @@ it("comparte la carga de cuenta entre el evento SIGNED_IN y la verificación OTP
   expect(result.current.cloud.writable).toBe(true);
   expect(result.current.cloud.status).toBe("synced");
   expect(readCloud).toHaveBeenCalledTimes(1);
+});
+
+describe("Validación final: restauración, exclusión y reintentos acotados", () => {
+  const snapshot = () => ({ state: state(), revision: 1, mutation_id: "m" });
+  const flush = async () => {
+    for (let i = 0; i < 12; i++) await Promise.resolve();
+  };
+  it("restaura INITIAL_SESSION por sí solo y una sesión ausente no consulta la nube", async () => {
+    vi.mocked(readCloud).mockResolvedValue(snapshot());
+    const a = mount();
+    await act(async () => {
+      authEvent("INITIAL_SESSION", null);
+      await flush();
+    });
+    expect(readCloud).not.toHaveBeenCalled();
+    await act(async () => {
+      authEvent("INITIAL_SESSION", { user: account });
+      await flush();
+    });
+    expect(a.result.current.cloud.status).toBe("synced");
+    expect(a.result.current.data.settings.name).toBe("Nube");
+    expect(readCloud).toHaveBeenCalledTimes(1);
+  });
+  it("TOKEN_REFRESHED recupera una carga inicial fallida sin caché ni recarga manual", async () => {
+    vi.mocked(readCloud).mockRejectedValueOnce(Error("JWT expired"));
+    const a = mount();
+    await act(async () => {
+      authEvent("INITIAL_SESSION", { user: account });
+      await flush();
+    });
+    expect(a.result.current.cloud.status).toBe("error");
+    expect(a.result.current.cloud.mode).toBe("setup");
+    vi.mocked(readCloud).mockResolvedValue(snapshot());
+    await act(async () => {
+      authEvent("TOKEN_REFRESHED", { user: account });
+      await flush();
+    });
+    expect(a.result.current.cloud.status).toBe("synced");
+    expect(a.result.current.cloud.writable).toBe(true);
+    expect(readCloud).toHaveBeenCalledTimes(2);
+  });
+  it.each(["INITIAL_SESSION", "TOKEN_REFRESHED"])(
+    "%s con otro UUID oculta el espacio y descarta una lectura tardía",
+    async (event) => {
+      vi.mocked(readCloud).mockResolvedValue(snapshot());
+      const a = mount();
+      await act(() => a.result.current.verifyCode(account.email, "123456"));
+      let finish!: (v: ReturnType<typeof snapshot>) => void;
+      vi.mocked(readCloud).mockReturnValueOnce(
+        new Promise((r) => {
+          finish = r;
+        }),
+      );
+      let old!: Promise<void>;
+      act(() => {
+        old = a.result.current.syncNow();
+      });
+      const other = { id: "owner-b", email: "other@example.test" };
+      act(() => authEvent(event, { user: other }));
+      expect(a.result.current.data.settings.name).not.toBe("Nube");
+      expect(a.result.current.cloud.writable).toBe(false);
+      act(() =>
+        expect(
+          a.result.current.commit((d) => {
+            d.settings.name = "No";
+          }),
+        ).toBe(false),
+      );
+      await act(async () => {
+        await flush();
+        finish({
+          ...snapshot(),
+          state: {
+            ...state(),
+            settings: { ...state().settings, name: "Respuesta anterior" },
+          },
+        });
+        await old;
+      });
+      expect(a.result.current.cloud.user?.id).toBe(other.id);
+      expect(a.result.current.data.settings.name).not.toBe(
+        "Respuesta anterior",
+      );
+      expect(localStorage.getItem(cacheKey(account.id))).not.toContain(
+        "Respuesta anterior",
+      );
+    },
+  );
+  it("no repite cargas por ráfagas de eventos y solo consulta una vez por intervalo", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.mocked(readCloud).mockResolvedValue(snapshot());
+      const a = mount();
+      await act(async () => {
+        authEvent("INITIAL_SESSION", { user: account });
+        await flush();
+      });
+      for (let i = 0; i < 20; i++) {
+        await act(async () => {
+          authEvent(i % 2 ? "TOKEN_REFRESHED" : "SIGNED_IN", { user: account });
+          await flush();
+        });
+      }
+      expect(readCloud).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(29999);
+      });
+      expect(readCloud).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(readCloud).toHaveBeenCalledTimes(2);
+      expect(a.result.current.cloud.status).toBe("synced");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("la pestaña secundaria no modifica la copia pendiente al desconectarse con un temporizador", async () => {
+    const remote = snapshot();
+    remote.state.activeTimer = createTimer(remote.state, {
+      courseId: null,
+      topicId: null,
+      planId: null,
+      minutes: 25,
+      mode: "continuous",
+    });
+    vi.mocked(readCloud).mockResolvedValue(remote);
+    const a = mount(),
+      b = mount();
+    await act(() => a.result.current.verifyCode(account.email, "123456"));
+    await act(() => b.result.current.verifyCode(account.email, "123456"));
+    act(() =>
+      expect(
+        a.result.current.commit((d) => {
+          d.settings.name = "Pendiente A";
+        }),
+      ).toBe(true),
+    );
+    const before = localStorage.getItem(cacheKey(account.id));
+    // Only the secondary receives this event, as in two independent documents.
+    a.unmount();
+    await act(async () => {
+      window.dispatchEvent(new Event("offline"));
+      await flush();
+    });
+    expect(b.result.current.cloud.writable).toBe(false);
+    expect(localStorage.getItem(cacheKey(account.id))).toBe(before);
+    await act(() => b.result.current.syncNow());
+    expect(b.result.current.data.settings.name).toBe("Pendiente A");
+  });
+  it("un desmontaje durante la concesión del bloqueo no deja un escritor huérfano", async () => {
+    vi.mocked(readCloud).mockResolvedValue(snapshot());
+    const a = mount();
+    act(() => authEvent("INITIAL_SESSION", { user: account }));
+    // Lock acquisition resumes in a microtask, after this unmount.
+    a.unmount();
+    await act(flush);
+    const b = mount();
+    await act(() => b.result.current.verifyCode(account.email, "123456"));
+    expect(b.result.current.cloud.writable).toBe(true);
+  });
+  it("solo una pestaña puede guardar y la secundaria recupera edición tras cerrar sesión en la primera", async () => {
+    vi.mocked(readCloud).mockResolvedValue(snapshot());
+    vi.mocked(writeCloud).mockImplementation(
+      async (data, revision, mutation_id) => ({
+        state: data,
+        revision: revision + 1,
+        mutation_id,
+      }),
+    );
+    const a = mount(),
+      b = mount();
+    await act(() => a.result.current.verifyCode(account.email, "123456"));
+    await act(() => b.result.current.verifyCode(account.email, "123456"));
+    act(() => {
+      expect(
+        a.result.current.commit((d) => {
+          d.settings.name = "A";
+        }),
+      ).toBe(true);
+      expect(
+        b.result.current.commit((d) => {
+          d.settings.name = "B";
+        }),
+      ).toBe(false);
+    });
+    await act(async () => {
+      await Promise.all([
+        a.result.current.syncNow(),
+        b.result.current.syncNow(),
+      ]);
+    });
+    expect(writeCloud).toHaveBeenCalledTimes(1);
+    expect(b.result.current.cloud.writable).toBe(false);
+    await act(() => a.result.current.signOut());
+    await act(flush);
+    await act(() => b.result.current.syncNow());
+    expect(b.result.current.cloud.writable).toBe(true);
+    act(() =>
+      expect(
+        b.result.current.commit((d) => {
+          d.settings.name = "B";
+        }),
+      ).toBe(true),
+    );
+    await act(() => b.result.current.syncNow());
+    expect(writeCloud).toHaveBeenCalledTimes(2);
+    expect(b.result.current.cloud.status).toBe("synced");
+  });
+  it("TOKEN_REFRESHED reintenta el mismo guardado pendiente sin duplicarlo", async () => {
+    vi.mocked(readCloud).mockResolvedValue(snapshot());
+    vi.mocked(writeCloud).mockRejectedValueOnce(Error("JWT expired"));
+    const a = mount();
+    await act(() => a.result.current.verifyCode(account.email, "123456"));
+    act(() =>
+      expect(
+        a.result.current.commit((d) => {
+          d.settings.name = "Mi cambio";
+        }),
+      ).toBe(true),
+    );
+    await act(() => a.result.current.syncNow());
+    expect(a.result.current.cloud.status).toBe("error");
+    const pending = readCache(account.id)!.pending;
+    vi.mocked(writeCloud).mockImplementation(
+      async (data, revision, mutation_id) => ({
+        state: data,
+        revision: revision + 1,
+        mutation_id,
+      }),
+    );
+    await act(async () => {
+      for (let i = 0; i < 20; i++)
+        authEvent("TOKEN_REFRESHED", { user: account });
+      await flush();
+    });
+    expect(writeCloud).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(writeCloud).mock.calls[1][2]).toBe(pending);
+    expect(a.result.current.data.settings.name).toBe("Mi cambio");
+    expect(a.result.current.cloud.status).toBe("synced");
+    expect(readCache(account.id)?.pending).toBeNull();
+  });
+  it("acota los reintentos al reconectar y al intervalo, incluso si la red sigue fallando", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.mocked(readCloud).mockResolvedValueOnce(snapshot());
+      const a = mount();
+      await act(() => a.result.current.verifyCode(account.email, "123456"));
+      vi.mocked(readCloud).mockRejectedValue(Error("Network"));
+      await act(async () => {
+        window.dispatchEvent(new Event("offline"));
+        for (let i = 0; i < 20; i++) window.dispatchEvent(new Event("online"));
+        await flush();
+      });
+      expect(readCloud).toHaveBeenCalledTimes(2);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(29999);
+      });
+      expect(readCloud).toHaveBeenCalledTimes(2);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(readCloud).toHaveBeenCalledTimes(3);
+      expect(a.result.current.cloud.status).toBe("error");
+      vi.mocked(readCloud).mockResolvedValue(snapshot());
+      await act(async () => {
+        authEvent("TOKEN_REFRESHED", { user: account });
+        await flush();
+      });
+      expect(a.result.current.cloud.status).toBe("synced");
+      expect(readCloud).toHaveBeenCalledTimes(4);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(29999);
+      });
+      expect(readCloud).toHaveBeenCalledTimes(4);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("StrictMode cancela la suscripción antigua y conserva un único escritor", async () => {
+    vi.mocked(readCloud).mockResolvedValue(snapshot());
+    vi.mocked(cloudClient().auth.onAuthStateChange).mockImplementation(
+      (callback) => {
+        queueMicrotask(() => {
+          void callback("INITIAL_SESSION", { user: account } as never);
+        });
+        return { data: { subscription: { unsubscribe: vi.fn() } } } as never;
+      },
+    );
+    const a = renderHook(() => useStore(), {
+      wrapper: ({ children }) => (
+        <StrictMode>
+          <StoreProvider>{children}</StoreProvider>
+        </StrictMode>
+      ),
+    });
+    await act(flush);
+    expect(a.result.current.cloud.status).toBe("synced");
+    expect(a.result.current.cloud.writable).toBe(true);
+    expect(readCloud).toHaveBeenCalledTimes(1);
+  });
 });

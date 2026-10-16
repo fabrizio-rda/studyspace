@@ -368,3 +368,50 @@ it("recupera estado y feed después de desconectar durante solicitudes pendiente
   await act(async () => window.dispatchEvent(new Event("online")));
   await waitFor(() => expect(second.result.current.events.length).toBe(3));
 });
+
+it("no encadena cargas de estado/feed tras reconectar y mantiene el intervalo de 30 segundos", async () => {
+  vi.mocked(sharingStatus).mockClear();
+  vi.mocked(calendarFeed).mockClear();
+  vi.useFakeTimers();
+  const flush = async () => {
+    for (let i = 0; i < 15; i++) await Promise.resolve();
+  };
+  try {
+    const a = renderHook(() => useSharedFeed("2026-10-01", "2026-10-31"), {
+      wrapper: Wrapper,
+    });
+    await act(flush);
+    expect(sharingStatus).toHaveBeenCalledTimes(1);
+    expect(calendarFeed).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      window.dispatchEvent(new Event("offline"));
+      await flush();
+    });
+    await act(async () => {
+      for (let i = 0; i < 20; i++) window.dispatchEvent(new Event("online"));
+      await flush();
+    });
+    expect(a.result.current.events).toHaveLength(3);
+    expect(a.result.current.loading).toBe(false);
+    expect(sharingStatus).toHaveBeenCalledTimes(2);
+    expect(calendarFeed).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(29999);
+    });
+    expect(sharingStatus).toHaveBeenCalledTimes(2);
+    expect(calendarFeed).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(sharingStatus).toHaveBeenCalledTimes(3);
+    expect(calendarFeed).toHaveBeenCalledTimes(3);
+    a.unmount();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+    expect(sharingStatus).toHaveBeenCalledTimes(3);
+    expect(calendarFeed).toHaveBeenCalledTimes(3);
+  } finally {
+    vi.useRealTimers();
+  }
+});

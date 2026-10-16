@@ -108,6 +108,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     remote: AppState;
   } | null>(null);
   const releaseWriter = useRef<(() => void) | null>(null);
+  const writerKey = useRef<string | null>(null);
   const attaching = useRef<{ id: string; operation: Promise<void> } | null>(
     null,
   );
@@ -353,10 +354,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return operation;
   }
   async function attachWorkspace(user: { id: string; email?: string }) {
+    const key = cacheKey(user.id);
+    const heldWriter = writerKey.current === key ? releaseWriter.current : null;
     changedWorkspace();
     bindCloudIdentity(user.id);
-    releaseWriter.current?.();
-    releaseWriter.current = null;
+    if (!heldWriter) releaseWriter.current?.();
+    releaseWriter.current = heldWriter;
+    writerKey.current = heldWriter ? key : null;
     sending.current = false;
     const generation = epoch.current;
     pending.current = null;
@@ -369,12 +373,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       error: "",
     });
     try {
-      const release = await acquireWriter(cacheKey(user.id));
+      // Keep our own lock during same-account retries. Releasing and acquiring
+      // immediately can race the browser's asynchronous release completion.
+      const release = await (heldWriter ?? acquireWriter(key));
       if (generation !== epoch.current) {
         release?.();
         return;
       }
       releaseWriter.current = release;
+      writerKey.current = release ? key : null;
       const writable = !!release;
       showCloud({ writable });
       const remote = await readCloud(user.id);
@@ -561,6 +568,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     bindCloudIdentity(null);
     releaseWriter.current?.();
     releaseWriter.current = null;
+    writerKey.current = null;
     sending.current = false;
     changedWorkspace();
     pending.current = null;
@@ -585,7 +593,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubscribe?.();
       try {
         const client = cloudClient();
+        let active = true;
+        let firstEvent = true;
+        const restoreSubscription = !!cloudRef.current.user;
         const listener = client.auth.onAuthStateChange?.((event, session) => {
+          if (!active) return;
+          const first = firstEvent;
+          firstEvent = false;
           const user = session?.user;
           if (
             event === "SIGNED_OUT" ||
@@ -594,13 +608,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             if (cloudRef.current.user) restoreLocalSession();
             return;
           }
-          if (user && user.id !== cloudRef.current.user?.id) {
+          if (
+            user &&
+            ((first && restoreSubscription) ||
+              user.id !== cloudRef.current.user?.id)
+          ) {
             // Clear the old workspace synchronously. attach yields at the lock
             // before querying auth/RPC, so the auth callback cannot deadlock.
             void attach(user).catch((e) => notify((e as Error).message));
+          } else if (
+            user &&
+            event === "TOKEN_REFRESHED" &&
+            ["error", "offline"].includes(cloudRef.current.status)
+          ) {
+            // A new credential can recover a failed initial load or sync.
+            // syncNow keeps pending changes and suppresses concurrent retries.
+            void syncNow().catch((e) => notify((e as Error).message));
           }
         });
-        unsubscribe = () => listener?.data.subscription.unsubscribe();
+        unsubscribe = () => {
+          active = false;
+          listener?.data.subscription.unsubscribe();
+        };
       } catch {
         /* Sin configuración todavía. */
       }
@@ -609,7 +638,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     window.addEventListener("studyspace:config", listen);
     return () => {
       unsubscribe?.();
+      // Invalidate even an acquisition/read which has not completed yet.
+      epoch.current++;
+      attaching.current = null;
       releaseWriter.current?.();
+      releaseWriter.current = null;
+      writerKey.current = null;
       window.removeEventListener("studyspace:config", listen);
     };
   }, []);
