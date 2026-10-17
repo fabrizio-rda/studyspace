@@ -1,8 +1,8 @@
 # Adaptación de la referencia visual
 
-Composición inspirada en la captura facilitada: barra lateral estrecha de iconos, tipografía grande y ligera, paneles amplios con borde fino y superficies translúcidas. Se conserva la paleta de StudySpace: azul con degradados hacia celeste, tarjeta de Fabrizio celeste y Catalina vino suave. No se incorporan imágenes de montañas, gráficos inventados ni estadísticas de ejemplo.
+Composición inspirada en la captura facilitada: barra lateral estrecha de iconos, tipografía grande y ligera, paneles amplios con borde fino y superficies translúcidas. Se conserva la paleta de StudySpace: fondo beige #f6f0e7, azul/celeste en navegación y tarjeta de Fabrizio, y Catalina vino suave. No se incorporan imágenes de montañas, gráficos inventados ni estadísticas de ejemplo.
 
-La portada mantiene las dos tarjetas arriba y el calendario mensual debajo, con el título «Calendario». La barra lateral lleva a la portada, las tarjetas y el calendario. En pantallas pequeñas pasa a una fila superior y las tarjetas se apilan, con ajustes para 390 y 320 px. Se conservan los indicadores de actividad del calendario y sus detalles autorizados.
+La portada mantiene las dos tarjetas arriba y el calendario mensual debajo, con el título «Calendario». El calendario ocupa el fondo beige directamente, sin tarjeta exterior, borde, sombra ni relleno propio; el contenido se amplía hasta 1600 px y las filas mensuales crecen en escritorio. La barra lateral lleva a la portada, las tarjetas y el calendario. En pantallas pequeñas pasa a una fila superior y las tarjetas se apilan, con ajustes para 390 y 320 px. Se conservan los indicadores de actividad del calendario y sus detalles autorizados.
 
 Dentro del espacio personal se aplican superficies azuladas, barra lateral azul oscuro, panel de bienvenida azul y botones con mayor contraste. La ilustración de libros se sustituye por un resumen de total, pendientes, completadas y porcentaje, calculado únicamente con las tareas de la cuenta activa. Se mantienen cursos, navegación y operaciones existentes.
 
@@ -12,4 +12,4 @@ Validación: 131 pruebas en 19 archivos aprobadas, TypeScript, compilación y sm
 
 No está disponible el control de navegador requerido por la previsualización administrada. No se generaron capturas ni se afirma validación visual. Para revisar, abrir el HTML del artefacto del PR en una ventana Invitado sin conectar Supabase; comprobar escritorio, 390 y 320 px, tarjetas, navegación superior móvil y calendario. El diseño con actividades y el resumen personal se verifican funcionalmente en JSDOM, no en un teléfono físico.
 
-La entrega queda en el PR #3, sin merge ni publicación automática.
+El usuario autorizó integrar y publicar esta corrección directamente en la página. La publicación se verifica tras las comprobaciones del PR #3.
