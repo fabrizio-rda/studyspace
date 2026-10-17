@@ -13,3 +13,7 @@ Validación: 131 pruebas en 19 archivos aprobadas, TypeScript, compilación y sm
 No está disponible el control de navegador requerido por la previsualización administrada. No se generaron capturas ni se afirma validación visual. Para revisar, abrir el HTML del artefacto del PR en una ventana Invitado sin conectar Supabase; comprobar escritorio, 390 y 320 px, tarjetas, navegación superior móvil y calendario. El diseño con actividades y el resumen personal se verifican funcionalmente en JSDOM, no en un teléfono físico.
 
 El usuario autorizó integrar y publicar esta corrección directamente en la página. La publicación se verifica tras las comprobaciones del PR #3.
+
+## Degradados visibles
+
+Se aumenta la diferencia entre los extremos del degradado: Fabrizio azul medio a celeste claro y Catalina vino suave a rosa cálido. El fondo pasa de celeste desaturado en la cabecera a beige en la zona del calendario, que conserva su superficie abierta. La navegación y la bienvenida también transicionan de azul a celeste; las tarjetas ganan altura, nombres más grandes y una acción con superficie translúcida. En móvil se mantienen las tarjetas apiladas y se corrige el contraste de los iconos superiores sobre el fondo claro. No cambian identidad, autenticación ni datos.
