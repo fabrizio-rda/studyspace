@@ -7,7 +7,6 @@ import {
   BookOpen,
   CalendarDays,
   Check,
-  Coffee,
   Hourglass,
   ListChecks,
   TrendingUp,
@@ -92,22 +91,34 @@ export default function Dashboard() {
             </span>
           </div>
         </div>
-        <div className="study-art" aria-hidden="true">
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <div className="book-stack">
-            <div className="book-book blue-book" />
-            <div className="book-book pink-book" />
-            <div className="book-book purple-book" />
-            <div className="book-pages" />
-            <div className="book-cover">
-              <BookOpen size={51} strokeWidth={1} />
+        <section className="welcome-summary" aria-label="Resumen de tareas">
+          <span className="welcome-summary-title">Tus tareas</span>
+          <dl>
+            <div>
+              <dt>Total</dt>
+              <dd>{data.tasks.length}</dd>
             </div>
+            <div>
+              <dt>Pendientes</dt>
+              <dd>{pending.length}</dd>
+            </div>
+            <div>
+              <dt>Completadas</dt>
+              <dd>{completed.length}</dd>
+            </div>
+          </dl>
+          <div
+            className="welcome-summary-progress"
+            role="progressbar"
+            aria-label="Tareas completadas"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
+          >
+            <span style={{ width: `${percent}%` }} />
           </div>
-          <div className="little-cup">
-            <Coffee size={36} strokeWidth={1.7} />
-          </div>
-        </div>
+          <span className="welcome-summary-percent">{percent}% completado</span>
+        </section>
       </section>
       <UpcomingTasks />
       <Card

@@ -53,19 +53,23 @@ export default function LandingCalendar() {
   const error = sharing.error || feed.error;
 
   return (
-    <section className="entry-calendar" aria-labelledby="joint-title">
+    <section
+      id="entry-calendar"
+      className="entry-calendar"
+      aria-labelledby="joint-title"
+    >
       <div className="entry-calendar-heading">
         <div>
-          <span className="entry-eyebrow">AGENDA COMPARTIDA</span>
+          <span className="entry-eyebrow">ACTIVIDADES DE AMBOS</span>
           <h2 id="joint-title">
             <CalendarDays size={22} />
-            Calendario conjunto
+            Calendario
           </h2>
         </div>
         {connected && (
           <button
             className="btn soft"
-            aria-label="Actualizar calendario conjunto"
+            aria-label="Actualizar calendario"
             onClick={() => {
               void sharing.refresh();
               void feed.refresh();
@@ -121,7 +125,9 @@ export default function LandingCalendar() {
         </p>
       )}
       {connected && error && (
-        <p className="integration-error" role="alert">{error}</p>
+        <p className="integration-error" role="alert">
+          {error}
+        </p>
       )}
       {connected && feed.loading && (
         <p className="entry-calendar-status" role="status">
@@ -130,7 +136,9 @@ export default function LandingCalendar() {
       )}
       <div className="entry-month-calendar">
         <div className="entry-month-weekdays" aria-hidden="true">
-          {weekdays.map((day) => <span key={day}>{day}</span>)}
+          {weekdays.map((day) => (
+            <span key={day}>{day}</span>
+          ))}
         </div>
         <div className="entry-month-grid">
           {days.map((day) => {
@@ -145,7 +153,9 @@ export default function LandingCalendar() {
                 aria-pressed={day === activeDay}
                 onClick={() => setSelected(day)}
               >
-                <span className="entry-month-number">{Number(day.slice(-2))}</span>
+                <span className="entry-month-number">
+                  {Number(day.slice(-2))}
+                </span>
                 <span className="entry-month-events">
                   {items.slice(0, 2).map((event) => (
                     <span
@@ -159,7 +169,9 @@ export default function LandingCalendar() {
                     </span>
                   ))}
                   {items.length > 2 && (
-                    <span className="entry-month-more">+{items.length - 2} más</span>
+                    <span className="entry-month-more">
+                      +{items.length - 2} más
+                    </span>
                   )}
                 </span>
               </button>
@@ -173,7 +185,9 @@ export default function LandingCalendar() {
           <ul>
             {activeEvents.map((event) => (
               <li key={`${event.ownerId}:${event.id}`}>
-                <span className={`entry-owner ${event.ownerAccent === "pink" ? "catalina" : "fabrizio"}`}>
+                <span
+                  className={`entry-owner ${event.ownerAccent === "pink" ? "catalina" : "fabrizio"}`}
+                >
                   {event.ownerName}
                 </span>
                 <time>{event.time || "Todo el día"}</time>
@@ -183,11 +197,14 @@ export default function LandingCalendar() {
             ))}
           </ul>
         ) : (
-          <p className="entry-week-empty">Sin actividades compartidas este día.</p>
+          <p className="entry-week-empty">
+            Sin actividades compartidas este día.
+          </p>
         )}
       </div>
       <p className="entry-calendar-note">
-        Solo actividades compartidas · Consulta · Las actividades privadas no aparecen aquí.
+        Solo actividades compartidas · Consulta · Las actividades privadas no
+        aparecen aquí.
       </p>
     </section>
   );

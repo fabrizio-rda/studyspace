@@ -88,7 +88,7 @@ try {
   assert(
     w.document
       .querySelector("main")
-      .textContent.includes("Calendario conjunto"),
+      .textContent.includes("Calendario"),
   );
   w.location.hash = "/acceso/catalina";
   await delay(100);

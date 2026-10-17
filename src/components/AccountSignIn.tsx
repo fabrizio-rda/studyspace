@@ -1,4 +1,27 @@
 import { useState } from "react";
+
+const OTP_PENDING_TTL = 15 * 60 * 1000;
+function pendingOtpKey() {
+  const route = window.location.hash.split("?")[0];
+  return `studyspace:pending-email-code:v1:${loadConfig().supabaseUrl}:${route}`;
+}
+function readPendingOtp(): string {
+  try {
+    const raw = sessionStorage.getItem(pendingOtpKey());
+    if (!raw) return "";
+    const value = JSON.parse(raw) as { email?: unknown; sentAt?: unknown };
+    if (typeof value.email === "string" && typeof value.sentAt === "number" && Date.now() - value.sentAt < OTP_PENDING_TTL && Date.now() >= value.sentAt) return value.email;
+    sessionStorage.removeItem(pendingOtpKey());
+  } catch { /* A private browsing session may restrict storage. */ }
+  return "";
+}
+function savePendingOtp(email: string) {
+  try { sessionStorage.setItem(pendingOtpKey(), JSON.stringify({ email, sentAt: Date.now() })); } catch { /* The form still works without persistence. */ }
+}
+function clearPendingOtp() {
+  try { sessionStorage.removeItem(pendingOtpKey()); } catch { /* Ignore unavailable storage. */ }
+}
+
 import { useStore } from "../services/store";
 import { loadConfig, saveConfig } from "../services/config";
 export default function AccountSignIn({
@@ -8,9 +31,10 @@ export default function AccountSignIn({
 }) {
   const store = useStore();
   const [config, setConfig] = useState(loadConfig);
-  const [email, setEmail] = useState("");
+  const [pendingEmail] = useState(readPendingOtp);
+  const [email, setEmail] = useState(pendingEmail);
   const [code, setCode] = useState("");
-  const [sent, setSent] = useState(false);
+  const [sent, setSent] = useState(!!pendingEmail);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return (
@@ -23,9 +47,12 @@ export default function AccountSignIn({
           setBusy(true);
           setError("");
           try {
-            if (sent) await store.verifyCode(email.trim(), code.trim());
-            else {
+            if (sent) {
+              await store.verifyCode(email.trim(), code.trim());
+              clearPendingOtp();
+            } else {
               await store.sendCode(email.trim());
+              savePendingOtp(email.trim());
               setSent(true);
             }
           } catch (e) {
@@ -46,6 +73,11 @@ export default function AccountSignIn({
             disabled={sent || busy}
           />
         </label>
+        {sent && (
+          <p className="form-help" role="status">
+            Correo enviado a {email}. Revisa el mensaje en otra pestaña: si contiene un código, escríbelo abajo; si contiene un botón «Sign in», ese enlace inicia sesión directamente. No necesitas pedir otro correo al recargar.
+          </p>
+        )}
         {sent && (
           <label>
             Código recibido
@@ -72,6 +104,7 @@ export default function AccountSignIn({
             className="text-btn"
             disabled={busy}
             onClick={() => {
+              clearPendingOtp();
               setSent(false);
               setCode("");
             }}

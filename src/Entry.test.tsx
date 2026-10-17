@@ -128,7 +128,7 @@ it("muestra dos tarjetas y un calendario vacío sin revelar datos locales ni con
     screen.getByRole("link", { name: "Entrar al espacio de Catalina" }),
   ).toHaveClass("catalina");
   expect(
-    screen.getByRole("heading", { name: "Calendario conjunto" }),
+    screen.getByRole("heading", { name: "Calendario" }),
   ).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Mes anterior" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Mes siguiente" })).toBeInTheDocument();
@@ -148,6 +148,21 @@ it("muestra dos tarjetas y un calendario vacío sin revelar datos locales ni con
   ).toBeInTheDocument();
   expect(screen.getByLabelText("Email")).toBeInTheDocument();
 });
+it("mantiene el campo del código tras recargar sin enviar otro correo", async () => {
+  const view = render(<App />);
+  await userEvent.click(
+    screen.getByRole("link", { name: "Entrar al espacio de Fabrizio" }),
+  );
+  const u = userEvent.setup();
+  await u.type(screen.getByLabelText("Email"), a.email);
+  await u.click(screen.getByRole("button", { name: "Enviar código" }));
+  expect(screen.getByLabelText("Código recibido")).toBeInTheDocument();
+  view.unmount();
+  render(<App />);
+  expect(screen.getByLabelText("Código recibido")).toBeInTheDocument();
+  expect(screen.getByLabelText("Email")).toHaveValue(a.email);
+  expect(cloudClient().auth.signInWithOtp).toHaveBeenCalledTimes(1);
+});
 it("entra directamente si la tarjeta reconoce el UUID de la sesión restaurada", async () => {
   session = a;
   bindEntry("fabrizio", a.id);
@@ -162,7 +177,7 @@ it("entra directamente si la tarjeta reconoce el UUID de la sesión restaurada",
   expect(cloudClient().auth.verifyOtp).not.toHaveBeenCalled();
   expect(readCloud).toHaveBeenCalledTimes(1);
 });
-it("una sesión no asociada exige confirmación y no abre el espacio por coincidencia de nombre", async () => {
+it("asocia automáticamente una sesión válida con la tarjeta seleccionada", async () => {
   session = a;
   render(<App />);
   await loaded();
@@ -170,16 +185,11 @@ it("una sesión no asociada exige confirmación y no abre el espacio por coincid
     screen.getByRole("link", { name: "Entrar al espacio de Fabrizio" }),
   );
   expect(
-    screen.queryByText("Tarea privada de fabrizio"),
-  ).not.toBeInTheDocument();
-  await userEvent.click(
-    screen.getByRole("button", { name: "Confirmar y entrar como Fabrizio" }),
-  );
-  expect(entryBindings().fabrizio).toBe(a.id);
-  expect(entryBindings().catalina).toBeUndefined();
-  expect(
     await screen.findByText("Cursos, tareas y evaluaciones."),
   ).toBeInTheDocument();
+  expect(entryBindings().fabrizio).toBe(a.id);
+  expect(entryBindings().catalina).toBeUndefined();
+  expect(screen.queryByRole("button", { name: /Confirmar y entrar/ })).not.toBeInTheDocument();
 });
 it("seleccionar Catalina desde Fabrizio exige cambiar de sesión y autentica el correo de Catalina", async () => {
   session = a;
@@ -203,11 +213,6 @@ it("seleccionar Catalina desde Fabrizio exige cambiar de sesión y autentica el 
   await u.click(screen.getByRole("button", { name: "Enviar código" }));
   await u.type(screen.getByLabelText("Código recibido"), "123456");
   await u.click(screen.getByRole("button", { name: "Iniciar sesión" }));
-  await u.click(
-    await screen.findByRole("button", {
-      name: "Confirmar y entrar como Catalina",
-    }),
-  );
   expect(
     await screen.findByText("Cursos, tareas y evaluaciones."),
   ).toBeInTheDocument();
@@ -335,9 +340,6 @@ it("el alta de Catalina propone su nombre y diez cursos sin ejecutar cambios en 
   await userEvent.click(
     screen.getByRole("link", { name: "Entrar al espacio de Catalina" }),
   );
-  await userEvent.click(
-    screen.getByRole("button", { name: "Confirmar cuenta de Catalina" }),
-  );
   expect(screen.getByLabelText("Tu nombre")).toHaveValue("Catalina");
   expect(screen.getByLabelText("Cursos iniciales")).toHaveValue("catalina");
   expect(screen.getByLabelText("Cursos iniciales")).toBeDisabled();
@@ -400,11 +402,6 @@ it("un enlace profundo anónimo conserva su destino al elegir una tarjeta", asyn
   await u.click(screen.getByRole("button", { name: "Enviar código" }));
   await u.type(screen.getByLabelText("Código recibido"), "123456");
   await u.click(screen.getByRole("button", { name: "Iniciar sesión" }));
-  await u.click(
-    await screen.findByRole("button", {
-      name: "Confirmar y entrar como Catalina",
-    }),
-  );
   expect(
     await screen.findByRole("heading", { name: "Configuración" }),
   ).toBeInTheDocument();

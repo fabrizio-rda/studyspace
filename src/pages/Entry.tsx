@@ -6,6 +6,9 @@ import {
   ArrowLeft,
   GraduationCap,
   ShieldCheck,
+  House,
+  UsersRound,
+  CalendarDays,
 } from "lucide-react";
 import { useStore } from "../services/store";
 import {
@@ -27,13 +30,55 @@ import { downloadText, serializeBackup } from "../services/storage";
 
 function EntryFrame({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const main = useRef<HTMLElement>(null);
+  function goTo(section: string) {
+    if (location.pathname !== "/")
+      navigate("/", { state: { entrySection: section } });
+    else document.getElementById(section)?.scrollIntoView?.({ block: "start" });
+  }
   useEffect(() => {
     main.current?.focus();
     window.scrollTo(0, 0);
-  }, [location.pathname]);
+    const section = location.state?.entrySection;
+    if (typeof section === "string")
+      document.getElementById(section)?.scrollIntoView?.({ block: "start" });
+  }, [location.pathname, location.state]);
   return (
     <div className="entry-page">
+      <aside className="entry-rail" aria-label="Navegación de la portada">
+        <Link
+          to="/"
+          className="entry-rail-brand"
+          aria-label="StudySpace · Portada"
+        >
+          <GraduationCap size={28} />
+        </Link>
+        <nav aria-label="Secciones de la portada">
+          <Link
+            to="/"
+            className={location.pathname === "/" ? "active" : ""}
+            aria-label="Portada"
+            title="Portada"
+          >
+            <House size={21} />
+          </Link>
+          <button
+            aria-label="Ver espacios personales"
+            title="Espacios personales"
+            onClick={() => goTo("entry-profiles")}
+          >
+            <UsersRound size={21} />
+          </button>
+          <button
+            aria-label="Ver calendario"
+            title="Calendario"
+            onClick={() => goTo("entry-calendar")}
+          >
+            <CalendarDays size={21} />
+          </button>
+        </nav>
+      </aside>
       <header className="entry-header">
         <Link to="/" className="entry-brand">
           <GraduationCap size={29} />
@@ -81,7 +126,11 @@ function Landing() {
         <h1>Elige tu espacio</h1>
         <p>Accede a tus cursos y consulta el calendario conjunto.</p>
       </div>
-      <div className="entry-profiles">
+      <section
+        id="entry-profiles"
+        className="entry-profiles"
+        aria-label="Espacios personales"
+      >
         {entryProfiles.map((profile) => (
           <Link
             key={profile.id}
@@ -105,7 +154,7 @@ function Landing() {
             </span>
           </Link>
         ))}
-      </div>
+      </section>
       <LandingCalendar />
       {!cloud.user && localAccess && (
         <details className="entry-local">
@@ -137,6 +186,31 @@ function Access({
   const ready =
     cloud.mode === "cloud" && !["loading", "saving"].includes(cloud.status);
   const recognized = cloud.user && entryBindings()[profile] === cloud.user.id;
+  // A valid session already identifies the owner. Bind an unrecognized card
+  // automatically only when its academic profile does not contradict the
+  // selected card. A known binding to another UUID is never overwritten.
+  useEffect(() => {
+    if (!cloud.user || mismatch || recognized) return;
+    if (
+      !(cloud.mode === "cloud" && ready) &&
+      !(cloud.mode === "setup" && cloud.status === "local")
+    )
+      return;
+    try {
+      bindEntry(profile, cloud.user.id);
+      refreshBinding((n) => n + 1);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }, [
+    cloud.user?.id,
+    cloud.mode,
+    cloud.status,
+    ready,
+    recognized,
+    mismatch,
+    profile,
+  ]);
   useEffect(() => {
     if (cloud.user && ready && recognized && !mismatch)
       enter(profile, cloud.user.id);
@@ -188,33 +262,7 @@ function Access({
                   fixedPreset={profile}
                 />
               ) : (
-                <>
-                  <p>
-                    La sesión <strong>{cloud.user.email}</strong> todavía no
-                    tiene un espacio académico. Confirma que corresponde a{" "}
-                    {person.name} antes de crear sus cursos.
-                  </p>
-                  <button
-                    className="btn primary"
-                    onClick={() => {
-                      try {
-                        bindEntry(profile, cloud.user!.id);
-                        refreshBinding((n) => n + 1);
-                      } catch (e) {
-                        setError((e as Error).message);
-                      }
-                    }}
-                  >
-                    Confirmar cuenta de {person.name}
-                  </button>
-                  <button
-                    className="btn soft"
-                    disabled={busy}
-                    onClick={() => void run(store.signOut)}
-                  >
-                    Iniciar sesión con otro correo
-                  </button>
-                </>
+                <p role="status">Preparando el espacio de {person.name}…</p>
               )
             ) : (
               <>
@@ -233,37 +281,7 @@ function Access({
           ) : recognized ? (
             <p role="status">Abriendo tu espacio…</p>
           ) : (
-            <>
-              <p>
-                Confirma que la sesión <strong>{cloud.user.email}</strong>{" "}
-                corresponde a {person.name}.
-              </p>
-              <p className="form-help">
-                Se recordará su identidad en este navegador. Esto no cambia el
-                propietario de los datos.
-              </p>
-              <button
-                className="btn primary"
-                disabled={!ready || busy}
-                onClick={() => {
-                  try {
-                    bindEntry(profile, cloud.user!.id);
-                    enter(profile, cloud.user!.id);
-                  } catch (e) {
-                    setError((e as Error).message);
-                  }
-                }}
-              >
-                Confirmar y entrar como {person.name}
-              </button>
-              <button
-                className="btn soft"
-                disabled={busy}
-                onClick={() => void run(store.signOut)}
-              >
-                Iniciar sesión con otro correo
-              </button>
-            </>
+            <p role="status">Abriendo el espacio de {person.name}…</p>
           )
         ) : (
           <>
