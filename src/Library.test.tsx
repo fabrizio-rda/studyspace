@@ -128,6 +128,48 @@ describe("Biblioteca y personalización", () => {
       screen.getByRole("link", { name: "Resumen de fuerzas" }),
     ).toHaveAttribute("href", "https://example.com/fuerzas");
   });
+  it("abre los materiales del curso en la biblioteca filtrada, sin avisos de fases futuras", async () => {
+    const d = initialState();
+    d.documents = [
+      {
+        id: "doc-course-1",
+        name: "Guía de mecánica",
+        url: "https://example.com/mecanica",
+        source: "manual",
+        externalId: null,
+        mimeType: "application/pdf",
+        folderId: null,
+        courseId: "course-1",
+        topicId: null,
+        tags: [],
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "doc-course-2",
+        name: "Documento de otro curso",
+        url: "https://example.com/otro",
+        source: "manual",
+        externalId: null,
+        mimeType: "application/pdf",
+        folderId: null,
+        courseId: "course-2",
+        topicId: null,
+        tags: [],
+        createdAt: new Date().toISOString(),
+      },
+    ];
+    saveState(d);
+    window.location.hash = "/cursos/course-1";
+    render(<App />);
+    expect(screen.queryByText("PRÓXIMAMENTE")).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Ver materiales del curso" }),
+    );
+    expect(await screen.findByRole("heading", { name: "Biblioteca" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Filtrar biblioteca por curso" })).toHaveValue("course-1");
+    expect(screen.getByRole("link", { name: "Guía de mecánica" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Documento de otro curso" })).not.toBeInTheDocument();
+  });
   it("elige un hexadecimal, lo previsualiza y conserva el color tras recargar", async () => {
     window.location.hash = "/configuracion";
     const user = userEvent.setup();
