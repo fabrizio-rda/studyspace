@@ -56,7 +56,7 @@ export default function Library() {
   const selected = params.get("documento");
   const current = data.folders.find((f) => f.id === folderId);
   const [query, setQuery] = useState("");
-  const [course, setCourse] = useState("");
+  const [course, setCourse] = useState(() => params.get("curso") ?? "");
   const [sort, setSort] = useState("date");
   const [view, setView] = useState("grid");
   const [folderEditor, setFolderEditor] = useState<
