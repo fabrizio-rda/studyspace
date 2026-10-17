@@ -255,9 +255,14 @@
   outline-color: #eef8ff;
 }
 
-/* The workspace uses the same cool surfaces and restrained panel borders. */
+/* Shared by every interior route; the account selector has its own background.
+   The horizontal gradient remains visible on long task/course pages. */
 .app-shell {
-  background: linear-gradient(145deg, #d5e8ed 0%, #eee6db 42%, #f6f0e7 80%);
+  background-color: #e5ecf1;
+  background-image:
+    radial-gradient(ellipse at 100% 0%, #d6c8ec99 0%, transparent 55%),
+    radial-gradient(ellipse at 0% 100%, #f4eadb 0%, transparent 60%),
+    linear-gradient(90deg, #8dbce0 0%, #b6e0ec 48%, #eee4d6 100%);
 }
 .sidebar {
   background: linear-gradient(170deg, #174b80 0%, #287fa4 62%, #69b6c7 100%);

@@ -17,3 +17,7 @@ El usuario autorizó integrar y publicar esta corrección directamente en la pá
 ## Degradados visibles
 
 Se aumenta la diferencia entre los extremos del degradado: Fabrizio azul medio a celeste claro y Catalina vino suave a rosa cálido. El fondo pasa de celeste desaturado en la cabecera a beige en la zona del calendario, que conserva su superficie abierta. La navegación y la bienvenida también transicionan de azul a celeste; las tarjetas ganan altura, nombres más grandes y una acción con superficie translúcida. En móvil se mantienen las tarjetas apiladas y se corrige el contraste de los iconos superiores sobre el fondo claro. No cambian identidad, autenticación ni datos.
+
+## Fondo de las páginas interiores
+
+El contenedor compartido `.app-shell` aplica un fondo azul a celeste con beige y un acento morado suave en todas las rutas del espacio académico. La transición horizontal conserva el color en páginas largas al desplazarse, sin repetir imágenes, usar capas fijas ni modificar el flujo o los controles táctiles. La portada con las dos cuentas conserva exactamente sus estilos. Es un ajuste de CSS sin cambios de datos ni servicios.
