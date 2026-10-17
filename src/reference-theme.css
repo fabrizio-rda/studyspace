@@ -1,5 +1,5 @@
-/* Reference composition, StudySpace palette. Opaque surfaces are the fallback
-   when backdrop-filter is unavailable. Course colors remain unchanged. */
+/* Reference composition with visible blue/cyan and wine gradients.
+   Beige remains the calendar canvas. Course colors remain unchanged. */
 :root {
   --muted: #566a80;
   --card: #fff9f0;
@@ -12,7 +12,9 @@
   min-height: 100svh;
   padding: 0 44px 0 124px;
   color: #263c54;
-  background: #f6f0e7;
+  background:
+    radial-gradient(ellipse at 80% 0%, #aeddf08a, transparent 47%),
+    linear-gradient(160deg, #d5e9ee 0%, #ede7db 32%, #f6f0e7 60%);
 }
 .entry-header,
 .entry-page > main,
@@ -47,7 +49,7 @@
   align-items: center;
   flex-direction: column;
   gap: 46px;
-  background: #0d315cbb;
+  background: linear-gradient(178deg, #174b80 0%, #287fa4 52%, #82c7d1 100%);
   border-right: 1px solid #d7eaff1c;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -109,19 +111,27 @@
 }
 .entry-profile {
   --entry-color: #214f80;
-  padding: 29px;
-  gap: 20px;
-  border-radius: 16px;
-  border: 1px solid #8ab9e5;
-  background: linear-gradient(135deg, #d7ecf8f2, #eaf4fbdf);
-  box-shadow: 0 12px 32px #0d2d541a;
+  padding: 34px;
+  gap: 24px;
+  min-height: 290px;
+  align-content: start;
+  border-radius: 18px;
+  border: 1px solid #548db9;
+  background:
+    radial-gradient(ellipse at 100% 0%, #e1faffb3, transparent 62%),
+    linear-gradient(122deg, #78b1dc 0%, #9ed4e8 48%, #d1eff1 100%);
+  box-shadow:
+    inset 0 1px 0 #ffffff85,
+    0 16px 36px #315d7f20;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
 .entry-profile.catalina {
-  --entry-color: #763549;
-  border-color: #b5788d;
-  background: linear-gradient(135deg, #ecd8e0f5, #f3e7eced);
+  --entry-color: #61263e;
+  border-color: #a55f7a;
+  background:
+    radial-gradient(ellipse at 100% 0%, #fff0e7a6, transparent 62%),
+    linear-gradient(122deg, #c58da4 0%, #e1b0bc 48%, #f1d8ce 100%);
 }
 .entry-profile:hover {
   box-shadow: 0 18px 38px #0b29482b;
@@ -130,17 +140,17 @@
   border-radius: 50%;
   width: 72px;
   height: 72px;
-  background: #ffffff91;
+  background: linear-gradient(145deg, #effcff, #b0d7ee);
   border-color: #ffffffb8;
   font-size: 29px;
 }
 .entry-profile h2 {
-  font-size: 30px;
-  font-weight: 550;
+  font-size: clamp(32px, 3.4vw, 46px);
+  font-weight: 450;
   letter-spacing: -0.7px;
 }
 .entry-profile-label {
-  color: #4d6278;
+  color: #294b67;
   font-size: 12px;
 }
 .entry-profile li {
@@ -150,11 +160,23 @@
   border-radius: 6px;
   font-size: 12px;
 }
+.entry-profile.catalina .entry-avatar {
+  background: linear-gradient(145deg, #fff2ec, #deb1c0);
+  border-color: #fff0ebad;
+}
 .entry-profile.catalina li {
-  color: #693a4d;
+  color: #592d40;
+  background: #fff3ee75;
+}
+.entry-profile.catalina .entry-profile-label {
+  color: #592d40;
 }
 .entry-enter {
-  border-color: #4d70982b;
+  border: 1px solid #ffffff75;
+  border-radius: 9px;
+  background: linear-gradient(105deg, #ffffff85, #ffffff30);
+  padding: 12px 16px;
+  margin-top: 6px;
   font-size: 14px;
   font-weight: 650;
 }
@@ -235,10 +257,10 @@
 
 /* The workspace uses the same cool surfaces and restrained panel borders. */
 .app-shell {
-  background: #f6f0e7;
+  background: linear-gradient(145deg, #d5e8ed 0%, #eee6db 42%, #f6f0e7 80%);
 }
 .sidebar {
-  background: linear-gradient(165deg, #153b67, #265b91);
+  background: linear-gradient(170deg, #174b80 0%, #287fa4 62%, #69b6c7 100%);
   border-color: #dcefff2b;
   color: #f4f9ff;
   border-radius: 18px;
@@ -289,7 +311,9 @@
   box-shadow: 0 9px 28px #25476c08;
 }
 .welcome {
-  background: linear-gradient(125deg, #204b76, #285982);
+  background:
+    radial-gradient(ellipse at 95% 0%, #bdeff54d, transparent 60%),
+    linear-gradient(115deg, #1d5187 0%, #277ca0 58%, #4f9db5 100%);
   color: #f6fbff;
   border: 1px solid #78a8d4;
   border-radius: 17px;
@@ -366,7 +390,7 @@
   color: #e2effc;
 }
 .app-shell .btn.primary {
-  background: linear-gradient(115deg, #2b65ad, #2b5fa3);
+  background: linear-gradient(110deg, #245b9b, #277b94);
   color: white;
   box-shadow: 0 3px 10px #23588a1a;
 }
@@ -430,6 +454,11 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+  .entry-rail-brand,
+  .entry-rail nav a,
+  .entry-rail nav button {
+    color: #28567a;
+  }
   .entry-rail nav {
     flex-direction: row;
     gap: 7px;
@@ -453,6 +482,7 @@
     gap: 16px;
   }
   .entry-profile {
+    min-height: 0;
     grid-template-columns: 62px minmax(0, 1fr);
     gap: 16px;
     padding: 24px;
