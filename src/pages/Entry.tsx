@@ -6,6 +6,9 @@ import {
   ArrowLeft,
   GraduationCap,
   ShieldCheck,
+  House,
+  UsersRound,
+  CalendarDays,
 } from "lucide-react";
 import { useStore } from "../services/store";
 import {
@@ -27,13 +30,55 @@ import { downloadText, serializeBackup } from "../services/storage";
 
 function EntryFrame({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const main = useRef<HTMLElement>(null);
+  function goTo(section: string) {
+    if (location.pathname !== "/")
+      navigate("/", { state: { entrySection: section } });
+    else document.getElementById(section)?.scrollIntoView?.({ block: "start" });
+  }
   useEffect(() => {
     main.current?.focus();
     window.scrollTo(0, 0);
-  }, [location.pathname]);
+    const section = location.state?.entrySection;
+    if (typeof section === "string")
+      document.getElementById(section)?.scrollIntoView?.({ block: "start" });
+  }, [location.pathname, location.state]);
   return (
     <div className="entry-page">
+      <aside className="entry-rail" aria-label="Navegación de la portada">
+        <Link
+          to="/"
+          className="entry-rail-brand"
+          aria-label="StudySpace · Portada"
+        >
+          <GraduationCap size={28} />
+        </Link>
+        <nav aria-label="Secciones de la portada">
+          <Link
+            to="/"
+            className={location.pathname === "/" ? "active" : ""}
+            aria-label="Portada"
+            title="Portada"
+          >
+            <House size={21} />
+          </Link>
+          <button
+            aria-label="Ver espacios personales"
+            title="Espacios personales"
+            onClick={() => goTo("entry-profiles")}
+          >
+            <UsersRound size={21} />
+          </button>
+          <button
+            aria-label="Ver calendario"
+            title="Calendario"
+            onClick={() => goTo("entry-calendar")}
+          >
+            <CalendarDays size={21} />
+          </button>
+        </nav>
+      </aside>
       <header className="entry-header">
         <Link to="/" className="entry-brand">
           <GraduationCap size={29} />
@@ -81,7 +126,11 @@ function Landing() {
         <h1>Elige tu espacio</h1>
         <p>Accede a tus cursos y consulta el calendario conjunto.</p>
       </div>
-      <div className="entry-profiles">
+      <section
+        id="entry-profiles"
+        className="entry-profiles"
+        aria-label="Espacios personales"
+      >
         {entryProfiles.map((profile) => (
           <Link
             key={profile.id}
@@ -105,7 +154,7 @@ function Landing() {
             </span>
           </Link>
         ))}
-      </div>
+      </section>
       <LandingCalendar />
       {!cloud.user && localAccess && (
         <details className="entry-local">
@@ -145,14 +194,23 @@ function Access({
     if (
       !(cloud.mode === "cloud" && ready) &&
       !(cloud.mode === "setup" && cloud.status === "local")
-    ) return;
+    )
+      return;
     try {
       bindEntry(profile, cloud.user.id);
       refreshBinding((n) => n + 1);
     } catch (e) {
       setError((e as Error).message);
     }
-  }, [cloud.user?.id, cloud.mode, cloud.status, ready, recognized, mismatch, profile]);
+  }, [
+    cloud.user?.id,
+    cloud.mode,
+    cloud.status,
+    ready,
+    recognized,
+    mismatch,
+    profile,
+  ]);
   useEffect(() => {
     if (cloud.user && ready && recognized && !mismatch)
       enter(profile, cloud.user.id);

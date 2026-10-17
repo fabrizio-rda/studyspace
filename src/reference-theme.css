@@ -1,0 +1,541 @@
+/* Reference composition, StudySpace palette. Opaque surfaces are the fallback
+   when backdrop-filter is unavailable. Course colors remain unchanged. */
+:root {
+  --muted: #566a80;
+  --card: #f7fbff;
+  --line: #d9e5f0;
+  --shadow: 0 14px 36px #143a6810;
+  background: #e9f2fb;
+  color: #263c54;
+}
+.entry-page {
+  min-height: 100svh;
+  padding: 0 44px 0 124px;
+  color: #f5faff;
+  background: linear-gradient(155deg, #123963 0%, #1f5791 42%, #326f9e 100%);
+}
+.entry-header,
+.entry-page > main,
+.entry-footer {
+  max-width: 1320px;
+}
+.entry-header {
+  min-height: 90px;
+  border-color: #d9efff25;
+}
+.entry-brand {
+  color: #f1f8ff;
+  font-weight: 650;
+  letter-spacing: -0.6px;
+}
+.entry-header-label {
+  color: #d3e7fa;
+}
+.entry-page > main {
+  padding-top: 35px;
+}
+.entry-page > main:focus {
+  outline: none;
+}
+.entry-rail {
+  position: fixed;
+  z-index: 45;
+  inset: 0 auto 0 0;
+  width: 80px;
+  padding: 29px 15px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 46px;
+  background: #0d315cbb;
+  border-right: 1px solid #d7eaff1c;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.entry-rail-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  color: #e5f4ff;
+}
+.entry-rail nav {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+.entry-rail nav a,
+.entry-rail nav button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  color: #c7e0f6;
+}
+.entry-rail nav .active,
+.entry-rail nav a:hover,
+.entry-rail nav button:hover {
+  background: #d7edff;
+  color: #204d7c;
+}
+.entry-page .entry-rail a:focus-visible {
+  outline-color: #e3f3ff;
+}
+.entry-page .entry-profile:focus-visible {
+  outline-color: #f2fbff;
+}
+.entry-intro {
+  margin: 0 0 30px;
+}
+.entry-intro .entry-eyebrow {
+  display: none;
+}
+.entry-intro h1 {
+  margin-top: 0;
+  font-size: clamp(32px, 4vw, 49px);
+  font-weight: 450;
+  letter-spacing: -1.4px;
+}
+.entry-intro p {
+  color: #d2e6f9;
+  font-size: 14px;
+}
+.entry-profiles {
+  gap: 25px;
+  margin-bottom: 28px;
+  scroll-margin-top: 24px;
+}
+.entry-profile {
+  --entry-color: #214f80;
+  padding: 29px;
+  gap: 20px;
+  border-radius: 16px;
+  border: 1px solid #8ab9e5;
+  background: linear-gradient(135deg, #d7ecf8f2, #eaf4fbdf);
+  box-shadow: 0 12px 32px #0d2d541a;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.entry-profile.catalina {
+  --entry-color: #763549;
+  border-color: #b5788d;
+  background: linear-gradient(135deg, #ecd8e0f5, #f3e7eced);
+}
+.entry-profile:hover {
+  box-shadow: 0 18px 38px #0b29482b;
+}
+.entry-avatar {
+  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  background: #ffffff91;
+  border-color: #ffffffb8;
+  font-size: 29px;
+}
+.entry-profile h2 {
+  font-size: 30px;
+  font-weight: 550;
+  letter-spacing: -0.7px;
+}
+.entry-profile-label {
+  color: #4d6278;
+  font-size: 12px;
+}
+.entry-profile li {
+  color: #334f6e;
+  background: #ffffff78;
+  border: 1px solid #ffffff75;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.entry-profile.catalina li {
+  color: #693a4d;
+}
+.entry-enter {
+  border-color: #4d70982b;
+  font-size: 14px;
+  font-weight: 650;
+}
+.entry-calendar {
+  padding: 30px;
+  border: 1px solid #cbe4f2bb;
+  border-radius: 16px;
+  background: #f1f8fdf0;
+  color: #29435e;
+  box-shadow: 0 14px 40px #10375f22;
+  scroll-margin-top: 24px;
+}
+.entry-calendar-heading h2 {
+  font-size: 29px;
+  font-weight: 500;
+  letter-spacing: -0.7px;
+}
+.entry-calendar .entry-eyebrow {
+  color: #4e6f91;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+.entry-month-controls h3 {
+  font-weight: 550;
+}
+.entry-month-calendar {
+  border-color: #cddfec;
+  background: #ffffff36;
+}
+.entry-month-weekdays {
+  background: #dfedf7;
+  color: #4a6480;
+}
+.entry-month-day {
+  background: #ffffff76;
+  border-color: #d5e3ef;
+}
+.entry-month-day:hover {
+  background: #e1eef9;
+}
+.entry-month-day.selected {
+  background: #d9ebfb;
+  box-shadow: inset 0 0 0 1px #6f9fd1;
+}
+.entry-month-day.today .entry-month-number {
+  background: #2c65ad;
+  color: #fff;
+}
+.entry-month-detail {
+  border-color: #d2e2ee;
+}
+.entry-local {
+  color: #e2effb;
+  margin-top: 22px;
+}
+.entry-footer {
+  border-color: #e0f2ff28;
+  color: #f2f8ff;
+}
+.entry-access {
+  color: #2c435d;
+  border-color: #dbe9f5;
+  background: #f5fafff5;
+  box-shadow: 0 22px 65px #0e315642;
+  border-radius: 17px;
+}
+.entry-access h1 {
+  font-weight: 550;
+}
+.entry-page .btn.primary {
+  background: #2a62ac;
+  color: #fff;
+}
+.entry-page .entry-rail nav button:focus-visible {
+  outline-color: #eef8ff;
+}
+
+/* The workspace uses the same cool surfaces and restrained panel borders. */
+.app-shell {
+  background: linear-gradient(150deg, #e8f2fc, #f2f7fc 60%, #e5f1f9);
+}
+.sidebar {
+  background: linear-gradient(165deg, #153b67, #265b91);
+  border-color: #dcefff2b;
+  color: #f4f9ff;
+  border-radius: 18px;
+}
+.sidebar .nav-eyebrow,
+.sidebar-profile small,
+.sidebar .collapse-btn,
+.sidebar .entry-return {
+  color: #d2e6fa;
+}
+.sidebar nav a {
+  color: #d9ebfb;
+}
+.sidebar nav a:hover {
+  background: #cce7ff1a;
+}
+.sidebar nav a.active {
+  background: #deefff;
+  color: #254e7e;
+  box-shadow: none;
+}
+.sidebar-profile .avatar {
+  background: #d9eeff;
+  color: #315680;
+}
+.sidebar .brand-mark {
+  background: #c4e4ff20;
+}
+.topbar {
+  background: #f5faffbd;
+  border-color: #ffffffdc;
+  border-radius: 15px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.input-with-icon {
+  background: #eaf2fa;
+  border-color: #d5e2ef;
+  color: #577089;
+}
+.topbar-date {
+  color: #566d85;
+}
+.card {
+  background: #f8fbffdb;
+  border-color: #d8e6f2;
+  border-radius: 16px;
+  box-shadow: 0 9px 28px #25476c08;
+}
+.welcome {
+  background: linear-gradient(125deg, #204b76, #285982);
+  color: #f6fbff;
+  border: 1px solid #78a8d4;
+  border-radius: 17px;
+  min-height: 230px;
+  gap: 24px;
+  padding: 30px;
+}
+.welcome h1 {
+  font-size: clamp(28px, 3.1vw, 42px);
+  font-weight: 500;
+  line-height: 1.14;
+}
+.welcome p,
+.welcome-bottom {
+  color: #dfedfa;
+}
+.welcome .date-pill {
+  background: #e3f2ff22;
+  color: #f4faff;
+  border: 1px solid #e8f5ff26;
+}
+.welcome-copy {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+}
+.welcome-summary {
+  min-width: 290px;
+  align-self: center;
+  padding: 22px;
+  border-radius: 14px;
+  border: 1px solid #d7ecff40;
+  background: #c7e3ff15;
+  color: #eff8ff;
+}
+.welcome-summary-title {
+  display: block;
+  font-size: 12px;
+  color: #dfedfb;
+  margin-bottom: 19px;
+}
+.welcome-summary dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+  margin: 0 0 18px;
+}
+.welcome-summary dt {
+  font-size: 12px;
+  color: #deecfb;
+}
+.welcome-summary dd {
+  font-size: 28px;
+  line-height: 1.4;
+  margin: 0;
+  font-weight: 450;
+}
+.welcome-summary-progress {
+  height: 4px;
+  border-radius: 4px;
+  background: #e1f1ff30;
+  overflow: hidden;
+}
+.welcome-summary-progress > span {
+  display: block;
+  height: 100%;
+  background: #c8ebff;
+  border-radius: inherit;
+}
+.welcome-summary-percent {
+  display: block;
+  margin-top: 9px;
+  font-size: 12px;
+  color: #e2effc;
+}
+.app-shell .btn.primary {
+  background: linear-gradient(115deg, #2b65ad, #2b5fa3);
+  color: white;
+  box-shadow: 0 3px 10px #23588a1a;
+}
+.btn.ghost {
+  background: #edf4fb;
+  border-color: #d6e3f0;
+}
+.app-shell .text-btn {
+  color: #3d68a1;
+}
+.app-shell .eyebrow {
+  color: #58718a;
+}
+.task-row,
+.compact-task-row {
+  border-color: #e0eaf4;
+}
+.modal {
+  background: #f8fbff;
+  border: 1px solid #d8e7f3;
+  border-radius: 17px;
+}
+.calendar-workspace,
+.course-card,
+.plan-card {
+  border-color: #d9e6f2;
+}
+.bar-track {
+  background: #e1edf8;
+}
+.bar-track > span {
+  background: linear-gradient(#8bbde0, #4c85bd);
+}
+
+@media (min-width: 1051px) {
+  .app-shell:not(.collapsed) {
+    --sidebar: 216px;
+  }
+}
+@media (max-width: 1250px) {
+  .welcome {
+    flex-wrap: wrap;
+  }
+  .welcome-summary {
+    flex: 1;
+  }
+}
+@media (max-width: 700px) {
+  .entry-page {
+    padding: 0 20px;
+  }
+  .entry-rail {
+    position: static;
+    width: auto;
+    padding: 12px 0 0;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 15px;
+    background: none;
+    border: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .entry-rail nav {
+    flex-direction: row;
+    gap: 7px;
+  }
+  .entry-rail-brand {
+    width: 44px;
+  }
+  .entry-rail nav a,
+  .entry-rail nav button {
+    width: 44px;
+    height: 44px;
+  }
+  .entry-header {
+    min-height: 72px;
+  }
+  .entry-page > main {
+    padding-top: 25px;
+  }
+  .entry-profiles {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .entry-profile {
+    grid-template-columns: 62px minmax(0, 1fr);
+    gap: 16px;
+    padding: 24px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .entry-profile .entry-avatar {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+  }
+  .entry-profile h2 {
+    font-size: 27px;
+  }
+  .entry-calendar {
+    padding: 23px 18px;
+  }
+  .entry-calendar-heading h2 {
+    font-size: 26px;
+  }
+  .welcome {
+    padding: 24px;
+    gap: 24px;
+  }
+  .welcome-summary {
+    min-width: 0;
+    width: 100%;
+  }
+}
+@media (max-width: 390px) {
+  .entry-page {
+    padding: 0 14px;
+  }
+  .entry-intro h1 {
+    font-size: 32px;
+  }
+  .entry-profile {
+    padding: 20px;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .entry-profile .entry-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 25px;
+  }
+  .entry-profile h2 {
+    font-size: 25px;
+  }
+  .entry-profile-label,
+  .entry-profile li,
+  .entry-enter {
+    font-size: 12px;
+  }
+  .entry-profile li:nth-child(n + 4) {
+    display: list-item;
+  }
+  .entry-enter {
+    min-height: 44px;
+  }
+  .entry-calendar {
+    padding: 22px 12px;
+  }
+  .entry-calendar-heading h2 {
+    font-size: 24px;
+  }
+  .entry-month-day {
+    min-height: 65px;
+  }
+  .welcome-summary {
+    padding: 17px 13px;
+  }
+  .welcome-summary dl {
+    gap: 9px;
+  }
+  .welcome-summary dt {
+    font-size: 12px;
+  }
+  .welcome-summary dd {
+    font-size: 25px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry-profile {
+    transition: none;
+  }
+}
