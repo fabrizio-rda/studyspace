@@ -388,13 +388,24 @@ export function CourseDetail() {
             </Card>
             <Card
               title="Materiales"
-              action={<span className="badge">PRÓXIMAMENTE</span>}
+              action={
+                <span className="count-pill">
+                  {data.documents.filter((d) => d.courseId === course.id).length}
+                </span>
+              }
             >
-              <Empty
-                title="Biblioteca pendiente"
-                description="La biblioteca de materiales llegará en la fase 3."
-                action={<BookOpen size={22} />}
-              />
+              <p className="form-help">
+                Consulta los documentos y enlaces asociados con este curso.
+              </p>
+              <button
+                className="btn soft"
+                onClick={() =>
+                  navigate(`/biblioteca?curso=${encodeURIComponent(course.id)}`)
+                }
+              >
+                <BookOpen size={17} />
+                Ver materiales del curso
+              </button>
             </Card>
           </div>
         </>
