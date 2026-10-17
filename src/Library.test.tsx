@@ -163,7 +163,7 @@ describe("Biblioteca y personalización", () => {
     render(<App />);
     expect(screen.queryByText("PRÓXIMAMENTE")).not.toBeInTheDocument();
     await userEvent.click(
-      screen.getByRole("button", { name: "Ver materiales del curso" }),
+      await screen.findByRole("button", { name: "Ver materiales del curso" }),
     );
     expect(await screen.findByRole("heading", { name: "Biblioteca" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Filtrar biblioteca por curso" })).toHaveValue("course-1");
