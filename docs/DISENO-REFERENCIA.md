@@ -21,3 +21,7 @@ Se aumenta la diferencia entre los extremos del degradado: Fabrizio azul medio a
 ## Fondo de las páginas interiores
 
 El contenedor compartido `.app-shell` aplica un fondo azul a celeste con beige y un acento morado suave en todas las rutas del espacio académico. La transición horizontal conserva el color en páginas largas al desplazarse, sin repetir imágenes, usar capas fijas ni modificar el flujo o los controles táctiles. La portada con las dos cuentas conserva exactamente sus estilos. Es un ajuste de CSS sin cambios de datos ni servicios.
+
+## Pantallas anchas y contraste del fondo
+
+La captura del usuario muestra una franja vacía a la derecha. Se elimina el límite de 1500 px de `.main-wrapper` en escritorio; el contenido usa todo el ancho disponible, conservando los márgenes del menú y los puntos de adaptación existentes en tablet y móvil. Se refuerzan los extremos del fondo: azul medio, celeste y beige, con un acento morado suave. La portada no se modifica. Se inspeccionó la captura aportada; esto no equivale a una prueba visual del resultado en navegador.
