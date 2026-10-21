@@ -2,6 +2,7 @@ import { z } from "zod";
 import { fromZonedTime, formatInTimeZone } from "date-fns-tz";
 import { cloudRpc } from "./cloud";
 import { dateSchema, validTimezone, visibilitySchema } from "../models/schema";
+import type { AppState } from "../models/schema";
 const accent = z.enum(["blue", "pink"]);
 const invite = z
   .object({
@@ -63,9 +64,80 @@ export const sharedEventSchema = z
     visibility: visibilitySchema,
     own: z.boolean(),
   })
-  .strict()
-;
+  .strict();
 export type SharedEvent = z.infer<typeof sharedEventSchema>;
+
+// Generate the signed-in student's calendar directly from their current state.
+// The other student's records are still loaded only through the authorized RPC.
+export function ownCalendarEvents(
+  data: AppState,
+  ownerId: string,
+  start: string,
+  end: string,
+): SharedEvent[] {
+  const courses = new Map(data.courses.map((course) => [course.id, course]));
+  const accent = data.settings.calendarAccent === "pink" ? "pink" : "blue";
+  const ownerName = data.settings.name;
+  function make(
+    kind: "task" | "event" | "session",
+    id: string,
+    date: string,
+    time: string,
+    title: string,
+    type: string,
+    courseId: string | null,
+    minutes: number | null,
+  ): SharedEvent | null {
+    if (!date || date < start || date > end) return null;
+    const course = courseId ? courses.get(courseId) : undefined;
+    return {
+      id: `${ownerId}:${kind}:${id}`,
+      ownerId,
+      ownerName,
+      ownerAccent: accent,
+      sourceTimezone: data.settings.timezone,
+      date,
+      time: time || "",
+      minutes,
+      title,
+      courseName: course?.name ?? null,
+      courseColor: course?.color ?? null,
+      type,
+      kind,
+      visibility: "details",
+      own: true,
+    };
+  }
+  return [
+    ...data.tasks.map((task) =>
+      make("task", task.id, task.dueDate, task.time, task.title, task.type, task.courseId, null),
+    ),
+    ...data.events.map((event) =>
+      make("event", event.id, event.date, event.time, event.title, event.type, event.courseId, null),
+    ),
+    ...data.scheduledSessions
+      .filter((session) => session.status !== "cancelled")
+      .map((session) =>
+        make(
+          "session",
+          session.id,
+          session.date,
+          session.time,
+          session.title,
+          session.kind === "review" ? "review" : "study",
+          session.courseId,
+          session.minutes,
+        ),
+      ),
+  ]
+    .filter((event): event is SharedEvent => event !== null)
+    .sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) ||
+        a.time.localeCompare(b.time) ||
+        a.title.localeCompare(b.title),
+    );
+}
 const feedSchema = z
   .object({
     connected: z.boolean(),
