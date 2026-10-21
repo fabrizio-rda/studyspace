@@ -9,8 +9,6 @@ import {
   cancelCalendar,
   revokeCalendar,
 } from "../services/sharing";
-import type { Visibility } from "../models/schema";
-import VisibilitySelect from "./VisibilitySelect";
 import { Card } from "./ui";
 const statusNames = {
   pending: "Pendiente de aceptación",
@@ -20,15 +18,13 @@ const statusNames = {
   expired: "Vencida",
 };
 export default function SharingSettings() {
-  const { data, cloud, commit, notify, updateSettings } = useStore();
+  const { data, cloud, updateSettings } = useStore();
   const sharing = useSharing();
   const [params] = useSearchParams();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [inviteLink, setInviteLink] = useState("");
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(0);
   const ready = cloud.mode === "cloud" && !!cloud.user;
   async function run(fn: () => Promise<void>) {
     if (busy) return;
@@ -44,49 +40,6 @@ export default function SharingSettings() {
       setBusy(false);
     }
   }
-  const activity = [
-    ...data.tasks
-      .filter((t) => !!t.dueDate)
-      .map((t) => ({
-        id: t.id,
-        kind: "task",
-        name: t.title,
-        date: t.dueDate,
-        visibility: t.visibility ?? "private",
-      })),
-    ...data.events.map((e) => ({
-      id: e.id,
-      kind: "event",
-      name: e.title,
-      date: e.date,
-      visibility: e.visibility ?? "private",
-    })),
-    ...data.scheduledSessions
-      .filter((s) => s.status !== "cancelled")
-      .map((s) => ({
-        id: s.id,
-        kind: "session",
-        name: s.title,
-        date: s.date,
-        visibility: s.visibility ?? "private",
-      })),
-  ]
-    .filter((a) =>
-      a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
-    )
-    .sort((a, b) => b.date.localeCompare(a.date));
-  function change(kind: string, id: string, visibility: Visibility) {
-    commit((d) => {
-      const list =
-        kind === "task"
-          ? d.tasks
-          : kind === "event"
-            ? d.events
-            : d.scheduledSessions;
-      const item = list.find((x) => x.id === id);
-      if (item) item.visibility = visibility;
-    }, "Visibilidad guardada; se aplicará al sincronizar la nube.");
-  }
   const targeted = params.get("invitacion");
   return (
     <Card
@@ -95,8 +48,8 @@ export default function SharingSettings() {
       action={<Link2 size={22} />}
     >
       <p className="muted">
-        Dos cuentas independientes. La vinculación permite leer únicamente las
-        actividades autorizadas; nunca editar las de la otra persona.
+        Cada cuenta conserva sus datos. Al vincularlas, todas sus tareas y actividades
+        con fecha aparecen automáticamente en el calendario conjunto.
       </p>
       {!ready ? (
         <p className="sharing-notice">
@@ -117,8 +70,7 @@ export default function SharingSettings() {
                   Vinculado con {sharing.status.connection.peerName}
                 </strong>
                 <small>
-                  {sharing.status.connection.peerEmail} · Lectura según la
-                  visibilidad de cada actividad.
+                  {sharing.status.connection.peerEmail} · Calendario conjunto automático.
                 </small>
               </div>
               <button
@@ -294,15 +246,8 @@ export default function SharingSettings() {
             </details>
           )}
           <div className="sharing-defaults">
-            <VisibilitySelect
-              label="Visibilidad predeterminada para actividades nuevas"
-              value={data.settings.calendarDefaultVisibility ?? "private"}
-              onChange={(v) => updateSettings({ calendarDefaultVisibility: v })}
-            />
             <p className="form-help">
-              Este cambio no publica las actividades existentes. Para las
-              sesiones regeneradas de un plan existente se mantiene un criterio
-              privado; revisa su visibilidad individual.
+              Todas las tareas, actividades y sesiones con fecha se muestran automáticamente.
             </p>
             <label>
               Color de propietario
@@ -319,64 +264,6 @@ export default function SharingSettings() {
               </select>
             </label>
           </div>
-          <details className="sharing-activities">
-            <summary>
-              Revisar visibilidad de mis actividades ({activity.length})
-            </summary>
-            <label>
-              Buscar mis actividades
-              <input
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setPage(0);
-                }}
-                placeholder="Título de la actividad"
-              />
-            </label>
-            {activity.slice(page * 30, (page + 1) * 30).map((a) => (
-              <div className="visibility-row" key={`${a.kind}:${a.id}`}>
-                <span>
-                  <strong>{a.name}</strong>
-                  <small>
-                    {a.date} ·{" "}
-                    {a.kind === "task"
-                      ? "Tarea"
-                      : a.kind === "session"
-                        ? "Sesión / repaso"
-                        : "Actividad"}
-                  </small>
-                </span>
-                <select
-                  aria-label={`Visibilidad de ${a.name}`}
-                  value={a.visibility}
-                  onChange={(e) =>
-                    change(a.kind, a.id, e.target.value as Visibility)
-                  }
-                >
-                  <option value="private">Privado</option>
-                  <option value="busy">Solo disponibilidad</option>
-                  <option value="details">Con detalles</option>
-                </select>
-              </div>
-            ))}
-            <div className="integration-actions">
-              <button
-                className="btn ghost"
-                disabled={page === 0}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Anterior
-              </button>
-              <button
-                className="btn ghost"
-                disabled={(page + 1) * 30 >= activity.length}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Siguiente
-              </button>
-            </div>
-          </details>
           <div className="integration-actions">
             <button
               className="btn soft"
