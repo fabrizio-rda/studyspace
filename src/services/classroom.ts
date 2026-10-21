@@ -143,7 +143,7 @@ export function mergeClassroom(
         dueDate: due.date,
         time: due.time,
         priority: "media",
-        visibility: data.settings.calendarDefaultVisibility ?? "private",
+        visibility: "details",
         status: "pendiente",
         createdAt: now,
         completedAt: null,
