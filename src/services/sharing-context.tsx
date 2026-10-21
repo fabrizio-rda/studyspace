@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useStore } from "./store";
-import { emptySharing, sharingStatus, calendarFeed } from "./sharing";
+import { emptySharing, sharingStatus, calendarFeed, ownCalendarEvents } from "./sharing";
 import type { SharingStatus, SharedEvent } from "./sharing";
 const Context = createContext<null | {
   status: SharingStatus;
@@ -121,7 +121,7 @@ export function useSharing() {
   return v;
 }
 export function useSharedFeed(start: string, end: string) {
-  const { data } = useStore();
+  const { data, cloud } = useStore();
   const sharing = useSharing();
   const key = sharing.status.connection
     ? `${sharing.userId}:${sharing.status.connection.id}:${start}:${end}:${data.settings.timezone}`
@@ -216,10 +216,26 @@ export function useSharedFeed(start: string, end: string) {
       window.removeEventListener("studyspace:calendar", focus);
     };
   }, [key]);
+  const current = state.key === key
+    ? state
+    : { events: [] as SharedEvent[], error: "", updated: 0, loading: !!key };
+  // Own activities always appear, even before a second account is linked.
+  // Drop remote copies of the owner to prevent duplicate calendar entries.
+  const mine =
+    cloud.mode === "cloud" && cloud.user
+      ? ownCalendarEvents(data, cloud.user.id, start, end)
+      : [];
+  const peer = current.events.filter(
+    (event) => event.ownerId !== sharing.userId,
+  );
   return {
-    ...(state.key === key
-      ? state
-      : { events: [], error: "", updated: 0, loading: !!key }),
+    ...current,
+    events: [...mine, ...peer].sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) ||
+        a.time.localeCompare(b.time) ||
+        a.ownerName.localeCompare(b.ownerName),
+    ),
     refresh,
   };
 }
