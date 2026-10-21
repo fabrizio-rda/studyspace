@@ -16,7 +16,6 @@ import { useSharing, useSharedFeed } from "../services/sharing-context";
 import { dateKey, parseDay, todayIn, displayDate } from "../services/dates";
 import type { SharedEvent } from "../services/sharing";
 import { Card, Modal } from "./ui";
-import { visibilityLabels } from "./VisibilitySelect";
 const names: Record<string, string> = {
   tarea: "Tarea",
   examen: "Examen",
@@ -72,11 +71,13 @@ export default function SharedCalendar({
       name: data.settings.name,
       accent: data.settings.calendarAccent ?? "blue",
     },
-    {
-      id: sharing.status.connection?.peerId ?? "",
-      name: sharing.status.connection?.peerName ?? "Cuenta vinculada",
-      accent: sharing.status.connection?.peerAccent ?? "pink",
-    },
+    ...(sharing.status.connection
+      ? [{
+          id: sharing.status.connection.peerId,
+          name: sharing.status.connection.peerName,
+          accent: sharing.status.connection.peerAccent,
+        }]
+      : []),
   ];
   const events = feed.events.filter(
     (e) => owner === "both" || e.ownerId === owner,
@@ -140,20 +141,14 @@ export default function SharedCalendar({
       </button>
     );
   }
-  if (!sharing.status.connection)
-    return (
-      <Card title="Calendario compartido">
-        <p>
-          {sharing.error ||
-            "Vincula las cuentas con una invitación aceptada para consultar actividades autorizadas."}
-        </p>
-        <Link className="btn soft" to="/configuracion">
-          Configurar calendario compartido
-        </Link>
-      </Card>
-    );
   const content = (
     <>
+      {cloud.mode === "cloud" && cloud.user && !sharing.status.connection && (
+        <p className="integration-status">
+          Tus actividades ya aparecen aquí. Para añadir las de Catalina,{" "}
+          <Link to="/configuracion">vincula su cuenta</Link>.
+        </p>
+      )}
       {filters}
       {!compact && (
         <div className="calendar-toolbar">
@@ -301,7 +296,7 @@ export default function SharedCalendar({
           <p>
             {feed.loading
               ? "Consultando actividades…"
-              : "Sin actividades autorizadas para esta fecha."}
+              : "Sin actividades para esta fecha."}
           </p>
         )}
       </div>
@@ -337,10 +332,9 @@ export default function SharedCalendar({
           {detail.courseName && <p>{detail.courseName}</p>}
           <p>{names[detail.type] ?? "Actividad"}</p>
           <p className="form-help">
-            {visibilityLabels[detail.visibility]} ·{" "}
             {detail.own
               ? "Tu actividad. Puedes editarla en Mi calendario."
-              : "Actividad de otra cuenta, solo lectura."}
+              : "Actividad de la otra cuenta, solo lectura."}
           </p>
           {detail.time && detail.sourceTimezone !== data.settings.timezone && (
             <p className="form-help">
@@ -370,7 +364,7 @@ export default function SharedCalendar({
         <div>
           <h1>Calendario compartido</h1>
           <p>
-            Actividades autorizadas de ambas cuentas. Los colores de propietario
+            Tareas y actividades de ambos espacios. Los colores de propietario
             y curso se muestran por separado.
           </p>
         </div>
