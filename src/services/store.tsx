@@ -242,6 +242,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       const draft = structuredClone(current.data);
       mutate(draft);
+      // The joint calendar has no per-activity privacy setting.
+      // Normalize older records whenever this workspace is saved.
+      for (const item of [...draft.tasks, ...draft.events, ...draft.scheduledSessions]) {
+        item.visibility = "details";
+      }
+      draft.settings.calendarDefaultVisibility = "details";
       persist(draft);
       if (message !== null) notify(message);
       return true;
