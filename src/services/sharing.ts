@@ -64,26 +64,7 @@ export const sharedEventSchema = z
     own: z.boolean(),
   })
   .strict()
-  .superRefine((e, ctx) => {
-    if (!e.own && e.visibility === "private")
-      ctx.addIssue({
-        code: "custom",
-        message: "Registro privado no autorizado",
-      });
-    if (
-      !e.own &&
-      e.visibility === "busy" &&
-      (e.title !== "Ocupado" ||
-        e.courseName !== null ||
-        e.courseColor !== null ||
-        e.type !== "busy" ||
-        e.kind !== "busy")
-    )
-      ctx.addIssue({
-        code: "custom",
-        message: "Disponibilidad con datos privados",
-      });
-  });
+;
 export type SharedEvent = z.infer<typeof sharedEventSchema>;
 const feedSchema = z
   .object({
