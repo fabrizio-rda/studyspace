@@ -72,7 +72,7 @@ export default function Settings() {
         throw new Error("La cuenta cambió durante la lectura.");
       if (
         window.confirm(
-          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos del espacio activo (nube si has iniciado sesión). Las actividades importadas se marcarán privadas; podrás compartirlas después. Exporta una copia antes. ¿Continuar?`,
+          `Importar ${parsed.courses.length} cursos, ${parsed.tasks.length} tareas y ${parsed.events.length} actividades, ${parsed.topics.length} temas, ${parsed.plans.length} planes y ${parsed.studyLogs.length} registros de estudio. Esto reemplazará TODOS los datos del espacio activo (nube si has iniciado sesión). Las actividades importadas también aparecerán en el calendario conjunto. Exporta una copia antes. ¿Continuar?`,
         )
       ) {
         for (const item of [
@@ -80,8 +80,8 @@ export default function Settings() {
           ...parsed.events,
           ...parsed.scheduledSessions,
         ])
-          item.visibility = "private";
-        parsed.settings.calendarDefaultVisibility = "private";
+          item.visibility = "details";
+        parsed.settings.calendarDefaultVisibility = "details";
         if (replace(parsed, workspace)) {
           setName(parsed.settings.name);
           setTimezone(parsed.settings.timezone);
