@@ -414,10 +414,10 @@ function PersonalCalendar() {
 export default function Calendar() {
   const [params] = useSearchParams();
   const [scope, setScope] = useState(
-    params.get("compartido") === "1" ? "shared" : "mine",
+    params.get("personal") === "1" ? "mine" : "shared",
   );
   useEffect(
-    () => setScope(params.get("compartido") === "1" ? "shared" : "mine"),
+    () => setScope(params.get("personal") === "1" ? "mine" : "shared"),
     [params],
   );
   const initial = params.get("date");
