@@ -31,8 +31,9 @@ export default function LandingCalendar() {
     (_, index) => dateKey(addDays(first, index)),
   );
   const feed = useSharedFeed(from, to);
-  const connected = cloud.mode === "cloud" && !!sharing.status.connection;
-  const events = connected ? feed.events : [];
+  const signedIn = cloud.mode === "cloud" && !!cloud.user;
+  const connected = signedIn && !!sharing.status.connection;
+  const events = signedIn ? feed.events : [];
   const activeDay =
     selected && selected >= from && selected <= to
       ? selected
@@ -56,7 +57,7 @@ export default function LandingCalendar() {
             Calendario
           </h2>
         </div>
-        {connected && (
+        {signedIn && (
           <button
             className="btn soft"
             aria-label="Actualizar calendario"
@@ -104,16 +105,16 @@ export default function LandingCalendar() {
           </button>
         )}
       </div>
-      {!connected && (
+      {!signedIn ? (
         <p className="entry-calendar-status" role="status">
-          {sharing.loading
-            ? "Consultando vinculación…"
-            : error ||
-              (cloud.user
-                ? "Las actividades compartidas aparecerán cuando ambos espacios estén vinculados."
-                : "Inicia sesión en uno de los espacios para consultar las actividades compartidas.")}
+          Inicia sesión en tu espacio para ver el calendario conjunto.
         </p>
-      )}
+      ) : !connected ? (
+        <p className="entry-calendar-status" role="status">
+          Tus actividades ya aparecen aquí. Las de la otra cuenta se añadirán cuando
+          ambos espacios estén vinculados.
+        </p>
+      ) : null}
       {connected && error && (
         <p className="integration-error" role="alert">
           {error}
@@ -193,8 +194,7 @@ export default function LandingCalendar() {
         )}
       </div>
       <p className="entry-calendar-note">
-        Solo actividades compartidas · Consulta · Las actividades privadas no
-        aparecen aquí.
+        Tareas, exámenes, actividades y sesiones de los espacios vinculados. Solo visible al iniciar sesión.
       </p>
     </section>
   );
