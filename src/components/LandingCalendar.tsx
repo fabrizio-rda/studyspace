@@ -32,17 +32,7 @@ export default function LandingCalendar() {
   );
   const feed = useSharedFeed(from, to);
   const connected = cloud.mode === "cloud" && !!sharing.status.connection;
-  // The shared feed can include the signed-in owner's private events.
-  // Never expose those on the landing page, even to that same owner.
-  const events = connected
-    ? feed.events
-        .filter((event) => event.visibility !== "private")
-        .map((event) =>
-          event.visibility === "busy"
-            ? { ...event, title: "Ocupado", courseName: null }
-            : event,
-        )
-    : [];
+  const events = connected ? feed.events : [];
   const activeDay =
     selected && selected >= from && selected <= to
       ? selected
