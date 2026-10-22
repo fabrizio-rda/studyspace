@@ -13,6 +13,7 @@ import {
   FolderOpen,
   ListTodo,
   Timer,
+  UsersRound,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -258,8 +259,14 @@ function Shell() {
             <X size={20} />
           </button>
           <p className="nav-eyebrow">MI ESPACIO</p>
-          <NavLink className="entry-return" to="/">
-            Cambiar de espacio
+          <NavLink
+            className="entry-return"
+            to="/"
+            aria-label="Cambiar de espacio"
+            title="Cambiar de espacio"
+          >
+            <UsersRound size={20} strokeWidth={1.7} aria-hidden="true" />
+            <span>Cambiar de espacio</span>
           </NavLink>
           <nav>
             {links.map((l) => (
