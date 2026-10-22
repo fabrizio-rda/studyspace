@@ -64,7 +64,22 @@ export const sharedEventSchema = z
     visibility: visibilitySchema,
     own: z.boolean(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (event) => event.own || event.visibility !== "private",
+    "Actividad ajena no autorizada",
+  )
+  .refine(
+    (event) =>
+      event.visibility !== "busy" ||
+      event.own ||
+      (event.title === "Ocupado" &&
+        event.courseName === null &&
+        event.courseColor === null &&
+        event.kind === "busy" &&
+        event.type === "busy"),
+    "La disponibilidad no debe contener detalles",
+  );
 export type SharedEvent = z.infer<typeof sharedEventSchema>;
 
 // Generate the signed-in student's calendar directly from their current state.
@@ -110,10 +125,28 @@ export function ownCalendarEvents(
   }
   return [
     ...data.tasks.map((task) =>
-      make("task", task.id, task.dueDate, task.time, task.title, task.type, task.courseId, null),
+      make(
+        "task",
+        task.id,
+        task.dueDate,
+        task.time,
+        task.title,
+        task.type,
+        task.courseId,
+        null,
+      ),
     ),
     ...data.events.map((event) =>
-      make("event", event.id, event.date, event.time, event.title, event.type, event.courseId, null),
+      make(
+        "event",
+        event.id,
+        event.date,
+        event.time,
+        event.title,
+        event.type,
+        event.courseId,
+        null,
+      ),
     ),
     ...data.scheduledSessions
       .filter((session) => session.status !== "cancelled")

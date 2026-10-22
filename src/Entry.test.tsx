@@ -130,8 +130,12 @@ it("muestra dos tarjetas y un calendario vacío sin revelar datos locales ni con
   expect(
     screen.getByRole("heading", { name: "Calendario" }),
   ).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Mes anterior" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Mes siguiente" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Mes anterior" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Mes siguiente" }),
+  ).toBeInTheDocument();
   expect(
     screen.queryByText("Tarea privada de fabrizio"),
   ).not.toBeInTheDocument();
@@ -189,7 +193,9 @@ it("asocia automáticamente una sesión válida con la tarjeta seleccionada", as
   ).toBeInTheDocument();
   expect(entryBindings().fabrizio).toBe(a.id);
   expect(entryBindings().catalina).toBeUndefined();
-  expect(screen.queryByRole("button", { name: /Confirmar y entrar/ })).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /Confirmar y entrar/ }),
+  ).not.toBeInTheDocument();
 });
 it("seleccionar Catalina desde Fabrizio exige cambiar de sesión y autentica el correo de Catalina", async () => {
   session = a;
@@ -244,8 +250,27 @@ it("un cambio de identidad dentro de un espacio oculta inmediatamente su interfa
     screen.getByRole("heading", { name: "Acceso de Fabrizio" }),
   ).toBeInTheDocument();
 });
-it("la portada solo muestra actividades compartidas y oculta incluso los detalles propios con visibilidad Ocupado", async () => {
+it("la portada muestra todas las actividades propias antiguas y las del vínculo sin pedir visibilidad", async () => {
   session = a;
+  const state = workspace("fabrizio");
+  state.events.push(
+    ...(["private", "busy", "details"] as const).map((visibility) => ({
+      id: visibility,
+      title: `Actividad anterior ${visibility}`,
+      description: "Notas que no se muestran",
+      courseId: null,
+      type: "examen" as const,
+      date: todayIn("America/Lima"),
+      time: "16:00",
+      createdAt: new Date().toISOString(),
+      visibility,
+    })),
+  );
+  vi.mocked(readCloud).mockResolvedValue({
+    state,
+    revision: 1,
+    mutation_id: "test",
+  });
   vi.mocked(sharingStatus).mockResolvedValue({
     ...emptySharing,
     connection: {
@@ -256,50 +281,39 @@ it("la portada solo muestra actividades compartidas y oculta incluso los detalle
       peerAccent: "pink",
     },
   });
-  const common = {
-    ownerId: a.id,
-    ownerName: "Fabrizio",
-    ownerAccent: "blue" as const,
-    sourceTimezone: "America/Lima",
-    date: todayIn("America/Lima"),
-    time: "16:00",
-    minutes: null,
-    courseName: null,
-    courseColor: null,
-    type: "examen",
-    kind: "event" as const,
-    own: true,
-  };
   vi.mocked(calendarFeed).mockResolvedValue({
     connected: true,
     events: [
       {
-        ...common,
-        id: "private",
-        title: "Examen privado",
-        visibility: "private",
-      },
-      {
-        ...common,
-        id: "public",
-        title: "Actividad compartida",
+        id: "peer-exam",
+        ownerId: b.id,
+        ownerName: "Catalina",
+        ownerAccent: "pink",
+        sourceTimezone: "America/Lima",
+        date: todayIn("America/Lima"),
+        time: "16:00",
+        minutes: null,
+        title: "Actividad de Catalina",
+        courseName: null,
+        courseColor: null,
+        type: "examen",
+        kind: "event",
+        own: false,
         visibility: "details",
-      },
-      {
-        ...common,
-        id: "busy",
-        title: "Detalle sensible del ocupado",
-        visibility: "busy",
       },
     ],
   });
   render(<App />);
-  expect((await screen.findAllByText("Actividad compartida")).length).toBeGreaterThan(0);
-  expect(screen.queryByText("Examen privado")).not.toBeInTheDocument();
   expect(
-    screen.queryByText("Detalle sensible del ocupado"),
+    (await screen.findAllByText("Actividad de Catalina")).length,
+  ).toBeGreaterThan(0);
+  for (const visibility of ["private", "busy", "details"])
+    expect(
+      screen.getAllByText(`Actividad anterior ${visibility}`).length,
+    ).toBeGreaterThan(0);
+  expect(
+    screen.queryByText("Notas que no se muestran"),
   ).not.toBeInTheDocument();
-  expect(screen.getAllByText("Ocupado").length).toBeGreaterThan(0);
   expect(
     screen.queryByRole("button", { name: /Editar/ }),
   ).not.toBeInTheDocument();

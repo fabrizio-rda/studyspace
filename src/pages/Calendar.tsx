@@ -413,13 +413,13 @@ function PersonalCalendar() {
 
 export default function Calendar() {
   const [params] = useSearchParams();
-  const [scope, setScope] = useState(
-    params.get("personal") === "1" ? "mine" : "shared",
-  );
-  useEffect(
-    () => setScope(params.get("personal") === "1" ? "mine" : "shared"),
-    [params],
-  );
+  const { cloud } = useStore();
+  const defaultScope =
+    params.get("personal") === "1" || cloud.mode !== "cloud"
+      ? "mine"
+      : "shared";
+  const [scope, setScope] = useState(defaultScope);
+  useEffect(() => setScope(defaultScope), [params, defaultScope]);
   const initial = params.get("date");
   return (
     <>

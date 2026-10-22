@@ -72,11 +72,13 @@ export default function SharedCalendar({
       accent: data.settings.calendarAccent ?? "blue",
     },
     ...(sharing.status.connection
-      ? [{
-          id: sharing.status.connection.peerId,
-          name: sharing.status.connection.peerName,
-          accent: sharing.status.connection.peerAccent,
-        }]
+      ? [
+          {
+            id: sharing.status.connection.peerId,
+            name: sharing.status.connection.peerName,
+            accent: sharing.status.connection.peerAccent,
+          },
+        ]
       : []),
   ];
   const events = feed.events.filter(
@@ -145,8 +147,8 @@ export default function SharedCalendar({
     <>
       {cloud.mode === "cloud" && cloud.user && !sharing.status.connection && (
         <p className="integration-status">
-          Tus actividades ya aparecen aquí. Para añadir las de Catalina,{" "}
-          <Link to="/configuracion">vincula su cuenta</Link>.
+          Tus actividades ya aparecen aquí. Para añadir las de la otra persona,{" "}
+          <Link to="/configuracion">Configurar calendario compartido</Link>.
         </p>
       )}
       {filters}
@@ -364,8 +366,8 @@ export default function SharedCalendar({
         <div>
           <h1>Calendario compartido</h1>
           <p>
-            Tareas y actividades de ambos espacios. Los colores de propietario
-            y curso se muestran por separado.
+            Tareas y actividades de ambos espacios. Los colores de propietario y
+            curso se muestran por separado.
           </p>
         </div>
       </div>

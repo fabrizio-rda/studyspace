@@ -505,21 +505,9 @@ export function generateSchedule(
           kind: job.kind,
           status: "pending",
           manual: false,
-          visibility: data.scheduledSessions.some(
-            (s) =>
-              s.planId === (plan?.id ?? null) &&
-              s.topicId === topic.id &&
-              s.kind === job.kind,
-          )
-            ? "private"
-            : (data.settings.calendarDefaultVisibility ?? "private"),
+          visibility: "details",
           reason: recommendationReason(topic, plan, today, job.kind),
         };
-        const previousVisibility = data.scheduledSessions.find(
-          (s) => s.id === session.id,
-        );
-        if (previousVisibility)
-          session.visibility = previousVisibility.visibility ?? "private";
         if (!result.some((s) => s.id === session.id)) result.push(session);
         job.remaining -= duration;
         if (job.kind === "study") lastStudy.set(topic.id, date);

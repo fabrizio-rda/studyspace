@@ -62,21 +62,13 @@ La elección de cursos iniciales es una plantilla para una cuenta nueva autentic
 6. Las invitaciones vencen a los siete días. El remitente puede cancelarlas y la destinataria rechazarlas. Crear la misma invitación vigente o repetir su aceptación no crea duplicados.
 7. Cualquiera puede pulsar **Revocar acceso**. La otra persona deja de recibir esos registros en futuras consultas; ninguno pierde sus actividades personales. Para vincular de nuevo hace falta otra invitación aceptada.
 
-## 5. Elegir lo que comparte cada actividad
+## 5. Calendario conjunto automático
 
-Todas las actividades anteriores sin una elección explícita siguen **privadas**. Invitar o aceptar no las publica.
+Las tareas, actividades y sesiones con fecha se guardan para el calendario conjunto sin selector de visibilidad. También las sesiones regeneradas por el planificador. Al guardar cambios en un espacio, se normalizan sus registros anteriores a `details`; la importación desde Configuración hace lo mismo.
 
-| Visibilidad             | Lo que recibe la otra cuenta                                                                                   |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Privado                 | Ningún registro de esa actividad                                                                               |
-| Solo disponibilidad     | Nombre del propietario, fecha, hora y duración cuando existe. Título “Ocupado”, sin curso ni tipo de actividad |
-| Compartido con detalles | Propietario, título, curso/color, fecha, hora, duración y tipo                                                 |
+Las actividades propias se calculan directamente desde el estado actual: aparecen inmediatamente sin esperar un guardado remoto ni tener una segunda cuenta vinculada. Las ajenas se consultan únicamente a través del vínculo aceptado y la RPC autenticada. No se permite consultar a cualquier usuario ni editar sus tareas.
 
-Nunca se incluyen descripciones, notas personales, prioridad, resultados, dominio, progreso, estado de entrega de Classroom, enlaces privados ni documentos en el feed compartido. El propietario sí puede ver los detalles de sus propias actividades en la vista combinada.
-
-Puedes elegir visibilidad al crear/editar tareas, eventos y sesiones pendientes. Para revisar también actividades completadas, abre **Configuración → Calendario compartido → Revisar visibilidad de mis actividades**, busca el título y cambia su opción individual.
-
-La preferencia predeterminada solo afecta actividades nuevas. No publica las anteriores. Las sesiones regeneradas con exactamente el mismo ID conservan su elección; las sustituciones de sesiones de un plan existente empiezan privadas. Al importar un JSON desde Configuración, las actividades importadas y el valor predeterminado se ponen privados antes de guardar, para evitar publicar una copia sin revisión.
+El calendario muestra propietario, título, curso/color, fecha, hora, duración y tipo. No incluye descripciones, notas personales, resultados, progreso, estado de entrega de Classroom, enlaces ni documentos. El backend conserva compatibilidad con registros antiguos `private`/`busy`; el cliente valida que no lleguen detalles ajenos por esas vías.
 
 El color azul/celeste o rosado/lila identifica a la persona; el nombre aparece también como etiqueta. El color del curso se conserva como un punto aparte. El nombre y el color de propietario pertenecen a las preferencias de cada cuenta.
 
@@ -104,8 +96,8 @@ Los cursos de Cambridge son propios de cada cuenta. Temarios, resultados de prá
 
 - Inicien sesión por separado y comprueben nombre, cursos y estadísticas personales.
 - Creen una tarea en cada cuenta y comprueben que no aparece en el gestor de la otra.
-- Acepten la invitación. Compartan una actividad con detalles y otra solo como disponibilidad; dejen una tercera privada.
-- Actualicen desde el otro dispositivo. Comprueben los tres filtros, el curso/color separado y la ausencia de títulos o notas en disponibilidad.
+- Acepten la invitación. Creen una tarea y una sesión de estudio en cada cuenta sin elegir visibilidad.
+- Actualicen desde el otro dispositivo. Comprueben los filtros, el curso/color y que no aparezcan notas personales.
 - Cambien la fecha y luego revoquen la vinculación. Actualicen el otro dispositivo: ya no debe recibir registros de la cuenta revocada.
 - Prueben Drive y Classroom autorizados individualmente y sus exportaciones JSON.
 
@@ -123,7 +115,13 @@ Referencias: [funciones y permisos Supabase](https://supabase.com/docs/guides/da
 2. Autentica su propio correo real y elige su nombre y el perfil Catalina: diez cursos, incluido Cambridge C1 Advanced. No debe importar la copia local de Fabrizio.
 3. Comprueba que su espacio está vacío de tareas, planes y sesiones ajenos; Cambridge tiene sus propios identificadores y progreso.
 4. Fabrizio crea una invitación dirigida a ese correo verificado. Catalina revisa la identidad y acepta desde su propia sesión.
-5. Comprobar primero una actividad que ambos decidan compartir: privado no se entrega; disponibilidad solo muestra Ocupado; detalles nunca incluye notas, documentos ni resultados. Revocar debe impedir las siguientes consultas.
+5. Crear una actividad y comprobar que aparece automáticamente en ambos calendarios, sin compartir notas, documentos ni resultados. Revocar debe impedir las siguientes consultas ajenas.
 6. En equipos compartidos, cerrar sesión. La sesión Supabase se conserva en el navegador mientras no se cierre; cambiar de UUID oculta inmediatamente el espacio anterior y cancela solicitudes pendientes.
 
 Este procedimiento queda preparado, **no ejecutado con cuentas reales**. No se creó la cuenta de Catalina ni se enviaron invitaciones. SMTP, permisos institucionales Google y pruebas entre dispositivos reales siguen requiriendo configuración y validación de sus propietarios.
+
+## Si no llega el correo de acceso
+
+La URL y la clave pública son las mismas para ambos; el correo y la sesión son individuales. La solicitud aceptada por Supabase no demuestra entrega en la bandeja. Revisar spam y filtros institucionales; abrir el enlace «Sign in» / «Confirm your signup» si el mensaje no contiene un código. La app conserva el formulario al recargar y permite reenviar después de 60 segundos, con mensajes específicos para límites, destinatario no autorizado, error SMTP, enlace vencido y conexión.
+
+Si Supabase devuelve destinatario no autorizado, el administrador debe configurar SMTP. El servicio predeterminado tiene restricciones de destinatarios y frecuencia: https://supabase.com/docs/guides/auth/auth-smtp. No se cambian plantillas, cuentas ni configuración de correo desde esta revisión, ni se envían mensajes de prueba a cuentas reales.
