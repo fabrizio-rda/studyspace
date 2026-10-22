@@ -26,6 +26,7 @@ import type { EntryProfile, EntryGrant } from "../services/entry";
 import AccountSignIn from "../components/AccountSignIn";
 import AccountSetup from "../components/AccountSetup";
 import LandingCalendar from "../components/LandingCalendar";
+import CalendarLinkNotice from "../components/CalendarLinkNotice";
 import { downloadText, serializeBackup } from "../services/storage";
 
 function EntryFrame({ children }: { children: ReactNode }) {
@@ -126,6 +127,7 @@ function Landing() {
         <h1>Elige tu espacio</h1>
         <p>Accede a tus cursos y consulta el calendario conjunto.</p>
       </div>
+      <CalendarLinkNotice key={cloud.user?.id ?? "signed-out"} />
       <section
         id="entry-profiles"
         className="entry-profiles"

@@ -16,6 +16,7 @@ import {
 } from "./services/sharing-context";
 import SharedCalendar from "./components/SharedCalendar";
 import SharingSettings from "./components/SharingSettings";
+import CalendarLinkNotice from "./components/CalendarLinkNotice";
 import AccountSetup from "./components/AccountSetup";
 import { accountState } from "./services/accounts";
 import {
@@ -455,4 +456,89 @@ it("una tarea nueva aparece de inmediato sin vínculo ni esperar el guardado rem
     hook.result.current.events.some((e) => e.title === "Nueva tarea escolar"),
   ).toBe(true);
   expect(calendarFeed).not.toHaveBeenCalled();
+});
+
+it("muestra al remitente que la invitación sigue pendiente y no simula un calendario vinculado", async () => {
+  status.connection = null;
+  status.outgoing = [
+    {
+      id: invite,
+      email: "catalina@example.test",
+      status: "pending",
+      expiresAt: "2099-01-01T00:00:00Z",
+    },
+  ];
+  vi.mocked(acceptCalendar).mockClear();
+  render(<CalendarLinkNotice />, { wrapper: Wrapper });
+  expect(
+    await screen.findByText(/falta que la otra persona la acepte/),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /Aceptar invitación/ }),
+  ).not.toBeInTheDocument();
+  expect(acceptCalendar).not.toHaveBeenCalled();
+});
+it("acepta desde el aviso principal, carga las actividades ajenas y conserva todas las propias", async () => {
+  status.connection = null;
+  status.incoming = [
+    {
+      id: invite,
+      fromName: "Catalina",
+      fromEmail: "catalina@example.test",
+      expiresAt: "2099-01-01T00:00:00Z",
+    },
+  ];
+  const original = structuredClone(mockedStore.current.data);
+  render(
+    <>
+      <CalendarLinkNotice />
+      <SharedCalendar initialDate="2026-10-19" />
+    </>,
+    { wrapper: Wrapper },
+  );
+  await userEvent.click(
+    await screen.findByRole("button", {
+      name: "Aceptar invitación de Catalina",
+    }),
+  );
+  expect(acceptCalendar).toHaveBeenCalledWith(invite);
+  expect(
+    (
+      await screen.findAllByRole("button", {
+        name: "Evaluación Biology · Catalina · 16:00",
+      })
+    ).length,
+  ).toBeGreaterThan(0);
+  expect(
+    screen.queryByText("El calendario conjunto aún no está vinculado"),
+  ).not.toBeInTheDocument();
+  expect(mockedStore.current.data).toEqual(original);
+});
+it("mantiene las actividades y el aviso si la aceptación falla", async () => {
+  status.connection = null;
+  status.incoming = [
+    {
+      id: invite,
+      fromName: "Catalina",
+      fromEmail: "catalina@example.test",
+      expiresAt: "2099-01-01T00:00:00Z",
+    },
+  ];
+  vi.mocked(acceptCalendar).mockRejectedValueOnce(
+    new Error("Invitación no disponible"),
+  );
+  const original = structuredClone(mockedStore.current.data);
+  render(<CalendarLinkNotice />, { wrapper: Wrapper });
+  await userEvent.click(
+    await screen.findByRole("button", {
+      name: "Aceptar invitación de Catalina",
+    }),
+  );
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Invitación no disponible",
+  );
+  expect(
+    screen.getByRole("button", { name: "Aceptar invitación de Catalina" }),
+  ).toBeEnabled();
+  expect(mockedStore.current.data).toEqual(original);
 });
