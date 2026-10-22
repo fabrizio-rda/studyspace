@@ -1,0 +1,263 @@
+/* Account-scoped interface colors. Course colors and owner labels stay semantic. */
+.app-shell {
+  --ui-ink: #263c54;
+  --ui-muted: #566a80;
+  --ui-accent: #2a62ac;
+  --ui-progress: #83a8eb;
+  --ui-soft: #dfeaf6;
+  --ui-field: #eaf2fa;
+  --ui-border: #d5e2ef;
+  --ui-on-dark: #dfedfa;
+  --ui-nav-text: #d9ebfb;
+  --ui-nav-active: #deefff;
+  --ui-scroll: #497da0aa;
+  --ui-scroll-hover: #2a5d84;
+  --ui-sidebar: linear-gradient(170deg, #174b80 0%, #287fa4 62%, #69b6c7 100%);
+  --ui-welcome:
+    radial-gradient(ellipse at 95% 0%, #bdeff54d, transparent 60%),
+    linear-gradient(115deg, #1d5187 0%, #277ca0 58%, #4f9db5 100%);
+  --ui-button: linear-gradient(110deg, #245b9b, #277b94);
+  --ui-bar: linear-gradient(#8bbde0, #4c85bd);
+}
+.app-shell[data-palette="wine"] {
+  --ui-ink: #4d2938;
+  --ui-muted: #785969;
+  --ui-accent: #833750;
+  --ui-progress: #b96e8b;
+  --ui-soft: #edd5df;
+  --ui-field: #f5e6ea;
+  --ui-border: #dfbfcb;
+  --ui-on-dark: #fff0f4;
+  --ui-nav-text: #fff0f4;
+  --ui-nav-active: #f4dce4;
+  --ui-scroll: #8b4965aa;
+  --ui-scroll-hover: #622b46;
+  --ui-sidebar: linear-gradient(170deg, #60243d 0%, #823c59 58%, #97536e 100%);
+  --ui-welcome:
+    radial-gradient(ellipse at 95% 0%, #f6d6c91a, transparent 60%),
+    linear-gradient(115deg, #6c2945 0%, #78304d 58%, #813b56 100%);
+  --ui-button: linear-gradient(110deg, #7d304d, #a3516b);
+  --ui-bar: linear-gradient(#d5a1b3, #9a4e6c);
+  --purple: #a25371;
+  --muted: #785969;
+  --line: #e4cfd0;
+  background-color: #eed7d7;
+  background-image:
+    radial-gradient(ellipse at 95% 0%, #c5b3df80 0%, transparent 48%),
+    radial-gradient(ellipse at 30% 100%, #f5e9d780 0%, transparent 55%),
+    linear-gradient(100deg, #bd859e 0%, #e4b8c3 35%, #eddbce 70%, #f4e9d9 100%);
+  color: var(--ui-ink);
+}
+.app-shell .sidebar {
+  background: var(--ui-sidebar);
+}
+.app-shell .sidebar nav a,
+.app-shell .sidebar .entry-return,
+.app-shell .sidebar .collapse-btn,
+.app-shell .sidebar-profile small,
+.app-shell .sidebar .nav-eyebrow {
+  color: var(--ui-nav-text);
+}
+.app-shell .sidebar nav a.active {
+  background: var(--ui-nav-active);
+  color: var(--ui-ink);
+}
+.app-shell .sidebar-profile .avatar,
+.app-shell .topbar .avatar {
+  background: var(--ui-nav-active);
+  color: var(--ui-ink);
+}
+.app-shell .welcome {
+  background: var(--ui-welcome);
+  border-color: var(--ui-progress);
+}
+.app-shell .welcome p,
+.app-shell .welcome-bottom,
+.app-shell .welcome-summary-title,
+.app-shell .welcome-summary dt,
+.app-shell .welcome-summary-percent {
+  color: var(--ui-on-dark);
+}
+.app-shell .welcome-summary-progress > span {
+  background: var(--ui-on-dark);
+}
+.app-shell .btn.primary {
+  background: var(--ui-button);
+  color: #fff;
+}
+.app-shell .btn.ghost,
+.app-shell .btn.soft,
+.app-shell .input-with-icon {
+  background: var(--ui-field);
+  border-color: var(--ui-border);
+  color: var(--ui-ink);
+}
+.app-shell .bar-track {
+  background: var(--ui-soft);
+}
+.app-shell .bar-track > span {
+  background: var(--ui-bar);
+}
+.app-shell .progress-legend i {
+  background: var(--ui-progress);
+}
+.app-shell .text-btn,
+.app-shell .eyebrow,
+.app-shell .progress-ring strong {
+  color: var(--ui-accent);
+}
+.app-shell .topbar-date {
+  color: var(--ui-muted);
+}
+.app-shell .calendar-workspace,
+.app-shell .course-card,
+.app-shell .plan-card,
+.app-shell .modal {
+  border-color: var(--ui-border);
+}
+.app-shell input,
+.app-shell select,
+.app-shell textarea {
+  accent-color: var(--ui-accent);
+}
+.app-shell input:focus,
+.app-shell select:focus,
+.app-shell textarea:focus {
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-accent) 15%, transparent);
+}
+.app-shell :focus-visible {
+  outline-color: var(--ui-accent);
+}
+.app-shell .sidebar :focus-visible {
+  outline-color: var(--ui-nav-active);
+}
+.app-shell,
+.app-shell *,
+.app-shell .sidebar {
+  scrollbar-color: var(--ui-scroll) transparent;
+}
+.app-shell ::-webkit-scrollbar-thumb {
+  background-color: var(--ui-scroll);
+}
+.app-shell ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ui-scroll-hover);
+}
+/* Accent controls across calendar, tasks, planning and library. */
+.app-shell[data-palette="wine"] .tabs button.active,
+.app-shell[data-palette="wine"] .segmented button.selected,
+.app-shell[data-palette="wine"] .owner-filters button.active,
+.app-shell[data-palette="wine"] .rdp-selected .rdp-day_button,
+.app-shell[data-palette="wine"]
+  .calendar-cell.is-today
+  .calendar-day-number
+  > span,
+.app-shell[data-palette="wine"] .switch:checked,
+.app-shell[data-palette="wine"] .check-btn.checked {
+  background: var(--ui-accent);
+  color: #fff;
+}
+.app-shell[data-palette="wine"] .rdp-root {
+  --rdp-accent-color: var(--ui-accent);
+}
+.app-shell[data-palette="wine"] .rdp-chevron {
+  fill: var(--ui-accent);
+}
+.app-shell[data-palette="wine"] .rdp-today:not(.rdp-selected) .rdp-day_button,
+.app-shell[data-palette="wine"] .plan-card {
+  background: var(--ui-field);
+}
+.app-shell[data-palette="wine"] .plan-symbol {
+  background: var(--ui-soft);
+  color: var(--ui-accent);
+}
+.app-shell[data-palette="wine"] .badge,
+.app-shell[data-palette="wine"] .count-badge {
+  background: var(--ui-soft);
+  color: var(--ui-accent);
+}
+.interface-palettes {
+  border: 0;
+  padding: 20px 0 0;
+  margin: 0;
+  min-width: 0;
+}
+.interface-palettes legend {
+  font-weight: 650;
+}
+.palette-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.palette-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: #fff9f0;
+  min-height: 64px;
+  color: var(--ui-ink);
+}
+.palette-option[aria-pressed="true"] {
+  border: 2px solid var(--ui-accent);
+  padding: 13px;
+}
+.palette-swatch {
+  display: block;
+  width: 48px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+.palette-blue .palette-swatch {
+  background: linear-gradient(120deg, #174b80, #8ccae2, #f3dfc5);
+}
+.palette-wine .palette-swatch {
+  background: linear-gradient(120deg, #60243d, #d5a1b3, #eddbce);
+}
+@media (max-width: 600px) {
+  .palette-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.app-shell[data-palette="wine"] .welcome-summary {
+  background: #fff0eb15;
+  border-color: #ffe8ef40;
+}
+.app-shell[data-palette="wine"] .welcome .date-pill {
+  background: #ffe5ed22;
+  color: #fff5ef;
+  border-color: #ffe8ef26;
+}
+.app-shell[data-palette="wine"] .count-pill,
+.app-shell[data-palette="wine"] .quick-icon.purple,
+.app-shell[data-palette="wine"] .quick-icon.pink,
+.app-shell[data-palette="wine"] .quick-icon.blue {
+  background: var(--ui-soft);
+  color: var(--ui-accent);
+}
+.app-shell[data-palette="wine"] .linear-progress {
+  background: var(--ui-soft);
+}
+.app-shell[data-palette="wine"] .linear-progress > span {
+  background: var(--ui-bar);
+}
+.app-shell[data-palette="wine"] .topic-line > .check-btn[aria-pressed="true"],
+.app-shell[data-palette="wine"] .sync-pending i,
+.app-shell[data-palette="wine"] .sync-saving i {
+  background: var(--ui-accent);
+}
+.app-shell[data-palette="wine"] .wizard-steps .current {
+  color: var(--ui-accent);
+  border-color: var(--ui-accent);
+  background: var(--ui-field);
+}
+.app-shell[data-palette="wine"] .integration-setup a,
+.app-shell[data-palette="wine"] .migration-counts strong {
+  color: var(--ui-accent);
+}

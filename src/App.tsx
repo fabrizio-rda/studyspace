@@ -29,6 +29,7 @@ import {
 import { downloadText } from "./services/storage";
 import { StoreProvider, useStore } from "./services/store";
 import { todayIn, displayDate } from "./services/dates";
+import { interfacePalette } from "./services/interface-palette";
 import { Editors } from "./components/Editors";
 import type { EditorState } from "./components/Editors";
 import { EditorContext } from "./components/AppContext";
@@ -220,6 +221,7 @@ function Shell() {
       <div
         className={`app-shell ${collapsed ? "collapsed" : ""} ${data.settings.compact ? "is-compact" : ""}`}
         data-clock={clock}
+        data-palette={interfacePalette(data.settings)}
       >
         <a
           className="skip-link"

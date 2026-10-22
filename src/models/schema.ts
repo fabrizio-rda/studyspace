@@ -137,6 +137,7 @@ export const settingsSchema = z.object({
   sidebarCollapsed: z.boolean(),
   taskView: z.enum(["list", "kanban"]),
   academicPreset: z.enum(["fabrizio", "catalina", "custom"]).optional(),
+  interfacePalette: z.enum(["blue", "wine"]).optional(),
   calendarDefaultVisibility: visibilitySchema.optional(),
   calendarAccent: z.enum(["blue", "pink"]).optional(),
 });
