@@ -1,25 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { accountAccessError } from "../services/auth-errors";
 
 const OTP_PENDING_TTL = 15 * 60 * 1000;
 function pendingOtpKey() {
   const route = window.location.hash.split("?")[0];
   return `studyspace:pending-email-code:v1:${loadConfig().supabaseUrl}:${route}`;
 }
-function readPendingOtp(): string {
+function readPendingOtp(): { email: string; sentAt: number } | null {
   try {
     const raw = sessionStorage.getItem(pendingOtpKey());
-    if (!raw) return "";
+    if (!raw) return null;
     const value = JSON.parse(raw) as { email?: unknown; sentAt?: unknown };
-    if (typeof value.email === "string" && typeof value.sentAt === "number" && Date.now() - value.sentAt < OTP_PENDING_TTL && Date.now() >= value.sentAt) return value.email;
+    if (
+      typeof value.email === "string" &&
+      typeof value.sentAt === "number" &&
+      Date.now() - value.sentAt < OTP_PENDING_TTL &&
+      Date.now() >= value.sentAt
+    )
+      return { email: value.email, sentAt: value.sentAt };
     sessionStorage.removeItem(pendingOtpKey());
-  } catch { /* A private browsing session may restrict storage. */ }
-  return "";
+  } catch {
+    /* A private browsing session may restrict storage. */
+  }
+  return null;
 }
 function savePendingOtp(email: string) {
-  try { sessionStorage.setItem(pendingOtpKey(), JSON.stringify({ email, sentAt: Date.now() })); } catch { /* The form still works without persistence. */ }
+  try {
+    sessionStorage.setItem(
+      pendingOtpKey(),
+      JSON.stringify({ email, sentAt: Date.now() }),
+    );
+  } catch {
+    /* The form still works without persistence. */
+  }
 }
 function clearPendingOtp() {
-  try { sessionStorage.removeItem(pendingOtpKey()); } catch { /* Ignore unavailable storage. */ }
+  try {
+    sessionStorage.removeItem(pendingOtpKey());
+  } catch {
+    /* Ignore unavailable storage. */
+  }
 }
 
 import { useStore } from "../services/store";
@@ -32,11 +52,30 @@ export default function AccountSignIn({
   const store = useStore();
   const [config, setConfig] = useState(loadConfig);
   const [pendingEmail] = useState(readPendingOtp);
-  const [email, setEmail] = useState(pendingEmail);
+  const [email, setEmail] = useState(pendingEmail?.email ?? "");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(!!pendingEmail);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [retryAt, setRetryAt] = useState((pendingEmail?.sentAt ?? 0) + 60000);
+  const [now, setNow] = useState(Date.now);
+  const remaining = Math.max(0, Math.ceil((retryAt - now) / 1000));
+  useEffect(() => {
+    if (retryAt <= Date.now()) return;
+    const timer = setInterval(() => {
+      setNow(Date.now());
+      if (Date.now() >= retryAt) clearInterval(timer);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [retryAt]);
+  async function requestEmail() {
+    await store.sendCode(email.trim());
+    savePendingOtp(email.trim());
+    setNow(Date.now());
+    setRetryAt(Date.now() + 60000);
+    setSent(true);
+    setCode("");
+  }
   return (
     <>
       <form
@@ -51,12 +90,10 @@ export default function AccountSignIn({
               await store.verifyCode(email.trim(), code.trim());
               clearPendingOtp();
             } else {
-              await store.sendCode(email.trim());
-              savePendingOtp(email.trim());
-              setSent(true);
+              await requestEmail();
             }
           } catch (e) {
-            setError((e as Error).message);
+            setError(accountAccessError(e));
           } finally {
             setBusy(false);
           }
@@ -75,7 +112,11 @@ export default function AccountSignIn({
         </label>
         {sent && (
           <p className="form-help" role="status">
-            Correo enviado a {email}. Revisa el mensaje en otra pestaña: si contiene un código, escríbelo abajo; si contiene un botón «Sign in», ese enlace inicia sesión directamente. No necesitas pedir otro correo al recargar.
+            Solicitud enviada para {email}. Revisa la bandeja de entrada y
+            correo no deseado: el mensaje puede contener un código o un enlace
+            «Sign in» / «Confirm your signup». Si trae un enlace, ábrelo para
+            iniciar sesión; no tienes que inventar un código. No necesitas pedir
+            otro correo al recargar.
           </p>
         )}
         {sent && (
@@ -101,15 +142,50 @@ export default function AccountSignIn({
         {sent && (
           <button
             type="button"
+            className="btn soft"
+            disabled={busy || remaining > 0}
+            onClick={async () => {
+              if (busy || Date.now() < retryAt) return;
+              setBusy(true);
+              setError("");
+              try {
+                await requestEmail();
+              } catch (e) {
+                setError(accountAccessError(e));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {remaining > 0
+              ? `Reenviar correo en ${remaining} s`
+              : "Reenviar correo"}
+          </button>
+        )}
+        {sent && (
+          <details className="form-help">
+            <summary>No recibí el correo</summary>
+            <p>
+              Busca mensajes de Supabase y revisa spam. Si usas el correo del
+              colegio, puede estar retenido por su filtro. Espera al menos un
+              minuto antes de reenviar. Si aparece un error de envío, sigue la
+              indicación que muestra abajo.
+            </p>
+          </details>
+        )}
+        {sent && (
+          <button
+            type="button"
             className="text-btn"
             disabled={busy}
             onClick={() => {
               clearPendingOtp();
               setSent(false);
               setCode("");
+              setError("");
             }}
           >
-            Cambiar email / solicitar otro código
+            Cambiar email
           </button>
         )}
         {!config.supabaseUrl && (
@@ -136,7 +212,7 @@ export default function AccountSignIn({
                   throw Error("Cierra sesión antes de cambiar el proyecto.");
                 saveConfig(config);
               } catch (e) {
-                setError((e as Error).message);
+                setError(accountAccessError(e));
               }
             }}
           >

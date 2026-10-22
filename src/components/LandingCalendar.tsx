@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   addDays,
   addMonths,
@@ -111,11 +112,12 @@ export default function LandingCalendar() {
         </p>
       ) : !connected ? (
         <p className="entry-calendar-status" role="status">
-          Tus actividades ya aparecen aquí. Las de la otra cuenta se añadirán cuando
-          ambos espacios estén vinculados.
+          Tus actividades ya aparecen aquí. Las de la otra cuenta se añadirán
+          cuando ambos espacios estén vinculados.{" "}
+          <Link to="/configuracion">Vincular cuentas</Link>.
         </p>
       ) : null}
-      {connected && error && (
+      {signedIn && error && (
         <p className="integration-error" role="alert">
           {error}
         </p>
@@ -194,7 +196,8 @@ export default function LandingCalendar() {
         )}
       </div>
       <p className="entry-calendar-note">
-        Tareas, exámenes, actividades y sesiones de los espacios vinculados. Solo visible al iniciar sesión.
+        Tareas, exámenes, actividades y sesiones de los espacios vinculados.
+        Solo visible al iniciar sesión.
       </p>
     </section>
   );

@@ -18,7 +18,7 @@ const statusNames = {
   expired: "Vencida",
 };
 export default function SharingSettings() {
-  const { data, cloud, updateSettings } = useStore();
+  const { data, cloud, updateSettings, notify } = useStore();
   const sharing = useSharing();
   const [params] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -48,8 +48,9 @@ export default function SharingSettings() {
       action={<Link2 size={22} />}
     >
       <p className="muted">
-        Cada cuenta conserva sus datos. Al vincularlas, todas sus tareas y actividades
-        con fecha aparecen automáticamente en el calendario conjunto.
+        Cada cuenta conserva sus datos. Al vincularlas, todas sus tareas y
+        actividades con fecha aparecen automáticamente en el calendario
+        conjunto.
       </p>
       {!ready ? (
         <p className="sharing-notice">
@@ -70,7 +71,8 @@ export default function SharingSettings() {
                   Vinculado con {sharing.status.connection.peerName}
                 </strong>
                 <small>
-                  {sharing.status.connection.peerEmail} · Calendario conjunto automático.
+                  {sharing.status.connection.peerEmail} · Calendario conjunto
+                  automático.
                 </small>
               </div>
               <button
@@ -176,8 +178,9 @@ export default function SharingSettings() {
                     calendarios
                   </strong>
                   <p>
-                    Solo se mostrarán las actividades que cada uno autorice. Tus
-                    actividades actuales seguirán privadas.
+                    Al aceptar, todas las tareas, actividades y sesiones con
+                    fecha de ambos aparecerán automáticamente en el calendario
+                    conjunto.
                   </p>
                   <div className="integration-actions">
                     <button
@@ -247,7 +250,8 @@ export default function SharingSettings() {
           )}
           <div className="sharing-defaults">
             <p className="form-help">
-              Todas las tareas, actividades y sesiones con fecha se muestran automáticamente.
+              Todas las tareas, actividades y sesiones con fecha se muestran
+              automáticamente.
             </p>
             <label>
               Color de propietario

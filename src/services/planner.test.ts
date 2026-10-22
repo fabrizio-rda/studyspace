@@ -426,12 +426,15 @@ describe("Revisiones tras completar la cuota inicial", () => {
   });
 });
 
-it("mantiene privadas las sesiones regeneradas de planes existentes aunque cambie el valor predeterminado", () => {
+it("comparte las sesiones regeneradas de planes existentes aunque tuvieran visibilidad privada", () => {
   const d = fixture();
   const first = generateSchedule(d, NOW);
   expect(first.sessions.length).toBeGreaterThan(0);
-  d.scheduledSessions = first.sessions;
+  d.scheduledSessions = first.sessions.map((s) => ({
+    ...s,
+    visibility: "private",
+  }));
   d.settings.calendarDefaultVisibility = "details";
   const next = generateSchedule(d, NOW);
-  expect(next.sessions.every((s) => s.visibility === "private")).toBe(true);
+  expect(next.sessions.every((s) => s.visibility === "details")).toBe(true);
 });

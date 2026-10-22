@@ -40,7 +40,7 @@ describe("Cuentas y calendario autorizado", () => {
     expect(d.settings).toMatchObject({
       name: "Catalina",
       timezone: "America/Lima",
-      calendarDefaultVisibility: "private",
+      calendarDefaultVisibility: "details",
       calendarAccent: "pink",
     });
     for (const list of [

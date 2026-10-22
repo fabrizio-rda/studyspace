@@ -69,6 +69,17 @@ beforeEach(() => {
     updateSettings: vi.fn(),
     startCloud: vi.fn(async () => {}),
   };
+  (mockedStore.current.data as ReturnType<typeof accountState>).events.push({
+    id: "own-exam",
+    title: "Examen de Gestión",
+    description: "Notas propias",
+    courseId: null,
+    type: "examen",
+    date: "2026-10-19",
+    time: "16:00",
+    createdAt: "2026-10-01T00:00:00Z",
+    visibility: "private",
+  });
   status = {
     connection: {
       id: link,
@@ -271,6 +282,8 @@ describe("Calendario e invitaciones con backend controlado", () => {
     expect(
       screen.getByText(/No se envía un correo automáticamente/),
     ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Copiar enlace" }));
+    expect(mockedStore.current.notify).toHaveBeenCalledWith("Enlace copiado.");
   });
   it("permite aceptar y revocar con consentimiento sin exponer un selector de cuentas", async () => {
     status.connection = null;
@@ -414,4 +427,32 @@ it("no encadena cargas de estado/feed tras reconectar y mantiene el intervalo de
   } finally {
     vi.useRealTimers();
   }
+});
+
+it("una tarea nueva aparece de inmediato sin vínculo ni esperar el guardado remoto", async () => {
+  status.connection = null;
+  const hook = renderHook(() => useSharedFeed("2026-10-01", "2026-10-31"), {
+    wrapper: Wrapper,
+  });
+  await waitFor(() => expect(hook.result.current.loading).toBe(false));
+  vi.mocked(calendarFeed).mockClear();
+  const data = mockedStore.current.data as ReturnType<typeof accountState>;
+  data.tasks.push({
+    id: "new-task",
+    title: "Nueva tarea escolar",
+    description: "",
+    courseId: null,
+    type: "tarea",
+    dueDate: "2026-10-22",
+    time: "",
+    priority: "media",
+    status: "pendiente",
+    createdAt: "2026-10-22T00:00:00Z",
+    completedAt: null,
+  });
+  hook.rerender();
+  expect(
+    hook.result.current.events.some((e) => e.title === "Nueva tarea escolar"),
+  ).toBe(true);
+  expect(calendarFeed).not.toHaveBeenCalled();
 });
