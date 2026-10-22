@@ -125,3 +125,7 @@ Este procedimiento queda preparado, **no ejecutado con cuentas reales**. No se c
 La URL y la clave pública son las mismas para ambos; el correo y la sesión son individuales. La solicitud aceptada por Supabase no demuestra entrega en la bandeja. Revisar spam y filtros institucionales; abrir el enlace «Sign in» / «Confirm your signup» si el mensaje no contiene un código. La app conserva el formulario al recargar y permite reenviar después de 60 segundos, con mensajes específicos para límites, destinatario no autorizado, error SMTP, enlace vencido y conexión.
 
 Si Supabase devuelve destinatario no autorizado, el administrador debe configurar SMTP. El servicio predeterminado tiene restricciones de destinatarios y frecuencia: https://supabase.com/docs/guides/auth/auth-smtp. No se cambian plantillas, cuentas ni configuración de correo desde esta revisión, ni se envían mensajes de prueba a cuentas reales.
+
+## Invitaciones pendientes visibles
+
+Si existe una invitación pendiente, Inicio y la portada muestran que el calendario aún no está vinculado. La persona destinataria puede pulsar «Aceptar invitación de …» directamente en el aviso. El remitente ve que falta aceptación y puede actualizar el vínculo. La aceptación consulta la RPC existente desde la sesión de la destinataria; no importa, reemplaza ni elimina datos académicos. Cuando se activa el vínculo, el aviso desaparece y el calendario carga las actividades autorizadas de la otra cuenta.

@@ -47,6 +47,7 @@ const StudySessions = deferredPage(() => import("./pages/StudySessions"));
 import { SharingProvider } from "./services/sharing-context";
 const Library = deferredPage(() => import("./pages/Library"));
 import { SyncIndicator } from "./components/Integrations";
+import CalendarLinkNotice from "./components/CalendarLinkNotice";
 import { GoogleProvider } from "./services/google-context";
 import TimerRuntime from "./components/TimerRuntime";
 import EntryRouter from "./pages/Entry";
@@ -493,6 +494,9 @@ function Shell() {
                   Abrir recuperación
                 </button>
               </div>
+            )}
+            {location.pathname !== "/configuracion" && (
+              <CalendarLinkNotice key={workspaceId} />
             )}
             <div className="route-content" key={location.pathname}>
               <Suspense

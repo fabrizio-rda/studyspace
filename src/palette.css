@@ -261,3 +261,47 @@
 .app-shell[data-palette="wine"] .migration-counts strong {
   color: var(--ui-accent);
 }
+
+.calendar-link-notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  padding: 18px;
+  margin-bottom: 20px;
+  border: 1px solid var(--ui-border, #d5c8bb);
+  border-radius: 12px;
+  background: #fff9f0d9;
+  color: var(--ui-ink, #263c54);
+}
+.calendar-link-notice > div:first-child {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.calendar-link-notice p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.calendar-link-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.calendar-link-actions .btn {
+  min-height: 44px;
+  white-space: normal;
+}
+.calendar-link-notice > .integration-error {
+  flex-basis: 100%;
+}
+@media (max-width: 600px) {
+  .calendar-link-actions {
+    width: 100%;
+  }
+  .calendar-link-actions .btn {
+    width: 100%;
+  }
+}
