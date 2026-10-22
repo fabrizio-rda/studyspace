@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useStore } from "../services/store";
 import { validTimezone } from "../models/schema";
+import { interfacePalette } from "../services/interface-palette";
 import {
   downloadText,
   parseBackup,
@@ -243,15 +244,31 @@ export default function Settings() {
               }
             />
           </div>
-          <div className="theme-preview">
-            <span />
-            <span />
-            <span />
-            <div>
-              <strong>Azul y celeste sobre beige</strong>
-              <p>Morado y naranja como acento secundario.</p>
+          <fieldset className="interface-palettes">
+            <legend>Paleta de la interfaz</legend>
+            <p className="form-help">
+              Se aplica a todas tus páginas y se guarda en tu cuenta.
+            </p>
+            <div className="palette-options">
+              {(
+                [
+                  ["blue", "Azul y celeste"],
+                  ["wine", "Vino y rosa suave"],
+                ] as const
+              ).map(([palette, label]) => (
+                <button
+                  key={palette}
+                  type="button"
+                  className={`palette-option palette-${palette}`}
+                  aria-pressed={interfacePalette(data.settings) === palette}
+                  onClick={() => updateSettings({ interfacePalette: palette })}
+                >
+                  <span className="palette-swatch" aria-hidden="true" />
+                  <span>{label}</span>
+                </button>
+              ))}
             </div>
-          </div>
+          </fieldset>
         </Card>
         <Card title="Copias de seguridad" className="backup-card">
           <p className="muted">

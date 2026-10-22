@@ -25,3 +25,9 @@ El contenedor compartido `.app-shell` aplica un fondo azul a celeste con beige y
 ## Pantallas anchas y contraste del fondo
 
 La captura del usuario muestra una franja vacía a la derecha. Se elimina el límite de 1500 px de `.main-wrapper` en escritorio; el contenido usa todo el ancho disponible, conservando los márgenes del menú y los puntos de adaptación existentes en tablet y móvil. Se refuerzan los extremos del fondo: azul medio, celeste y beige, con un acento morado suave. La portada no se modifica. Se inspeccionó la captura aportada; esto no equivale a una prueba visual del resultado en navegador.
+
+## Paletas individuales de la interfaz
+
+Configuración incluye dos botones: Azul y celeste; Vino y rosa suave. La preferencia `settings.interfacePalette` se guarda en el espacio activo mediante la sincronización existente. Las cuentas de Catalina nuevas usan vino; las antiguas sin preferencia usan vino por su perfil académico, sin editar filas ni tocar tareas. Fabrizio usa azul por defecto. La elección explícita prevalece sobre el perfil.
+
+La paleta abarca fondo, menú, bienvenida, botones, formularios, calendario, gráficos de progreso y barras de desplazamiento. El fondo vino combina rosa suave, beige y malva; los cursos y etiquetas de propietario mantienen sus colores informativos. La portada no cambia. Las pruebas cubren compatibilidad con cuentas antiguas, cambio desde Configuración, persistencia al volver a acceder y copias de seguridad. La revisión del resultado visual en navegador queda pendiente porque el control requerido no está disponible.

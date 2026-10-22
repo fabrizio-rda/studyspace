@@ -15,3 +15,5 @@ import "./library.css";
 import "./phase4.css";
 import "./entry.css";
 import "./reference-theme.css";
+
+import "./palette.css";

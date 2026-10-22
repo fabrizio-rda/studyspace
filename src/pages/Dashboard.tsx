@@ -177,7 +177,7 @@ export default function Dashboard() {
           role="img"
           aria-label={`${percent}% de tareas completadas`}
           style={{
-            background: `conic-gradient(#83A8EB ${percent}%, #DFEAF6 0)`,
+            background: `conic-gradient(var(--ui-progress, #83A8EB) ${percent}%, var(--ui-soft, #DFEAF6) 0)`,
           }}
         >
           <div>

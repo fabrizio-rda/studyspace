@@ -423,3 +423,30 @@ it("un enlace profundo anónimo conserva su destino al elegir una tarjeta", asyn
     "invitacion=50000000-0000-4000-8000-000000000005",
   );
 });
+
+it("Catalina entra con interfaz vino y puede elegir azul para toda su interfaz desde Configuración", async () => {
+  session = b;
+  bindEntry("catalina", b.id);
+  render(<App />);
+  await loaded();
+  const u = userEvent.setup();
+  await u.click(
+    screen.getByRole("link", { name: "Entrar al espacio de Catalina" }),
+  );
+  await screen.findByText("Cursos, tareas y evaluaciones.");
+  expect(document.querySelector(".app-shell")).toHaveAttribute(
+    "data-palette",
+    "wine",
+  );
+  await u.click(screen.getByRole("link", { name: "Configuración" }));
+  const blue = await screen.findByRole("button", { name: "Azul y celeste" });
+  expect(
+    screen.getByRole("button", { name: "Vino y rosa suave" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await u.click(blue);
+  expect(document.querySelector(".app-shell")).toHaveAttribute(
+    "data-palette",
+    "blue",
+  );
+  expect(blue).toHaveAttribute("aria-pressed", "true");
+});

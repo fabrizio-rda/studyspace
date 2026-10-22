@@ -795,3 +795,29 @@ describe("Validación final: restauración, exclusión y reintentos acotados", (
     expect(readCloud).toHaveBeenCalledTimes(1);
   });
 });
+
+it("guarda la paleta en el espacio autenticado y la recupera al volver a entrar", async () => {
+  const remote = accountState("Catalina", "catalina");
+  vi.mocked(readCloud).mockImplementation(async () => ({
+    state: remote,
+    revision: 1,
+    mutation_id: "initial",
+  }));
+  vi.mocked(writeCloud).mockImplementation(
+    async (state, revision, mutation_id) => {
+      Object.assign(remote, structuredClone(state));
+      return { state, revision: revision + 1, mutation_id };
+    },
+  );
+  const first = mount();
+  await act(() => first.result.current.verifyCode(account.email, "123456"));
+  act(() => first.result.current.updateSettings({ interfacePalette: "blue" }));
+  await act(() => first.result.current.syncNow());
+  expect(remote.settings.interfacePalette).toBe("blue");
+  expect(vi.mocked(writeCloud).mock.calls.at(-1)?.[3]).toBe(account.id);
+  first.unmount();
+  const next = mount();
+  await act(() => next.result.current.verifyCode(account.email, "123456"));
+  expect(next.result.current.data.settings.interfacePalette).toBe("blue");
+  expect(next.result.current.data.settings.academicPreset).toBe("catalina");
+});

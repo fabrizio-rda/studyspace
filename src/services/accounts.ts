@@ -17,6 +17,7 @@ export function accountState(name: string, preset: AccountPreset): AppState {
     ...d.settings,
     name: name.trim() || "Mi cuenta",
     academicPreset: preset,
+    interfacePalette: preset === "catalina" ? "wine" : "blue",
     calendarDefaultVisibility: "details",
     calendarAccent: preset === "catalina" ? "pink" : "blue",
   };
