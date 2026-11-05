@@ -195,7 +195,9 @@ export default function Integrations() {
                 </button>
               </div>
               <p className="form-help">
-                La sesión se conserva en este navegador para que puedas volver a entrar sin solicitar otro correo. Cierra sesión en dispositivos compartidos.
+                La sesión se conserva en este navegador para que puedas volver a
+                entrar sin solicitar otro correo. Cierra sesión en dispositivos
+                compartidos.
               </p>
             </>
           ) : (
@@ -244,8 +246,9 @@ export default function Integrations() {
             {google.driveReady ? "Autorizado en esta sesión" : "Sin conectar"}
           </span>
           <p className="muted">
-            Selecciona archivos concretos con Google Picker. Solo guardamos
-            referencias.
+            Selecciona archivos concretos con Google Picker o crea documentos
+            desde Apuntes de clase. StudySpace guarda sus referencias; el
+            contenido permanece en Google Drive.
           </p>
           <div className="integration-actions">
             <button
@@ -386,10 +389,14 @@ export default function Integrations() {
         </Card>
       </div>
       {google.error && (
-        <p className="integration-error" role="alert">{google.error}</p>
+        <p className="integration-error" role="alert">
+          {google.error}
+        </p>
       )}
       {error && cloud.user && (
-        <p className="integration-error" role="alert">{error}</p>
+        <p className="integration-error" role="alert">
+          {error}
+        </p>
       )}
       <details className="integration-setup">
         <summary>Configurar servicios externos</summary>

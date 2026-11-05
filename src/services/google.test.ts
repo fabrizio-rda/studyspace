@@ -6,6 +6,7 @@ import {
   googleGet,
   SCOPES,
   pickDrive,
+  createDriveDocument,
 } from "./google";
 import { fetchClassroomCourses, fetchCourseWork } from "./classroom";
 let configuration: google.accounts.oauth2.TokenClientConfig;
@@ -50,6 +51,56 @@ afterEach(() => {
   forgetGoogle();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+});
+it("crea un Google Doc con drive.file, verifica sus metadatos y no guarda credenciales", async () => {
+  await authorizeGoogle("drive");
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ id: "doc-school" }), { status: 200 }),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          id: "doc-school",
+          name: "Apuntes",
+          mimeType: "application/vnd.google-apps.document",
+        }),
+        { status: 200 },
+      ),
+    );
+  vi.stubGlobal("fetch", fetcher);
+  const doc = await createDriveDocument("Apuntes");
+  expect(fetcher.mock.calls[0][1].method).toBe("POST");
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({
+    name: "Apuntes",
+    mimeType: "application/vnd.google-apps.document",
+  });
+  expect(fetcher.mock.calls[1][0]).toContain("files/doc-school?");
+  expect(doc.url).toBe("https://docs.google.com/document/d/doc-school/edit");
+  expect(JSON.stringify(doc) + JSON.stringify(localStorage)).not.toContain(
+    "ephemeral-access",
+  );
+});
+it("no crea documentos sin autorización de Drive", async () => {
+  const fetcher = vi.fn();
+  vi.stubGlobal("fetch", fetcher);
+  await expect(createDriveDocument("Apuntes")).rejects.toThrow(
+    "Vuelve a conectar",
+  );
+  expect(fetcher).not.toHaveBeenCalled();
+});
+it("no consulta el documento creado usando credenciales de una identidad nueva", async () => {
+  await authorizeGoogle("drive");
+  const fetcher = vi.fn(async () => {
+    forgetGoogle();
+    return new Response(JSON.stringify({ id: "doc-old" }), { status: 200 });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  await expect(createDriveDocument("Apuntes")).rejects.toThrow(
+    "La cuenta cambió",
+  );
+  expect(fetcher).toHaveBeenCalledTimes(1);
 });
 describe("Adaptadores Google con SDK y red sustituidos", () => {
   it("solicita drive.file por separado y mantiene el token fuera de la persistencia", async () => {

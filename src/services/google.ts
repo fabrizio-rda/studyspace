@@ -227,3 +227,76 @@ export async function pickDrive(): Promise<DocumentRef[]> {
     }),
   );
 }
+
+// Only creates a file after the student explicitly requests it with Drive connected.
+// Uses the same narrow drive.file permission as the existing Picker.
+export async function createDriveDocument(name: string): Promise<DocumentRef> {
+  const generation = authorizationGeneration;
+  const token = tokenFor("drive");
+  const response = await fetch(
+    "https://www.googleapis.com/drive/v3/files?fields=id,name,mimeType,webViewLink",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name.trim(),
+        mimeType: "application/vnd.google-apps.document",
+      }),
+      signal: AbortSignal.timeout(30000),
+    },
+  );
+  if (generation !== authorizationGeneration)
+    throw new Error(
+      "La cuenta cambió. El documento no se vinculó al nuevo espacio; revisa el Drive de la cuenta anterior.",
+    );
+  if (!response.ok) {
+    if (response.status === 401) delete tokens.drive;
+    throw new Error(
+      response.status === 401
+        ? "La autorización expiró. Vuelve a conectar Drive."
+        : "Google no permitió crear el documento. Revisa tus permisos y que la API de Drive esté habilitada.",
+    );
+  }
+  const file = (await response.json()) as { id?: string };
+  if (!file.id || !/^[\w-]+$/.test(file.id))
+    throw new Error("Google no devolvió un documento válido.");
+  if (generation !== authorizationGeneration)
+    throw new Error(
+      "La cuenta cambió. Revisa el documento en tu Drive anterior.",
+    );
+  const verified = await googleGet<{
+    id: string;
+    name: string;
+    mimeType: string;
+  }>(
+    "drive",
+    `https://www.googleapis.com/drive/v3/files/${file.id}?fields=id,name,mimeType`,
+  );
+  if (generation !== authorizationGeneration)
+    throw new Error(
+      "La cuenta cambió. Revisa el documento creado en tu Drive anterior.",
+    );
+  if (
+    verified.id !== file.id ||
+    verified.mimeType !== "application/vnd.google-apps.document"
+  )
+    throw new Error(
+      "No se pudo verificar el documento creado. Revisa tu Drive antes de volver a crearlo.",
+    );
+  return {
+    id: crypto.randomUUID(),
+    externalId: verified.id,
+    name: verified.name.slice(0, 300),
+    mimeType: verified.mimeType,
+    url: `https://docs.google.com/document/d/${verified.id}/edit`,
+    source: "drive",
+    folderId: null,
+    courseId: null,
+    topicId: null,
+    tags: [],
+    createdAt: new Date().toISOString(),
+  };
+}
