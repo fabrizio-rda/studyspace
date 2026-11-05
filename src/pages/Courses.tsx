@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Syllabus from "../components/Syllabus";
+import CourseNotes from "../components/CourseNotes";
 import { topicProgress } from "../services/planner";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -332,8 +333,18 @@ export function CourseDetail() {
         >
           Temario
         </button>
+        <button
+          role="tab"
+          aria-selected={tab === "notes"}
+          className={tab === "notes" ? "active" : ""}
+          onClick={() => setTab("notes")}
+        >
+          Apuntes de clase
+        </button>
       </div>
-      {tab === "syllabus" ? (
+      {tab === "notes" ? (
+        <CourseNotes key={course.id} course={course} />
+      ) : tab === "syllabus" ? (
         <Syllabus courseId={course.id} />
       ) : (
         <>
@@ -390,7 +401,10 @@ export function CourseDetail() {
               title="Materiales"
               action={
                 <span className="count-pill">
-                  {data.documents.filter((d) => d.courseId === course.id).length}
+                  {
+                    data.documents.filter((d) => d.courseId === course.id)
+                      .length
+                  }
                 </span>
               }
             >
